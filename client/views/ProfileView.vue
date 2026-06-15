@@ -21,9 +21,52 @@
     <template v-if="authStore.user">
       <!-- Avatar & Overview -->
       <div class="card-surface p-8 flex flex-col sm:flex-row items-center sm:items-start gap-8">
-        <div class="w-20 h-20 rounded-full bg-accent/10 border-2 border-accent/20 flex items-center justify-center text-2xl font-bold text-accent shrink-0">
-          {{ userInitials }}
+        <!-- Profile Photo Section -->
+        <div class="relative group shrink-0">
+          <div
+            class="w-24 h-24 rounded-full overflow-hidden border-2 border-accent/20 flex items-center justify-center cursor-pointer transition-all hover:border-accent/40"
+            @click="triggerFileInput"
+            @dragover.prevent="dragOver = true"
+            @dragleave="dragOver = false"
+            @drop.prevent="handleDrop"
+            :class="{ 'ring-2 ring-accent/30 ring-offset-2 ring-offset-surface': dragOver }"
+          >
+            <img
+              v-if="photoPreview || authStore.user.profilePhoto"
+              :src="photoPreview || authStore.user.profilePhoto"
+              alt="Profile"
+              class="w-full h-full object-cover"
+            />
+            <span v-else class="text-2xl font-bold text-accent">{{ userInitials }}</span>
+          </div>
+          <!-- Hover overlay -->
+          <div
+            class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            @click="triggerFileInput"
+          >
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+            class="hidden"
+            @change="handleFileSelect"
+          />
+          <!-- Upload button -->
+          <button
+            v-if="selectedFile"
+            @click="uploadPhoto"
+            :disabled="uploading"
+            class="mt-3 w-full btn-primary py-1.5 text-xs"
+          >
+            {{ uploading ? 'Uploading...' : 'Upload Photo' }}
+          </button>
         </div>
+
         <div class="flex-1 text-center sm:text-left space-y-1">
           <h3 class="text-xl font-bold text-text-primary">{{ authStore.user.username }}</h3>
           <p class="text-sm text-text-muted">{{ authStore.user.email }}</p>
@@ -140,6 +183,11 @@ const authStore = useAuthStore()
 const saving = ref(false)
 const updateError = ref('')
 const successMsg = ref('')
+const fileInput = ref(null)
+const selectedFile = ref(null)
+const photoPreview = ref('')
+const uploading = ref(false)
+const dragOver = ref(false)
 
 const form = reactive({
   username: '',
@@ -170,6 +218,51 @@ onMounted(async () => {
     // error handled in store
   }
 })
+
+function triggerFileInput() {
+  fileInput.value?.click()
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  processFile(file)
+}
+
+function handleDrop(e) {
+  dragOver.value = false
+  const file = e.dataTransfer?.files?.[0]
+  if (!file) return
+  if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) return
+  processFile(file)
+}
+
+function processFile(file) {
+  selectedFile.value = file
+  photoPreview.value = URL.createObjectURL(file)
+}
+
+async function uploadPhoto() {
+  if (!selectedFile.value) return
+  uploading.value = true
+  updateError.value = ''
+  successMsg.value = ''
+  try {
+    const formData = new FormData()
+    formData.append('photo', selectedFile.value)
+    const { data } = await client.post('/auth/profile/photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    authStore.user.profilePhoto = data.profilePhoto
+    selectedFile.value = null
+    photoPreview.value = ''
+    successMsg.value = 'Profile photo updated successfully.'
+  } catch (err) {
+    updateError.value = err.response?.data?.message || 'Failed to upload photo'
+  } finally {
+    uploading.value = false
+  }
+}
 
 async function handleUpdate() {
   if (!form.username.trim() || !form.email.trim()) return

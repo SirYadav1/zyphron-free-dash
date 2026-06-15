@@ -7,7 +7,13 @@ import {
   UseGuards,
   Req,
   Ip,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as path from 'path';
+import * as crypto from 'crypto';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -64,6 +70,34 @@ export class AuthController {
     @Body() body: { username?: string; email?: string; first_name?: string; last_name?: string },
   ) {
     return this.authService.updateProfile(user.id, body);
+  }
+
+  @Post('profile/photo')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      storage: diskStorage({
+        destination: '/var/www/html/uploads/profiles',
+        filename: (req, file, cb) => {
+          const ext = path.extname(file.originalname);
+          const filename = `${crypto.randomUUID()}${ext}`;
+          cb(null, filename);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+          return cb(new Error('Only image files are allowed'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadProfilePhoto(
+    @CurrentUser() user: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.authService.uploadProfilePhoto(user.id, file);
   }
 
   @Throttle({ default: { limit: 5, ttl: 60000 } })
