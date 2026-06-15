@@ -34,8 +34,12 @@ export class InvoicesController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.invoicesService.findById(id);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: string,
+  ) {
+    // scope to the caller, don't trust an id from the url
+    return this.invoicesService.findById(id, userId);
   }
 
   @Post()

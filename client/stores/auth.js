@@ -44,7 +44,7 @@ export const useAuthStore = defineStore('auth', {
         if (data.requires2FA) {
           return data
         }
-        localStorage.setItem('access_token', data.access_token)
+        sessionStorage.setItem('access_token', data.access_token)  // BUG-H5 FIX
         this.user = data.user
         return data
       } catch (error) {
@@ -93,14 +93,14 @@ export const useAuthStore = defineStore('auth', {
         return data
       } catch (error) {
         this.user = null
-        localStorage.removeItem('access_token')
+        sessionStorage.removeItem('access_token')  // BUG-H5 FIX
         throw error
       }
     },
 
     logout() {
       this.user = null
-      localStorage.removeItem('access_token')
+      sessionStorage.removeItem('access_token')  // BUG-H5 FIX
     },
   },
 })

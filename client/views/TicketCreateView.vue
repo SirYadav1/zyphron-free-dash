@@ -119,8 +119,9 @@ async function handleSubmit() {
       priority: form.priority,
       message: form.message.trim(),
     }
+    // BUG-C4 FIX: Send 'server' as string to match backend DTO (was serverId which got stripped)
     if (form.serverId) {
-      payload.serverId = form.serverId
+      payload.server = String(form.serverId)
     }
     await client.post('/tickets', payload)
     router.push('/ticket')

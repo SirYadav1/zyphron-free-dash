@@ -8,7 +8,7 @@ const client = axios.create({
 })
 
 client.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = sessionStorage.getItem('access_token')  // BUG-H5 FIX: sessionStorage instead of localStorage
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -21,7 +21,7 @@ client.interceptors.response.use(
     const url = error.config?.url || ''
     const isAuthAttempt = url.includes('/auth/login') || url.includes('/auth/register')
     if (error.response?.status === 401 && !isAuthAttempt) {
-      localStorage.removeItem('access_token')
+      sessionStorage.removeItem('access_token')  // BUG-H5 FIX
       if (!window.location.pathname.startsWith('/login')) {
         window.location.href = '/login'
       }

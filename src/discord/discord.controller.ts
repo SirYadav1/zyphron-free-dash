@@ -13,6 +13,19 @@ import { JwtService } from '@nestjs/jwt';
 import { DiscordService } from './discord.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { randomBytes } from 'crypto';
+
+// BUG-C1 FIX: Store OAuth states instead of leaking JWT in URL
+// BUG-H7 FIX: Also store code_verifier for PKCE
+const oauthStates = new Map<string, { userId: string; codeVerifier?: string; expiresAt: number }>();
+
+// Clean up expired states every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of oauthStates) {
+    if (val.expiresAt < now) oauthStates.delete(key);
+  }
+}, 5 * 60 * 1000);
 
 @Controller('discord')
 export class DiscordController {
@@ -31,7 +44,17 @@ export class DiscordController {
       const payload = this.jwtService.verify(token);
       if (!payload || !payload.sub) throw new Error('Invalid token');
 
-      const url = this.discordService.getOAuthUrl(token);
+      // BUG-C1 FIX: Generate random state, store userId mapped to it
+      // BUG-H7 FIX: Also generate and store PKCE code_verifier
+      const state = randomBytes(32).toString('hex');
+      const { codeVerifier, codeChallenge } = this.discordService.generatePKCE();
+      oauthStates.set(state, {
+        userId: payload.sub,
+        codeVerifier,
+        expiresAt: Date.now() + 10 * 60 * 1000, // 10 min expiry
+      });
+
+      const url = this.discordService.getOAuthUrl(state, codeChallenge);
       return res.redirect(url);
     } catch {
       return res.redirect(`${process.env.FRONTEND_URL}/login`);
@@ -45,10 +68,14 @@ export class DiscordController {
     @Res() res: any,
   ) {
     try {
-      const payload = this.jwtService.verify(state);
-      if (!payload || !payload.sub) throw new Error('Invalid token in state');
+      // BUG-C1 FIX: Look up userId from state map instead of verifying JWT
+      const stateData = oauthStates.get(state);
+      if (!stateData || stateData.expiresAt < Date.now()) {
+        throw new Error('Invalid or expired OAuth state');
+      }
+      oauthStates.delete(state); // One-time use
 
-      await this.discordService.handleCallback(code, payload.sub);
+      await this.discordService.handleCallback(code, stateData.userId, stateData.codeVerifier);
       return res.redirect(
         `${process.env.FRONTEND_URL}/settings?discord=linked`,
       );

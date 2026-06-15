@@ -91,13 +91,23 @@ export class AdminService {
       order: { created_at: 'DESC' },
     });
 
+    // spreading the entity leaks password_hash, 2fa secret and ip; return the public shape
     return {
-      ...user,
       id: user.id,
       username: user.username,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
       isAdmin: user.is_admin,
       coins: user.coins,
       pterodactylUserId: user.pterodactyl_user_id,
+      pterodactylUsername: user.pterodactyl_username,
+      discordId: user.discord_id,
+      discordUsername: user.discord_username,
+      isBanned: user.is_banned,
+      bannedAt: user.banned_at,
+      banReason: user.ban_reason,
+      createdAt: user.created_at,
       servers: servers.map((s) => {
         const now = new Date();
         const updated = s.last_active_at || s.updated_at || s.created_at;
@@ -469,7 +479,7 @@ export class AdminService {
       return {
         success: false,
         message: errorMessage,
-        error: error.message,
+        // log the real error, return something generic
         guidance,
       };
     }

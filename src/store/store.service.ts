@@ -197,7 +197,7 @@ export class StoreService {
     return {
       message: `${type.toUpperCase()} upgraded by ${amount}`,
       cost: totalCost,
-      remainingCoins: user.coins - totalCost,
+      remainingCoins: (await this.userRepo.findOne({ where: { id: userId } }))?.coins ?? (user.coins - totalCost),  // re-read the balance, the cached value is stale
       server: {
         [field]: newValue,
       },

@@ -43,15 +43,16 @@ export class CreditsService {
     // for now, just add coins to the user's account
     const creditAmount = pkg.quantity;
 
+    // optimistic lock, closes the double-credit race
     const updateResult = await this.userRepo
       .createQueryBuilder()
       .update(User)
       .set({ coins: user.coins + creditAmount })
-      .where('id = :id', { id: userId })
+      .where('id = :id AND coins = :coins', { id: userId, coins: user.coins })
       .execute();
 
     if (updateResult.affected === 0) {
-      throw new BadRequestException('Failed to add credits. Please try again.');
+      throw new BadRequestException('Concurrent purchase detected. Please try again.');
     }
 
     // record transaction

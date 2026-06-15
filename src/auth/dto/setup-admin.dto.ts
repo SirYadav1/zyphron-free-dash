@@ -1,4 +1,4 @@
-import { IsString, IsEmail, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsEmail, MinLength, MaxLength, Matches } from 'class-validator';
 
 export class SetupAdminDto {
   @IsString()
@@ -12,8 +12,12 @@ export class SetupAdminDto {
   @IsEmail()
   email: string;
 
+  // same password rules as register.dto
   @IsString()
-  @MinLength(6)
+  @MinLength(8)
   @MaxLength(100)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+  })
   password: string;
 }

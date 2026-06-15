@@ -68,8 +68,15 @@ export class EmailTemplatesService {
 
     for (const [key, value] of Object.entries(vars)) {
       const placeholder = `{{${key}}}`;
-      subject = subject.split(placeholder).join(value ?? '');
-      body = body.split(placeholder).join(value ?? '');
+      // escape vars, the template renders as html
+      const escapedValue = (value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+      subject = subject.split(placeholder).join(escapedValue);
+      body = body.split(placeholder).join(escapedValue);
     }
 
     return { subject, body };

@@ -148,8 +148,8 @@ const twoFAError = ref('')
 
 onMounted(async () => {
   try {
-    const res = await fetch('/api/public-settings')
-    const data = await res.json()
+    // BUG-L6 FIX: Use axios client instead of raw fetch for centralized error handling
+    const { data } = await client.get('/public-settings')
     if (data.login_image_url) {
       loginImage.value = data.login_image_url
     }
@@ -181,7 +181,7 @@ async function handle2FALogin() {
       email: email.value,
       code: twoFACode.value,
     })
-    localStorage.setItem('access_token', data.access_token)
+    sessionStorage.setItem('access_token', data.access_token)  // BUG-H5 FIX
     store.user = data.user
     router.push('/home')
   } catch (err) {
