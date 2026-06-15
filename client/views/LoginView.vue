@@ -1,13 +1,10 @@
 <template>
   <div class="auth-shell">
     <div class="max-w-md w-full space-y-8 relative z-10">
-      <div v-if="loginImage" class="flex justify-center mb-4">
-        <img :src="loginImage" class="max-h-32 max-w-full rounded-lg object-contain" />
+      <div class="flex justify-center mb-4">
+        <img src="/login-logo.png" alt="Zyphron Cloud" class="max-h-32 max-w-full rounded-lg object-contain" />
       </div>
-      <div v-else class="text-center space-y-3">
-        <div class="flex justify-center mb-2">
-          <ZyphronLogo size="lg" />
-        </div>
+      <div class="text-center space-y-3">
         <h1 class="text-2xl font-bold text-text-primary tracking-tight">Welcome back</h1>
         <p class="text-sm text-text-muted">Sign in to manage your servers on Zyphron Cloud.</p>
       </div>
@@ -129,10 +126,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import ZyphronLogo from '../components/ZyphronLogo.vue'
 import client from '../api/client'
 
 const router = useRouter()
@@ -140,23 +136,10 @@ const store = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const loginImage = ref('')
 const requires2FA = ref(false)
 const twoFACode = ref('')
 const twoFALoading = ref(false)
 const twoFAError = ref('')
-
-onMounted(async () => {
-  try {
-    // BUG-L6 FIX: Use axios client instead of raw fetch for centralized error handling
-    const { data } = await client.get('/public-settings')
-    if (data.login_image_url) {
-      loginImage.value = data.login_image_url
-    }
-  } catch {
-    // ignore
-  }
-})
 
 async function handleLogin() {
   try {
