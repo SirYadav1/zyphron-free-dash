@@ -2,9 +2,9 @@
   <div class="space-y-10 max-w-2xl">
     <div class="space-y-1">
       <div class="flex items-center gap-3">
-        <router-link to="/admin/products" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to Products</router-link>
+        <router-link to="/admin/services" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to Services</router-link>
       </div>
-      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Create Product</h2>
+      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Create Service</h2>
       <p class="text-sm text-text-muted">Add a new server product</p>
     </div>
 
@@ -112,9 +112,9 @@
 
       <div class="flex gap-3 pt-4 border-t border-border">
         <button @click="handleSubmit" :disabled="saving" class="btn-primary px-6 py-2">
-          {{ saving ? 'Creating...' : 'Create Product' }}
+          {{ saving ? 'Creating...' : 'Create Service' }}
         </button>
-        <router-link to="/admin/products" class="btn-secondary px-6 py-2 text-center">Cancel</router-link>
+        <router-link to="/admin/services" class="btn-secondary px-6 py-2 text-center">Cancel</router-link>
       </div>
     </div>
   </div>
@@ -207,7 +207,7 @@ function onEggChange() {
 
 async function handleSubmit() {
   if (!form.value.name) {
-    error.value = 'Product name is required'
+    error.value = 'Service name is required'
     return
   }
   if (!form.value.nest_id || !form.value.egg_id) {
@@ -219,9 +219,9 @@ async function handleSubmit() {
   error.value = ''
   success.value = ''
   try {
-    await client.post('/admin/products', form.value)
-    success.value = 'Product created successfully'
-    setTimeout(() => router.push('/admin/products'), 1000)
+    await client.post('/admin/services', form.value)
+    success.value = 'Service created successfully'
+    setTimeout(() => router.push('/admin/services'), 1000)
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to create product'
   } finally {

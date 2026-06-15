@@ -2,10 +2,10 @@
   <div class="space-y-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="space-y-1">
-        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Manage Products</h2>
-        <p class="text-sm text-text-muted">{{ products.length }} server products</p>
+        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Manage Services</h2>
+        <p class="text-sm text-text-muted">{{ products.length }} server services</p>
       </div>
-      <router-link to="/admin/products/create" class="btn-primary px-4 py-2 text-xs">Create Product</router-link>
+      <router-link to="/admin/services/create" class="btn-primary px-4 py-2 text-xs">Create Product</router-link>
     </div>
 
     <div class="card-surface overflow-hidden">
@@ -41,14 +41,14 @@
               <td class="px-5 py-3 text-text-muted text-sm">{{ p.databases }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ p.backups }}</td>
               <td class="px-5 py-3 text-right">
-                <router-link :to="`/admin/products/${p.id}/edit`" class="text-xs font-bold text-accent hover:text-white transition-colors">Edit</router-link>
+                <router-link :to="`/admin/services/${p.id}/edit`" class="text-xs font-bold text-accent hover:text-white transition-colors">Edit</router-link>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       <div v-if="products.length === 0" class="py-16 text-center">
-        <p class="text-text-muted text-lg font-bold mb-1">No Products Found</p>
+        <p class="text-text-muted text-lg font-bold mb-1">No Services Found</p>
         <p class="text-sm text-text-muted/60">Create your first product to get started.</p>
       </div>
     </div>
