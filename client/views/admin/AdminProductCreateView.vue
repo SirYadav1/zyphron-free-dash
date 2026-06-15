@@ -220,7 +220,7 @@ async function handleSubmit() {
   try {
     await client.post('/admin/products', form.value)
     success.value = 'Service created successfully'
-    setTimeout(() => router.push('/admin/products'), 1000)
+    setTimeout(() => router.push('/admin/services'), 1000)
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to create product'
   } finally {

@@ -60,11 +60,11 @@ export const useServersStore = defineStore('servers', {
       }
     },
 
-    async createServer(serverName, productId) {
+    async createServer(serverName, productId, extraPayload = {}) {
       this.loading = true
       this.error = null
       try {
-        const payload = { serverName }
+        const payload = { serverName, ...extraPayload }
         if (productId) payload.productId = productId
         const { data } = await client.post('/servers', payload)
         this.servers.unshift(data)

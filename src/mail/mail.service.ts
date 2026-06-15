@@ -305,4 +305,74 @@ export class MailService {
       `,
     });
   }
+
+  /**
+   * Send payment declined email
+   */
+  async sendPaymentDeclined(to: string, username: string, orderId: number, reason?: string) {
+    await this.safeSendMail({
+      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      to,
+      subject: `Payment Declined — Order #${orderId} - Zyphron`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #ef4444;">Payment Declined</h1>
+          <p>Hi <strong>${escapeHtml(username)}</strong>,</p>
+          <p>Your payment for order <strong>#${orderId}</strong> has been declined.</p>
+          ${reason ? `<p>Reason: <strong>${escapeHtml(reason)}</strong></p>` : ''}
+          <p>Please try again or contact support for assistance.</p>
+          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0; color: #991b1b; font-size: 16px; font-weight: bold;">Payment Not Processed</p>
+          </div>
+          <p style="color: #6b7280; font-size: 12px;">If you believe this is an error, please contact support.</p>
+        </div>
+      `,
+    });
+  }
+
+  /**
+   * Send voucher redeemed email
+   */
+  async sendVoucherRedeemed(to: string, username: string, voucherCode: string, credits: number) {
+    await this.safeSendMail({
+      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      to,
+      subject: `Voucher Redeemed — +${credits} Coins - Zyphron`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #22c55e;">Voucher Redeemed! 🎟️</h1>
+          <p>Hi <strong>${escapeHtml(username)}</strong>,</p>
+          <p>You have successfully redeemed voucher <strong>${escapeHtml(voucherCode)}</strong> and received <strong>${credits} coins</strong>.</p>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0; color: #166534; font-size: 24px; font-weight: bold;">+${credits} Coins</p>
+          </div>
+          <p>You can now use your coins to purchase servers and other services.</p>
+          <p style="color: #6b7280; font-size: 12px;">If you have any questions, please contact support.</p>
+        </div>
+      `,
+    });
+  }
+
+  /**
+   * Send partner commission email
+   */
+  async sendPartnerCommission(to: string, username: string, commission: number, referredUser: string) {
+    await this.safeSendMail({
+      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      to,
+      subject: `Partner Commission Earned — +${commission} Coins - Zyphron`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #7c3aed;">Partner Commission Earned! 💰</h1>
+          <p>Hi <strong>${escapeHtml(username)}</strong>,</p>
+          <p>You have earned a partner commission of <strong>${commission} coins</strong> for referring <strong>${escapeHtml(referredUser)}</strong>.</p>
+          <div style="background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0; color: #5b21b6; font-size: 24px; font-weight: bold;">+${commission} Coins</p>
+          </div>
+          <p>Keep sharing your partner link to earn more commissions!</p>
+          <p style="color: #6b7280; font-size: 12px;">If you have any questions, please contact support.</p>
+        </div>
+      `,
+    });
+  }
 }
