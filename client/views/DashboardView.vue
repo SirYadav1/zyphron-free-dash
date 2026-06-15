@@ -7,63 +7,53 @@
         <p class="text-sm text-text-muted">Welcome back, {{ authStore.user?.username || 'User' }}.</p>
       </div>
       <router-link to="/services" class="btn-primary inline-flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
+        <Plus :size="16" :stroke-width="2.5" />
         Deploy Server
       </router-link>
     </div>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="card-surface p-5 space-y-2">
+      <div class="card-surface p-5 space-y-2 card-hover">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
-            </svg>
+            <Server :size="20" :stroke-width="2" />
           </div>
           <div>
             <p class="text-label">Servers</p>
-            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ serverStats.active || 0 }}</p>
+            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ animatedStats.servers }}</p>
           </div>
         </div>
       </div>
 
-      <div class="card-surface p-5 space-y-2">
+      <div class="card-surface p-5 space-y-2 card-hover">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+            <Coins :size="20" :stroke-width="2" />
           </div>
           <div>
             <p class="text-label">Credits</p>
-            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ authStore.user?.coins || 0 }}</p>
+            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ animatedStats.credits }}</p>
           </div>
         </div>
       </div>
 
-      <div class="card-surface p-5 space-y-2">
+      <div class="card-surface p-5 space-y-2 card-hover">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
+            <ShieldCheck :size="20" :stroke-width="2" />
           </div>
           <div>
             <p class="text-label">Server Slots</p>
-            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ serverStats.active || 0 }} / {{ authStore.user?.serverLimit || 1 }}</p>
+            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ animatedStats.slots }} / {{ authStore.user?.serverLimit || 1 }}</p>
           </div>
         </div>
       </div>
 
-      <div class="card-surface p-5 space-y-2">
+      <div class="card-surface p-5 space-y-2 card-hover">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+            <Activity :size="20" :stroke-width="2" />
           </div>
           <div>
             <p class="text-label">Uptime</p>
@@ -74,42 +64,44 @@
     </div>
 
     <div v-if="store.loading" class="flex flex-col items-center justify-center py-20 gap-4">
-      <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+      <div class="loading-spinner"></div>
       <p class="text-xs font-semibold text-text-muted tracking-widest uppercase">Loading...</p>
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- MOTD Card -->
-      <div class="card-surface p-6 lg:col-span-2">
+      <div class="card-surface p-6 lg:col-span-2 card-hover">
         <div class="flex items-center gap-2 mb-4">
-          <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
-          </svg>
+          <Megaphone :size="16" :stroke-width="2" class="text-accent" />
           <h3 class="text-sm font-bold text-text-primary uppercase tracking-wider">Message of the Day</h3>
         </div>
         <p class="text-sm text-text-muted leading-relaxed">Welcome to Zyphron. Configure this message in Settings.</p>
       </div>
 
       <!-- Useful Links -->
-      <div class="card-surface p-6">
+      <div class="card-surface p-6 card-hover">
         <div class="flex items-center gap-2 mb-4">
-          <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-          </svg>
+          <Link :size="16" :stroke-width="2" class="text-accent" />
           <h3 class="text-sm font-bold text-text-primary uppercase tracking-wider">Useful Links</h3>
         </div>
         <div class="space-y-2">
-          <a :href="serverStats.panelUrl || 'https://console.zyphron.cloud'" target="_blank" rel="noopener" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary">
-            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent text-xs">P</span>
-            Pterodactyl Panel
+          <a :href="serverStats.panelUrl || 'https://console.zyphron.cloud'" target="_blank" rel="noopener" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group">
+            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
+              <Terminal :size="12" :stroke-width="2" />
+            </span>
+            <span class="group-hover:text-text-primary transition-colors">Pterodactyl Panel</span>
           </a>
-          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary">
-            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent text-xs">M</span>
-            phpMyAdmin
+          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group">
+            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
+              <Database :size="12" :stroke-width="2" />
+            </span>
+            <span class="group-hover:text-text-primary transition-colors">phpMyAdmin</span>
           </a>
-          <a href="https://discord.gg/zyphron" target="_blank" rel="noopener" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary">
-            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent text-xs">D</span>
-            Discord
+          <a href="https://discord.gg/zyphron" target="_blank" rel="noopener" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group">
+            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
+              <MessageSquare :size="12" :stroke-width="2" />
+            </span>
+            <span class="group-hover:text-text-primary transition-colors">Discord</span>
           </a>
         </div>
       </div>
@@ -123,17 +115,17 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div v-for="server in store.servers.slice(0, 4)" :key="server.id" 
-          class="card-surface p-5 group cursor-default">
-          
+        <div v-for="(server, index) in store.servers.slice(0, 4)" :key="server.id"
+          class="stagger-item card-surface p-5 group cursor-default"
+          :style="{ animationDelay: (index * 0.08) + 's' }"
+        >
+
           <div class="flex items-start justify-between mb-6">
             <div class="space-y-1">
               <div class="flex items-center gap-2">
                 <h4 class="font-bold text-text-primary group-hover:text-accent transition-colors">{{ server.serverName }}</h4>
                 <a v-if="server.identifier" :href="`${store.stats.panelUrl || 'https://console.zyphron.cloud'}/server/${server.identifier}`" target="_blank" class="p-1 rounded bg-white/5 hover:bg-white/10 text-text-muted hover:text-accent transition-colors">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                  </svg>
+                  <ExternalLink :size="14" :stroke-width="2" />
                 </a>
               </div>
             </div>
@@ -172,9 +164,7 @@
     <!-- Empty State -->
     <div v-else-if="!store.loading && store.servers.length === 0" class="card-surface py-16 text-center space-y-6">
       <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto text-text-muted opacity-40">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-        </svg>
+        <Server :size="32" :stroke-width="1.5" />
       </div>
       <div class="space-y-2">
         <h3 class="text-lg font-bold text-text-primary">No Servers Yet</h3>
@@ -186,11 +176,9 @@
     <!-- Partner Program & Activity Logs -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Partner Program -->
-      <div class="card-surface p-6">
+      <div class="card-surface p-6 card-hover">
         <div class="flex items-center gap-2 mb-4">
-          <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
+          <Users :size="16" :stroke-width="2" class="text-accent" />
           <h3 class="text-sm font-bold text-text-primary uppercase tracking-wider">Partner Program</h3>
         </div>
         <p class="text-xs text-text-muted mb-3">Refer friends and earn commission on their purchases.</p>
@@ -205,11 +193,9 @@
       </div>
 
       <!-- Activity Logs -->
-      <div class="card-surface p-6">
+      <div class="card-surface p-6 card-hover">
         <div class="flex items-center gap-2 mb-4">
-          <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-          </svg>
+          <ScrollText :size="16" :stroke-width="2" class="text-accent" />
           <h3 class="text-sm font-bold text-text-primary uppercase tracking-wider">Recent Activity</h3>
         </div>
         <div class="space-y-3">
@@ -224,14 +210,52 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 import { useServersStore } from '../stores/servers'
 import { useAuthStore } from '../stores/auth'
+import {
+  Plus,
+  Server,
+  Coins,
+  ShieldCheck,
+  Activity,
+  Megaphone,
+  Link,
+  Terminal,
+  Database,
+  MessageSquare,
+  ExternalLink,
+  Users,
+  ScrollText,
+} from 'lucide-vue-next'
 
 const store = useServersStore()
 const authStore = useAuthStore()
 
 const serverStats = computed(() => store.stats)
+
+// animated counter logic
+const animatedStats = reactive({
+  servers: 0,
+  credits: 0,
+  slots: 0,
+})
+
+function animateCounter(key, target) {
+  const duration = 800
+  const start = animatedStats[key] || 0
+  const diff = target - start
+  if (diff === 0) return
+  const startTime = performance.now()
+  function step(currentTime) {
+    const elapsed = currentTime - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const eased = 1 - Math.pow(1 - progress, 3)
+    animatedStats[key] = Math.round(start + diff * eased)
+    if (progress < 1) requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
 
 onMounted(async () => {
   try {
@@ -240,6 +264,20 @@ onMounted(async () => {
     // Error handled in store
   }
 })
+
+// animate when data changes
+watch(() => store.stats, (newStats) => {
+  if (newStats) {
+    animateCounter('servers', newStats.active || 0)
+  }
+}, { immediate: true })
+
+watch(() => authStore.user, (user) => {
+  if (user) {
+    animateCounter('credits', user.coins || 0)
+    animateCounter('slots', user.serverLimit || 1)
+  }
+}, { immediate: true })
 
 function statusColorClass(status) {
   return {

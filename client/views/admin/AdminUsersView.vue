@@ -117,8 +117,8 @@
             <button @click="showEditModal = false" class="text-text-muted hover:text-text-primary transition-colors text-2xl">×</button>
           </div>
           <div class="p-6 space-y-5">
-            <div v-if="modalError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">⚠️ {{ modalError }}</div>
-            <div v-if="modalSuccess" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">✅ {{ modalSuccess }}</div>
+            <div v-if="modalError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2"><AlertTriangle :size="14" :stroke-width="2.5" /> {{ modalError }}</div>
+            <div v-if="modalSuccess" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent flex items-center gap-2"><CheckCircle :size="14" :stroke-width="2.5" /> {{ modalSuccess }}</div>
 
             <!-- Change Email -->
             <div class="space-y-1">
@@ -224,6 +224,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
+import { AlertTriangle, CheckCircle } from 'lucide-vue-next'
 
 const store = useAdminStore()
 const searchQuery = ref('')

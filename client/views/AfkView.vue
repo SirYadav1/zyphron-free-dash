@@ -15,9 +15,7 @@
     <!-- Error State -->
     <div v-if="store.multiTabDetected" class="card-surface p-6 border-red-500/20 bg-red-500/5 flex items-center gap-4">
       <div class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636"></path>
-        </svg>
+        <ShieldOff :size="20" :stroke-width="2" />
       </div>
       <div>
         <p class="text-sm font-bold text-text-primary">Conflict Detected</p>
@@ -30,8 +28,8 @@
       <div class="flex flex-col justify-center min-h-[350px]">
         <!-- Inactive State -->
         <div v-if="!store.isActive && !store.multiTabDetected" class="card-surface p-12 text-center space-y-8">
-          <div class="w-20 h-20 bg-base rounded-2xl border border-border flex items-center justify-center mx-auto text-4xl shadow-inner">
-            ⚡
+          <div class="w-20 h-20 bg-base rounded-2xl border border-border flex items-center justify-center mx-auto shadow-inner">
+            <Zap :size="36" :stroke-width="1.5" class="text-accent" />
           </div>
 
           <div class="space-y-2">
@@ -62,7 +60,7 @@
           
           <div class="relative inline-flex">
             <div class="w-20 h-20 bg-accent/10 rounded-3xl border border-accent/20 flex items-center justify-center animate-pulse">
-              <span class="text-4xl">💎</span>
+              <Diamond :size="36" :stroke-width="1.5" class="text-accent" />
             </div>
           </div>
 
@@ -132,9 +130,7 @@
 
         <div class="card-surface p-6 bg-accent/[0.02] border-accent/10">
           <h4 class="text-xs font-bold text-text-primary mb-2 flex items-center gap-2">
-            <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+            <Info :size="14" :stroke-width="2" class="text-accent" />
             Pro Tip
           </h4>
           <p class="text-[11px] text-text-muted leading-relaxed font-medium">
@@ -150,6 +146,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAfkStore } from '../stores/afk'
 import client from '../api/client'
+import { Zap, Diamond, Info, ShieldOff } from 'lucide-vue-next'
 
 const store = useAfkStore()
 

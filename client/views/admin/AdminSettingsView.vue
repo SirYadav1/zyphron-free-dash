@@ -5,11 +5,11 @@
       <p class="text-sm text-text-muted">System Configuration & Key-Value Store</p>
     </div>
 
-    <div v-if="error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">
-      ⚠️ {{ error }}
+    <div v-if="error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2">
+      <AlertTriangle :size="14" :stroke-width="2.5" /> {{ error }}
     </div>
-    <div v-if="success" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">
-      ✅ {{ success }}
+    <div v-if="success" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent flex items-center gap-2">
+      <CheckCircle :size="14" :stroke-width="2.5" /> {{ success }}
     </div>
 
     <!-- Custom AFK Rates Config Section -->
@@ -18,7 +18,7 @@
       <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="space-y-1">
           <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
-            <span class="text-accent">⚡</span> AFK Earning Rates
+            <Zap :size="18" :stroke-width="2" class="text-accent" /> AFK Earning Rates
           </h3>
           <p class="text-sm text-text-muted">Configure how many compute credits users earn from active sessions.</p>
         </div>
@@ -86,7 +86,7 @@
 
         <div v-if="!pteroConfigured" class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 text-sm">
           <div class="flex items-center gap-2 text-yellow-400 mb-2">
-            <span>⚠️</span>
+            <AlertTriangle :size="16" :stroke-width="2" />
             <span class="font-bold">Pterodactyl Not Configured</span>
           </div>
           <p class="text-text-muted">Configure your Pterodactyl API above, then click "Load from Pterodactyl" to automatically fetch available options.</p>
@@ -226,7 +226,8 @@
 
       <div v-if="pteroStatus" class="relative p-3 rounded border text-xs font-medium flex items-start gap-2"
         :class="pteroStatus.success ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'">
-        <span class="mt-0.5">{{ pteroStatus.success ? '✅' : '❌' }}</span> 
+        <span class="mt-0.5" v-if="pteroStatus.success"><Check :size="14" :stroke-width="2.5" class="text-green-500" /></span>
+        <span class="mt-0.5" v-else><X :size="14" :stroke-width="2.5" class="text-red-500" /></span>
         <div class="flex-1">
           <div>{{ pteroStatus.message }}</div>
           <div v-if="pteroStatus.panelType" class="mt-1 font-bold">Panel Type: {{ pteroStatus.panelType.charAt(0).toUpperCase() + pteroStatus.panelType.slice(1) }}</div>
@@ -354,6 +355,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
+import { AlertTriangle, CheckCircle, Zap, Check, X } from 'lucide-vue-next'
 
 const store = useAdminStore()
 const editingKey = ref(null)

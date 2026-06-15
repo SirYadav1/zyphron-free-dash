@@ -3,7 +3,9 @@
     <!-- Header -->
     <div class="space-y-1">
       <div class="flex items-center gap-3">
-        <button v-if="selectedCategory" @click="goBack" class="text-sm text-accent hover:text-white transition-colors">&larr; Back</button>
+        <button v-if="selectedCategory" @click="goBack" class="text-sm text-accent hover:text-white transition-colors flex items-center gap-1">
+          <ArrowLeft :size="14" :stroke-width="2.5" /> Back
+        </button>
       </div>
       <h2 class="text-2xl font-bold text-text-primary tracking-tight">
         {{ selectedCategory ? selectedCategory.name : 'Services' }}
@@ -15,15 +17,15 @@
 
     <!-- Feedback -->
     <div v-if="error" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-sm font-bold flex items-center gap-3">
-      <span>⚠️</span> {{ error }}
+      <AlertTriangle :size="16" :stroke-width="2.5" /> {{ error }}
     </div>
     <div v-if="success" class="card-surface p-4 border-accent/20 bg-accent/5 text-accent text-sm font-bold flex items-center gap-3">
-      <span>✅</span> {{ success }}
+      <CheckCircle :size="16" :stroke-width="2.5" /> {{ success }}
     </div>
 
     <!-- Loading -->
     <div v-if="loading" class="flex flex-col items-center justify-center py-20 gap-4">
-      <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+      <div class="loading-spinner"></div>
       <p class="text-xs font-semibold text-text-muted uppercase tracking-widest">Loading services...</p>
     </div>
 
@@ -31,9 +33,7 @@
     <div v-else-if="!selectedCategory" class="space-y-8">
       <!-- Search Bar -->
       <div class="card-surface p-4 flex items-center gap-3">
-        <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+        <Search :size="18" :stroke-width="2" class="text-text-muted shrink-0" />
         <input
           v-model="searchQuery"
           type="text"
@@ -41,29 +41,28 @@
           class="flex-1 bg-transparent text-sm text-text-primary placeholder-text-muted outline-none"
         />
         <button v-if="searchQuery" @click="searchQuery = ''" class="text-text-muted hover:text-text-primary transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X :size="16" :stroke-width="2" />
         </button>
       </div>
 
       <!-- Category Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          v-for="cat in filteredCategories"
+          v-for="(cat, index) in filteredCategories"
           :key="cat.id"
           @click="selectCategory(cat)"
-          class="card-surface p-8 flex flex-col cursor-pointer transition-all hover:border-accent/30 hover:bg-accent/[0.02] group relative overflow-hidden"
+          class="stagger-item card-surface p-8 flex flex-col cursor-pointer transition-all hover:border-accent/30 hover:bg-accent/[0.02] group relative overflow-hidden"
+          :style="{ animationDelay: (index * 0.08) + 's' }"
         >
           <!-- Background Glow -->
-          <div class="absolute -top-20 -right-20 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all"></div>
-          
+          <div class="absolute -top-20 -right-20 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all duration-500"></div>
+
           <div class="relative flex-1 space-y-6">
             <!-- Image / Icon -->
-            <div class="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-110 transition-all">
+            <div class="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-110 transition-all duration-300">
               <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-full h-full object-cover" />
               <div v-else class="w-full h-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-all">
-                <span class="text-2xl">📦</span>
+                <Package :size="22" :stroke-width="1.5" class="text-accent" />
               </div>
             </div>
 
@@ -84,18 +83,14 @@
 
           <!-- Arrow -->
           <div class="relative mt-6 flex items-center justify-end">
-            <svg class="w-5 h-5 text-text-muted group-hover:text-accent group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
+            <ChevronRight :size="18" :stroke-width="2" class="text-text-muted group-hover:text-accent group-hover:translate-x-1 transition-all duration-200" />
           </div>
         </div>
 
         <!-- Empty State -->
         <div v-if="filteredCategories.length === 0 && searchQuery" class="col-span-full card-surface p-12 text-center">
           <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <SearchX :size="28" :stroke-width="1.5" class="text-text-muted" />
           </div>
           <p class="text-text-muted">No services match "{{ searchQuery }}"</p>
         </div>
@@ -112,7 +107,7 @@
         <div class="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center">
           <img v-if="selectedCategory.image_url" :src="selectedCategory.image_url" :alt="selectedCategory.name" class="w-full h-full object-cover" />
           <div v-else class="w-full h-full bg-accent/10 flex items-center justify-center">
-            <span class="text-2xl">📦</span>
+            <Package :size="22" :stroke-width="1.5" class="text-accent" />
           </div>
         </div>
         <div class="flex-1">
@@ -127,16 +122,17 @@
 
       <!-- Loading Products -->
       <div v-if="loadingProducts" class="flex items-center justify-center py-12">
-        <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+        <div class="loading-spinner"></div>
       </div>
 
       <!-- Plans Grid -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
-          v-for="plan in categoryProducts"
+          v-for="(plan, index) in categoryProducts"
           :key="plan.id"
           @click="selectPlan(plan)"
-          class="card-surface p-6 flex flex-col transition-all hover:border-accent/30 cursor-pointer group"
+          class="stagger-item card-surface p-6 flex flex-col transition-all hover:border-accent/30 cursor-pointer group"
+          :style="{ animationDelay: (index * 0.06) + 's' }"
         >
           <div class="flex-1 space-y-4">
             <!-- Plan Name & Description -->
@@ -166,21 +162,15 @@
             <!-- Additional Specs -->
             <div class="flex items-center gap-3 text-xs text-text-muted">
               <span v-if="plan.swap" class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
+                <RefreshCw :size="12" :stroke-width="2" />
                 {{ formatRam(plan.swap) }} Swap
               </span>
               <span v-if="plan.databases" class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-                </svg>
+                <Database :size="12" :stroke-width="2" />
                 {{ plan.databases }} DB
               </span>
               <span v-if="plan.backups" class="flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
+                <HardDrive :size="12" :stroke-width="2" />
                 {{ plan.backups }} Backup
               </span>
             </div>
@@ -212,9 +202,7 @@
       <div class="card-surface p-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
+            <Package :size="18" :stroke-width="2" class="text-accent" />
           </div>
           <div>
             <p class="text-xs font-bold text-text-muted uppercase tracking-widest">Selected Plan</p>
@@ -238,7 +226,7 @@
         </div>
 
         <div v-if="loadingEggs" class="flex items-center gap-3 py-8">
-          <div class="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+          <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;"></div>
           <p class="text-sm text-text-muted">Loading available options...</p>
         </div>
 
@@ -253,7 +241,7 @@
             type="button"
             @click="selectedEgg = egg"
             :class="[
-              'card-surface p-5 text-left transition-all',
+              'card-surface p-5 text-left transition-all duration-200',
               selectedEgg?.id === egg.id ? 'border-accent/50 bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:border-accent/30'
             ]"
           >
@@ -263,9 +251,7 @@
                 <p v-if="egg.attributes?.description" class="text-xs text-text-muted mt-1 line-clamp-2">{{ egg.attributes.description }}</p>
               </div>
               <div v-if="selectedEgg?.id === egg.id" class="w-5 h-5 rounded-full bg-accent flex items-center justify-center shrink-0 ml-3">
-                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                </svg>
+                <Check :size="12" :stroke-width="3" class="text-white" />
               </div>
             </div>
           </button>
@@ -292,9 +278,7 @@
             <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted/40 pointer-events-none">-free-dash</span>
           </div>
           <div class="flex items-center gap-2 text-xs text-text-muted">
-            <svg class="w-4 h-4 text-accent/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <Info :size="14" :stroke-width="2" class="text-accent/60 shrink-0" />
             <span>Your server will be accessible as: <span class="text-text-primary font-medium">{{ serverName || 'my-server' }}-free-dash</span></span>
           </div>
         </div>
@@ -305,9 +289,7 @@
         <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Coins :size="24" :stroke-width="2" />
             </div>
             <div>
               <p class="text-sm text-text-muted">Your Balance</p>
@@ -321,18 +303,15 @@
               :disabled="deploying || !serverName || !selectedEgg || (selectedPlan.coin_price > (authStore.user?.coins || 0))"
               class="btn-primary px-8 py-2.5 flex items-center gap-2"
             >
-              <svg v-if="deploying" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
+              <Loader2 v-if="deploying" :size="16" :stroke-width="2" class="animate-spin" />
+              <Rocket v-else :size="16" :stroke-width="2" />
               {{ deploying ? 'Deploying...' : 'Deploy Server' }}
             </button>
           </div>
         </div>
         <div v-if="selectedPlan.coin_price > (authStore.user?.coins || 0)" class="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
           <p class="text-xs font-bold text-red-400 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+            <AlertTriangle :size="16" :stroke-width="2" />
             Insufficient coins. You need {{ selectedPlan.coin_price - (authStore.user?.coins || 0) }} more coins.
           </p>
         </div>
@@ -340,14 +319,12 @@
     </div>
 
     <!-- STEP 4: Success -->
-    <div v-else-if="serverCreated" class="card-surface p-12 text-center space-y-6">
+    <div v-else-if="serverCreated" class="card-surface p-12 text-center space-y-6" style="animation: scaleIn 0.5s ease-out both;">
       <div class="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
+        <CheckCircle2 :size="32" :stroke-width="1.5" class="text-green-500" />
       </div>
       <div>
-        <h3 class="text-xl font-bold text-text-primary">Server Deployed! 🎉</h3>
+        <h3 class="text-xl font-bold text-text-primary">Server Deployed!</h3>
         <p class="text-sm text-text-muted mt-2">
           Your server <span class="text-accent font-medium">{{ serverName }}-free-dash</span> is being created.
           <br/>It will appear in your servers list shortly.
@@ -366,6 +343,25 @@ import { ref, computed, onMounted } from 'vue'
 import { useServersStore } from '../stores/servers'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
+import {
+  ArrowLeft,
+  AlertTriangle,
+  CheckCircle,
+  Search,
+  X,
+  Package,
+  ChevronRight,
+  SearchX,
+  RefreshCw,
+  Database,
+  HardDrive,
+  Check,
+  Info,
+  Coins,
+  Loader2,
+  Rocket,
+  CheckCircle2,
+} from 'lucide-vue-next'
 
 const serversStore = useServersStore()
 const authStore = useAuthStore()

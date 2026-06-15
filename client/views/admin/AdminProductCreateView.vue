@@ -33,7 +33,7 @@
 
         <!-- Pterodactyl Selection -->
         <div class="col-span-2 space-y-4 p-4 bg-base/50 border border-border rounded-xl">
-          <h3 class="text-sm font-bold text-text-primary">🎮 Pterodactyl Configuration</h3>
+          <h3 class="text-sm font-bold text-text-primary flex items-center gap-2"><Monitor :size="16" :stroke-width="2" class="text-accent" /> Pterodactyl Configuration</h3>
           
           <div class="space-y-1">
             <label class="text-label">Nest (Game Type)</label>

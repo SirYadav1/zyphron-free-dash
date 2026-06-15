@@ -156,10 +156,10 @@
         <!-- Actions -->
         <div v-if="selectedOrder.status === 'awaiting_screenshot'" class="flex gap-3 pt-2">
           <button @click="approveOrder" :disabled="acting" class="flex-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold py-2.5 rounded-lg text-sm hover:bg-emerald-500/20 transition-colors">
-            {{ acting ? 'Processing...' : '✅ Approve & Credit Coins' }}
+            {{ acting ? 'Processing...' : 'Approve & Credit Coins' }}
           </button>
           <button @click="declineOrder" :disabled="acting" class="flex-1 bg-red-500/10 border border-red-500/20 text-red-500 font-bold py-2.5 rounded-lg text-sm hover:bg-red-500/20 transition-colors">
-            {{ acting ? 'Processing...' : '❌ Decline' }}
+            {{ acting ? 'Processing...' : 'Decline' }}
           </button>
         </div>
         <div v-else class="pt-2">

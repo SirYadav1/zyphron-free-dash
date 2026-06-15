@@ -9,11 +9,11 @@
     </div>
 
     <!-- Success/Error Messages -->
-    <div v-if="successMsg" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">
-      ✅ {{ successMsg }}
+    <div v-if="successMsg" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent flex items-center gap-2">
+      <CheckCircle :size="14" :stroke-width="2.5" /> {{ successMsg }}
     </div>
-    <div v-if="errorMsg" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">
-      ⚠️ {{ errorMsg }}
+    <div v-if="errorMsg" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2">
+      <AlertTriangle :size="14" :stroke-width="2.5" /> {{ errorMsg }}
     </div>
 
     <!-- Add User Section -->
@@ -118,6 +118,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import client from '../../api/client'
 import { useAdminStore } from '../../stores/admin'
+import { CheckCircle, AlertTriangle } from 'lucide-vue-next'
 
 const route = useRoute()
 const store = useAdminStore()
