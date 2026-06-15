@@ -69,5 +69,6 @@ export class User {
   created_at: string;
 
   @UpdateDateColumn({ type: 'text' })
+  last_active: string;
   updated_at: string;
 }

@@ -113,6 +113,9 @@ export class AuthService {
       throw new UnauthorizedException('Your account has been banned');
     }
 
+    // update last_active timestamp
+    await this.userRepo.update(user.id, { last_active: new Date().toISOString() });
+
     // check if 2FA is enabled - return requires2FA flag instead of token
     if (user.two_factor_enabled) {
       return {

@@ -130,6 +130,34 @@ class CreateTemplateDto {
   isActive?: boolean;
 }
 
+class SmtpConfigDto {
+  @IsString()
+  @IsNotEmpty()
+  host: string;
+
+  @IsString()
+  @IsNotEmpty()
+  port: string;
+
+  @IsString()
+  @IsOptional()
+  user: string;
+
+  @IsString()
+  @IsOptional()
+  pass: string;
+
+  @IsString()
+  @IsOptional()
+  from: string;
+}
+
+class SendTestEmailDto {
+  @IsString()
+  @IsNotEmpty()
+  to: string;
+}
+
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminController {
@@ -153,6 +181,11 @@ export class AdminController {
   @Put('users/:id')
   async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.adminService.updateUser(id, dto);
+  }
+
+  @Delete('users/:id')
+  async deleteUser(@Param('id') id: string) {
+    return this.adminService.deleteUser(id);
   }
 
   @Post('users/:id/ban')
@@ -248,6 +281,21 @@ export class AdminController {
       dto.apiKey,
       dto.panelType,
     );
+  }
+
+  @Put('settings/smtp')
+  async updateSmtpConfig(@Body() dto: SmtpConfigDto) {
+    return this.adminService.updateSmtpConfig(dto);
+  }
+
+  @Get('settings/smtp')
+  async getSmtpConfig() {
+    return this.adminService.getSmtpConfig();
+  }
+
+  @Post('email/test')
+  async sendTestEmail(@Body() dto: SendTestEmailDto) {
+    return this.adminService.sendTestEmail(dto.to);
   }
 
   @Post('pterodactyl/test')

@@ -164,6 +164,12 @@ export class AdminService {
     return { message: 'User updated' };
   }
 
+  async deleteUser(id: string): Promise<void> {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    await this.userRepo.remove(user);
+  }
+
   async banUser(id: string, reason: string, adminId?: string): Promise<any> {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
@@ -553,6 +559,50 @@ export class AdminService {
 
   async transferPterodactylServer(serverId: string, userId: number): Promise<any> {
     return this.pterodactylService.transferServer(serverId, userId);
+  }
+
+  async updateSmtpConfig(dto: {
+    host: string;
+    port: string;
+    user: string;
+    pass: string;
+    from: string;
+  }): Promise<any> {
+    const smtpKeys = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from'];
+    const smtpValues = [dto.host, dto.port, dto.user, dto.pass, dto.from];
+
+    for (let i = 0; i < smtpKeys.length; i++) {
+      const key = smtpKeys[i];
+      const value = smtpValues[i] || '';
+      const existing = await this.settingRepo.findOne({ where: { key } });
+      if (existing) {
+        await this.settingRepo.update(existing.id, { value });
+      } else {
+        await this.settingRepo.save(this.settingRepo.create({ key, value }));
+      }
+    }
+
+    // reinitialize mail service with new settings
+    await this.mailService.reinitialize();
+
+    return { message: 'SMTP configuration updated successfully' };
+  }
+
+  async getSmtpConfig(): Promise<any> {
+    return this.mailService.getSmtpConfig();
+  }
+
+  async sendTestEmail(to: string): Promise<any> {
+    const sent = await this.mailService.sendTestEmail(to);
+    if (sent) {
+      return { message: `Test email sent to ${to}`, success: true };
+    } else {
+      return {
+        message: 'Failed to send test email. Check SMTP configuration.',
+        success: false,
+        guidance: 'Make sure SMTP host, port, username, and password are configured correctly.',
+      };
+    }
   }
 
 }
