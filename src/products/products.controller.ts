@@ -97,6 +97,10 @@ class CreateProductDto {
   @IsOptional()
   @IsNumber()
   coin_price?: number;
+
+  @IsOptional()
+  @IsNumber()
+  category_id?: number;
 }
 
 class UpdateProductDto {
@@ -183,6 +187,10 @@ class UpdateProductDto {
   @IsOptional()
   @IsNumber()
   coin_price?: number;
+
+  @IsOptional()
+  @IsNumber()
+  category_id?: number;
 }
 
 @Controller('admin/products')

@@ -8,6 +8,16 @@
       <router-link to="/admin/services/create" class="btn-primary px-4 py-2 text-xs">Create Product</router-link>
     </div>
 
+    <!-- Category Filter -->
+    <div v-if="categories.length > 0" class="flex items-center gap-3">
+      <label class="text-label text-xs">Filter by Category:</label>
+      <select v-model="filterCategory" class="input-field w-48 text-xs py-1.5">
+        <option :value="null">All Categories</option>
+        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+      </select>
+      <span class="text-xs text-text-muted">{{ filteredProducts.length }} result{{ filteredProducts.length !== 1 ? 's' : '' }}</span>
+    </div>
+
     <div class="card-surface overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -15,6 +25,7 @@
             <tr class="border-b border-border bg-base/50 text-left">
               <th class="px-5 py-3 text-label">Active</th>
               <th class="px-5 py-3 text-label">Name</th>
+              <th class="px-5 py-3 text-label">Category</th>
               <th class="px-5 py-3 text-label">Price</th>
               <th class="px-5 py-3 text-label">Billing</th>
               <th class="px-5 py-3 text-label">Memory</th>
@@ -27,11 +38,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="p in products" :key="p.id" class="border-b border-border/50 hover:bg-white/[0.02] transition-colors">
+            <tr v-for="p in filteredProducts" :key="p.id" class="border-b border-border/50 hover:bg-white/[0.02] transition-colors">
               <td class="px-5 py-3">
                 <span :class="p.isActive ? 'text-accent' : 'text-text-muted/40'" class="text-xs font-bold">{{ p.isActive ? 'Yes' : 'No' }}</span>
               </td>
               <td class="px-5 py-3 text-text-primary font-bold text-sm">{{ p.name }}</td>
+              <td class="px-5 py-3 text-text-muted text-sm">{{ getCategoryName(p.category_id) }}</td>
               <td class="px-5 py-3 text-accent font-bold">{{ p.price }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ p.billing_priority || '---' }}</td>
               <td class="px-5 py-3 text-blue-400 text-sm">{{ p.ram }}MB</td>
@@ -56,15 +68,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import client from '../../api/client'
 
 const products = ref([])
+const categories = ref([])
+const filterCategory = ref(null)
+
+const filteredProducts = computed(() => {
+  if (filterCategory.value === null) return products.value
+  return products.value.filter(p => p.category_id === filterCategory.value)
+})
+
+function getCategoryName(catId) {
+  if (!catId) return 'Uncategorized'
+  const cat = categories.value.find(c => c.id === catId)
+  return cat ? cat.name : 'Unknown'
+}
 
 onMounted(async () => {
   try {
-    const { data } = await client.get('/admin/products')
-    products.value = Array.isArray(data) ? data : data.products || []
+    const [prodRes, catRes] = await Promise.all([
+      client.get('/admin/products'),
+      client.get('/admin/categories').catch(() => ({ data: [] }))
+    ])
+    products.value = Array.isArray(prodRes.data) ? prodRes.data : prodRes.data.products || []
+    categories.value = Array.isArray(catRes.data) ? catRes.data : []
   } catch { /* ignore */ }
 })
 </script>

@@ -176,7 +176,7 @@ async function handleRegister() {
   try {
     const result = await store.register(username.value, email.value, password.value, firstName.value, lastName.value)
     if (result.access_token) {
-      localStorage.setItem('access_token', result.access_token)
+      sessionStorage.setItem('access_token', result.access_token)
     }
     await store.fetchProfile()
     router.push('/home')
