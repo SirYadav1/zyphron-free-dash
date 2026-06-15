@@ -121,9 +121,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const packages = ref([])
 const loading = ref(true)
@@ -143,17 +145,15 @@ onMounted(async () => {
 })
 
 async function buyPackage(pkg) {
-  buying.value = true
-  error.value = ''
-  success.value = ''
-  try {
-    const { data } = await client.post('/credits/buy', { packageId: pkg.id })
-    success.value = data.message
-    await authStore.fetchProfile()
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to purchase coins'
-  } finally {
-    buying.value = false
-  }
+  // Navigate to order page with package info
+  router.push({
+    path: '/store/order',
+    query: {
+      name: pkg.display,
+      coins: pkg.quantity,
+      price: pkg.price,
+      currency: pkg.currency_code,
+    },
+  })
 }
 </script>
