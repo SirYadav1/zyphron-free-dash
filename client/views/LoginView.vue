@@ -17,14 +17,14 @@
           </div>
 
           <div class="space-y-1.5" style="animation: slideUp 0.4s ease-out 0.3s both;">
-            <label for="email" class="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-0.5">Email Address</label>
+            <label for="email" class="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-0.5">Email or Username</label>
             <input
               id="email"
               v-model="email"
-              type="email"
+              type="text"
               required
               class="input-field"
-              placeholder="Your email address"
+              placeholder="Email or username"
             />
           </div>
 

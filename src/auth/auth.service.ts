@@ -149,7 +149,12 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    let user = await this.userRepo.findOne({ where: { email: dto.email } });
+    const identifier = dto.email.trim().toLowerCase();
+    let user = await this.userRepo.findOne({ where: { email: identifier } });
+    if (!user) {
+      // try by username
+      user = await this.userRepo.findOne({ where: { username: identifier } });
+    }
     if (!user || !user.password_hash) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -216,7 +221,11 @@ export class AuthService {
    * Complete login with 2FA verification
    */
   async loginWith2FA(email: string, code: string) {
-    const user = await this.userRepo.findOne({ where: { email } });
+    const identifier = email.trim().toLowerCase();
+    let user = await this.userRepo.findOne({ where: { email: identifier } });
+    if (!user) {
+      user = await this.userRepo.findOne({ where: { username: identifier } });
+    }
     if (!user || !user.password_hash) {
       throw new UnauthorizedException('Invalid credentials');
     }
