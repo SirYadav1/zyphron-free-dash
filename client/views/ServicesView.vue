@@ -51,29 +51,32 @@
           v-for="(cat, index) in filteredCategories"
           :key="cat.id"
           @click="selectCategory(cat)"
-          class="stagger-item card-surface p-8 flex flex-col cursor-pointer transition-all hover:border-accent/30 hover:bg-accent/[0.02] group relative overflow-hidden"
+          class="stagger-item card-surface flex flex-col cursor-pointer transition-all hover:border-accent/30 hover:bg-accent/[0.02] group relative overflow-hidden"
           :style="{ animationDelay: (index * 0.08) + 's' }"
         >
           <!-- Background Glow -->
           <div class="absolute -top-20 -right-20 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all duration-500"></div>
 
-          <div class="relative flex-1 space-y-6">
-            <!-- Image / Icon -->
-            <div class="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-              <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-full h-full object-cover" />
-              <div v-else class="w-full h-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-all">
-                <Package :size="22" :stroke-width="1.5" class="text-accent" />
-              </div>
+          <!-- Banner Image -->
+          <div class="relative w-full h-44 overflow-hidden">
+            <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <div v-else class="w-full h-full bg-gradient-to-br from-accent/20 via-accent/10 to-surface flex items-center justify-center">
+              <Package :size="40" :stroke-width="1.5" class="text-accent/60" />
             </div>
+            <!-- Gradient fade overlay -->
+            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-surface to-transparent"></div>
+          </div>
 
+          <!-- Content -->
+          <div class="relative flex-1 p-6 pt-2 space-y-4">
             <!-- Info -->
-            <div class="space-y-2">
+            <div class="space-y-1.5">
               <h3 class="text-lg font-bold text-text-primary group-hover:text-accent transition-colors">{{ cat.name }}</h3>
-              <p class="text-sm text-text-muted leading-relaxed">{{ cat.description || 'Browse available plans' }}</p>
+              <p class="text-sm text-text-muted leading-relaxed line-clamp-2">{{ cat.description || 'Browse available plans' }}</p>
             </div>
 
             <!-- Stats -->
-            <div class="flex items-center gap-4 pt-2">
+            <div class="flex items-center gap-4">
               <div class="flex items-center gap-1.5">
                 <div class="w-1.5 h-1.5 rounded-full bg-accent/60"></div>
                 <span class="text-xs font-medium text-text-muted">{{ cat.product_count || cat.productCount || 0 }} plan{{ (cat.product_count || cat.productCount || 0) !== 1 ? 's' : '' }}</span>
@@ -82,7 +85,7 @@
           </div>
 
           <!-- Arrow -->
-          <div class="relative mt-6 flex items-center justify-end">
+          <div class="relative px-6 pb-5 flex items-center justify-end">
             <ChevronRight :size="18" :stroke-width="2" class="text-text-muted group-hover:text-accent group-hover:translate-x-1 transition-all duration-200" />
           </div>
         </div>
@@ -103,18 +106,21 @@
     <!-- STEP 2: Plan Selection (within category) -->
     <div v-else-if="selectedCategory && !selectedPlan" class="space-y-6">
       <!-- Category Header -->
-      <div class="card-surface p-6 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center">
+      <div class="card-surface overflow-hidden flex flex-col sm:flex-row items-stretch">
+        <!-- Banner image strip -->
+        <div class="relative w-full sm:w-40 h-28 sm:h-auto shrink-0 overflow-hidden">
           <img v-if="selectedCategory.image_url" :src="selectedCategory.image_url" :alt="selectedCategory.name" class="w-full h-full object-cover" />
-          <div v-else class="w-full h-full bg-accent/10 flex items-center justify-center">
-            <Package :size="22" :stroke-width="1.5" class="text-accent" />
+          <div v-else class="w-full h-full bg-gradient-to-br from-accent/20 via-accent/10 to-surface flex items-center justify-center">
+            <Package :size="32" :stroke-width="1.5" class="text-accent/60" />
           </div>
+          <!-- Fade overlay (right edge on desktop, bottom on mobile) -->
+          <div class="absolute inset-0 sm:bg-gradient-to-r sm:from-transparent sm:to-surface bg-gradient-to-t from-surface to-transparent"></div>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 p-5 sm:p-6">
           <h3 class="text-lg font-bold text-text-primary">{{ selectedCategory.name }}</h3>
           <p class="text-sm text-text-muted">{{ selectedCategory.description || 'Browse available plans' }}</p>
         </div>
-        <div class="text-right">
+        <div class="text-right p-5 sm:p-6 sm:pl-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
           <p class="text-xs text-text-muted">Available Plans</p>
           <p class="text-lg font-bold text-accent">{{ categoryProducts.length }}</p>
         </div>
@@ -470,7 +476,10 @@ async function deployServer() {
   deploying.value = true
   error.value = ''
   try {
-    await serversStore.createServer(serverName.value, selectedPlan.value.id)
+    await serversStore.createServer(serverName.value, selectedPlan.value.id, {
+      eggId: selectedEgg.value.id,
+      nestId: selectedPlan.value.nest_id
+    })
     await authStore.fetchProfile()
     serverCreated.value = true
   } catch (err) {

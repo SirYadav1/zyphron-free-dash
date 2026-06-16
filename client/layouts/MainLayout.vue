@@ -13,21 +13,44 @@
       </div>
 
       <!-- Sidebar Content -->
-      <nav class="flex-1 overflow-y-auto p-4 space-y-8 mt-2">
-        <div v-for="section in navSections" :key="section.title">
-          <h3 class="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest text-text-muted/50">{{ section.title }}</h3>
-          <div class="space-y-1">
+      <nav class="flex-1 overflow-y-auto p-4 space-y-6 mt-2">
+        <div 
+          v-for="section in navSections" 
+          :key="section.title"
+          :class="[
+            section.title === 'Earning' 
+              ? 'submenu-section relative bg-accent/[0.03] border-l-2 border-accent/25 rounded-r-lg py-2.5 pl-1 pr-1.5' 
+              : ''
+          ]"
+        >
+          <h3 
+            class="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"
+            :class="section.title === 'Earning' ? 'text-accent/50 pl-2' : 'text-text-muted/50'"
+          >
+            <span v-if="section.title === 'Earning'" class="inline-block w-1.5 h-1.5 rounded-full bg-accent/40 shrink-0"></span>
+            {{ section.title }}
+          </h3>
+          <div class="space-y-0.5">
             <router-link
               v-for="item in section.items"
               :key="item.path"
               :to="item.path"
               @click="sidebarOpen = false"
-              class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200"
-              :class="isActive(item.path)
-                ? 'bg-accent/10 text-accent'
-                : 'text-text-muted hover:text-text-primary hover:bg-white/5'"
+              :class="[
+                'nav-item flex items-center gap-3 rounded-md text-sm font-medium transition-all duration-200',
+                section.title === 'Earning' ? 'px-3 pl-5 py-1.5 text-[13px]' : 'px-3 py-2',
+                isActive(item.path)
+                  ? 'bg-accent/15 text-accent'
+                  : 'text-text-muted hover:text-text-primary hover:bg-white/5'
+              ]"
             >
-              <span class="w-5 h-5 flex items-center justify-center shrink-0 opacity-70" v-html="item.icon"></span>
+              <span 
+                :class="[
+                  'flex items-center justify-center shrink-0 opacity-70',
+                  section.title === 'Earning' ? 'w-4 h-4' : 'w-5 h-5'
+                ]" 
+                v-html="item.icon"
+              ></span>
               <span class="flex-1">{{ item.label }}</span>
               <span v-if="item.badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent/20 text-accent">{{ item.badge }}</span>
             </router-link>
