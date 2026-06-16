@@ -224,8 +224,8 @@
         </div>
       </div>
 
-      <!-- Egg Selection -->
-      <div class="space-y-4">
+      <!-- Egg Selection (only shown when plan has neutral egg) -->
+      <div v-if="!selectedPlan.egg_id" class="space-y-4">
         <div class="space-y-1">
           <h3 class="text-sm font-bold text-text-primary uppercase tracking-wider">Select Software</h3>
           <p class="text-sm text-text-muted">Choose what you want to run on your server.</p>
@@ -261,6 +261,17 @@
               </div>
             </div>
           </button>
+        </div>
+      </div>
+
+      <!-- Auto-selected egg info (when plan has specific egg) -->
+      <div v-else class="card-surface p-4 border-accent/20 bg-accent/5">
+        <div class="flex items-center gap-3">
+          <Check :size="16" :stroke-width="2.5" class="text-accent" />
+          <div>
+            <p class="text-xs font-bold text-text-primary">Software: <span class="text-accent">{{ selectedEgg?.attributes?.name || selectedPlan.egg_name }}</span></p>
+            <p class="text-[10px] text-text-muted">Pre-configured by admin</p>
+          </div>
         </div>
       </div>
 
@@ -431,7 +442,14 @@ async function selectCategory(cat) {
 function selectPlan(plan) {
   selectedPlan.value = plan
   selectedEgg.value = null
-  loadEggs(plan)
+
+  if (plan.egg_id) {
+    // Plan has a specific egg — auto-select it, skip egg selection
+    selectedEgg.value = { id: plan.egg_id, attributes: { name: plan.egg_name || 'Egg #' + plan.egg_id } }
+  } else {
+    // Neutral egg — load available eggs for user to choose
+    loadEggs(plan)
+  }
 }
 
 async function loadEggs(plan) {

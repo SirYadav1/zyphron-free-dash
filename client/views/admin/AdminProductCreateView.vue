@@ -34,6 +34,7 @@
         <!-- Pterodactyl Selection -->
         <div class="col-span-2 space-y-4 p-4 bg-base/50 border border-border rounded-xl">
           <h3 class="text-sm font-bold text-text-primary flex items-center gap-2"><Monitor :size="16" :stroke-width="2" class="text-accent" /> Pterodactyl Configuration</h3>
+          <p class="text-[10px] text-text-muted">Select a game type. Egg can be neutral (user chooses) or specific.</p>
           
           <div class="space-y-1">
             <label class="text-label">Nest (Game Type)</label>
@@ -48,7 +49,7 @@
           <div class="space-y-1" v-if="selectedNestId">
             <label class="text-label">Egg (Server Type)</label>
             <select v-model="selectedEggId" @change="onEggChange" class="input-field w-full">
-              <option value="">Select Egg...</option>
+              <option value=""> Neutral — Let User Choose</option>
               <option v-for="egg in eggs" :key="getEggId(egg)" :value="getEggId(egg)">
                 {{ getEggName(egg) }}
               </option>
@@ -57,6 +58,9 @@
 
           <div v-if="form.egg_name" class="text-xs text-text-muted">
             Selected: <span class="text-accent">{{ form.nest_name }}</span> → <span class="text-accent">{{ form.egg_name }}</span>
+          </div>
+          <div v-else-if="form.nest_name" class="text-xs text-accent/60">
+            <span class="text-accent">{{ form.nest_name }}</span> → Neutral (user will choose egg)
           </div>
         </div>
 
@@ -199,6 +203,11 @@ async function onNestChange() {
 }
 
 function onEggChange() {
+  if (!selectedEggId.value) {
+    form.value.egg_id = null
+    form.value.egg_name = ''
+    return
+  }
   const egg = eggs.value.find(e => getEggId(e) == selectedEggId.value)
   form.value.egg_id = parseInt(selectedEggId.value)
   form.value.egg_name = getEggName(egg)
@@ -209,8 +218,8 @@ async function handleSubmit() {
     error.value = 'Service name is required'
     return
   }
-  if (!form.value.nest_id || !form.value.egg_id) {
-    error.value = 'Please select a Nest and Egg'
+  if (!form.value.nest_id) {
+    error.value = 'Please select a Nest (Game Type)'
     return
   }
 
