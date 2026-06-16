@@ -65,6 +65,10 @@
           <div class="flex justify-center p-4 bg-white rounded-lg">
             <img :src="qrCodeUrl" alt="2FA QR Code" class="w-48 h-48" />
           </div>
+          <div class="mt-3 p-3 bg-base/80 rounded-lg border border-border">
+            <p class="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">Manual Entry Key</p>
+            <p class="text-sm font-mono font-bold text-text-primary break-all select-all">{{ secretKey }}</p>
+          </div>
         </div>
 
         <div class="space-y-2">
@@ -134,6 +138,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import client from '../api/client'
+import QRCode from 'qrcode'
 
 const loading = ref(true)
 const generating = ref(false)
@@ -143,6 +148,7 @@ const successMsg = ref('')
 const errorMsg = ref('')
 const twoFactorEnabled = ref(false)
 const qrCodeUrl = ref('')
+const secretKey = ref('')
 const verifyCode = ref('')
 const disableCode = ref('')
 
@@ -168,7 +174,15 @@ async function generateSecret() {
   successMsg.value = ''
   try {
     const { data } = await client.post('/auth/2fa/generate')
-    qrCodeUrl.value = data.otpauthUrl
+    qrCodeUrl.value = await QRCode.toDataURL(data.otpauthUrl, {
+      width: 256,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    })
+    secretKey.value = data.secret
   } catch (err) {
     errorMsg.value = err.response?.data?.message || 'Failed to generate QR code'
   } finally {
@@ -186,6 +200,7 @@ async function enable2FA() {
     successMsg.value = 'Two-factor authentication enabled successfully!'
     twoFactorEnabled.value = true
     qrCodeUrl.value = ''
+    secretKey.value = ''
     verifyCode.value = ''
   } catch (err) {
     errorMsg.value = err.response?.data?.message || 'Failed to enable 2FA'
