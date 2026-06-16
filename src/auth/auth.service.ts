@@ -83,7 +83,23 @@ export class AuthService {
         this.logger.log(`Auto-registered user ${user.id} on Pterodactyl (ID: ${pteroId})`);
       }
     } catch (err) {
-      this.logger.warn(`Failed to auto-register user on Pterodactyl: ${err.message}`);
+      // creation failed, maybe the panel user already exists, try linking by email
+      this.logger.warn(`Pterodactyl createUser failed, attempting email-link: ${err.message}`);
+      try {
+        const existingPteroUser = await this.pterodactylService.getUserByEmail(dto.email);
+        if (existingPteroUser) {
+          const pteroId = existingPteroUser.attributes?.id || existingPteroUser.id;
+          await this.userRepo.update(user.id, {
+            pterodactyl_user_id: pteroId,
+            pterodactyl_username: existingPteroUser.attributes?.username || dto.username,
+          });
+          this.logger.log(`Linked existing Pterodactyl user ${pteroId} to new dashboard user ${user.id} (email match during registration)`);
+        } else {
+          this.logger.warn(`User ${user.email} not found on Pterodactyl either — will sync on first login`);
+        }
+      } catch (linkErr) {
+        this.logger.warn(`Email-link failed during registration: ${linkErr.message}`);
+      }
     }
 
     const token = this.signToken(user.id);
