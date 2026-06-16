@@ -90,7 +90,7 @@ export class PterodactylService {
 
   async updateConfiguration(
     panelUrl: string,
-    apiKey: string,
+    apiKey?: string,
     panelType: string = 'pterodactyl',
   ): Promise<void> {
     const upsertSetting = async (key: string, value: string) => {
@@ -103,7 +103,10 @@ export class PterodactylService {
     };
 
     await upsertSetting('pterodactyl_panel_url', panelUrl);
-    await upsertSetting('pterodactyl_api_key', apiKey);
+    // only update apiKey if a new one was provided (non-empty)
+    if (apiKey) {
+      await upsertSetting('pterodactyl_api_key', apiKey);
+    }
     await upsertSetting('panel_type', panelType);
 
     await this.loadConfiguration();
@@ -116,12 +119,14 @@ export class PterodactylService {
     panelType: string;
     panelUrl: string;
     configured: boolean;
+    apiKeyConfigured: boolean;
   }> {
     await this.loadConfiguration();
     return {
       panelType: this.panelType,
       panelUrl: this.panelUrl,
       configured: !!(this.panelUrl && this.apiKey),
+      apiKeyConfigured: !!this.apiKey,
     };
   }
 

@@ -215,12 +215,17 @@
         </div>
         <div class="space-y-1 md:col-span-2">
           <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">API Key</label>
-          <input 
-            v-model="pteroConfig.apiKey" 
-            type="password" 
-            placeholder="ptla_..."
-            class="input-field py-2"
-          />
+          <div class="flex items-center gap-2">
+            <input 
+              v-model="pteroConfig.apiKey" 
+              type="password" 
+              placeholder="ptla_..."
+              class="input-field py-2 flex-1"
+            />
+            <span v-if="pteroApiKeyConfigured && !pteroConfig.apiKey" class="flex items-center gap-1 text-green-400 text-xs font-bold whitespace-nowrap">
+              <CheckCircle :size="14" :stroke-width="2.5" /> Configured
+            </span>
+          </div>
         </div>
       </div>
 
@@ -398,6 +403,7 @@ const pteroConfig = ref({
 })
 const pteroStatus = ref(null)
 const pteroConfigured = ref(false)
+const pteroApiKeyConfigured = ref(false)
 const loadingPteroOptions = ref(false)
 const pteroOptionsLoaded = ref(false)
 const pteroData = ref({
@@ -542,7 +548,9 @@ async function loadPterodactylConfig() {
   try {
     const { data } = await client.get('/admin/pterodactyl/config')
     pteroConfig.value.panelUrl = data.panelUrl || ''
+    pteroConfig.value.panelType = data.panelType || 'pterodactyl'
     pteroConfigured.value = data.configured || false
+    pteroApiKeyConfigured.value = data.apiKeyConfigured || false
   } catch (err) {
     console.error('Failed to load Pterodactyl config:', err)
   }
@@ -613,13 +621,18 @@ async function savePterodactylConfig() {
   success.value = ''
   pteroStatus.value = null
   try {
+    // Only send apiKey if user typed a new one (non-empty)
+    // If empty and already configured, don't overwrite
+    const apiKey = pteroConfig.value.apiKey || (pteroApiKeyConfigured.value ? undefined : '')
     await store.updatePterodactylConfig(
       pteroConfig.value.panelUrl, 
-      pteroConfig.value.apiKey,
+      apiKey,
       pteroConfig.value.panelType
     )
     success.value = 'Panel configuration saved successfully'
     pteroConfigured.value = true
+    // Reload config to reflect actual state from backend
+    await loadPterodactylConfig()
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to save configuration'
   } finally {

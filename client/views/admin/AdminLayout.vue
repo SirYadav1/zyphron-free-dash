@@ -1,6 +1,19 @@
 <template>
   <div class="min-h-screen bg-base bg-grid font-sans flex">
-    <aside class="w-64 bg-surface border-r border-border flex flex-col shrink-0">
+    <!-- Mobile overlay -->
+    <div
+      v-if="sidebarOpen"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+      @click="sidebarOpen = false"
+    ></div>
+
+    <!-- Sidebar -->
+    <aside
+      :class="[
+        'fixed inset-y-0 left-0 z-50 w-64 bg-surface border-r border-border flex flex-col transition-all duration-300 lg:translate-x-0 lg:static lg:inset-auto',
+        sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+      ]"
+    >
       <div class="p-6 border-b border-border">
         <ZyphronLogo size="sm" />
         <p class="text-[10px] font-semibold text-accent/70 uppercase tracking-[0.2em] mt-2">Admin Panel</p>
@@ -18,6 +31,7 @@
               :class="isActive(item.path)
                 ? 'active text-accent border border-accent/20'
                 : 'text-text-muted hover:text-text-primary hover:bg-white/5 border border-transparent'"
+              @click="sidebarOpen = false"
             >
               <component :is="item.icon" :size="18" :stroke-width="2" class="shrink-0" />
               <span class="flex-1">{{ item.label }}</span>
@@ -80,7 +94,14 @@
     </aside>
 
     <main class="flex-1 overflow-auto">
-      <div class="p-6 lg:p-8 animate-fade-in">
+      <div class="p-4 lg:p-8 animate-fade-in">
+        <!-- Mobile hamburger button -->
+        <button
+          @click="sidebarOpen = true"
+          class="lg:hidden fixed top-4 left-4 z-30 p-2 rounded-lg bg-surface/90 backdrop-blur-sm border border-border hover:bg-white/5 transition-all"
+        >
+          <Menu :size="20" :stroke-width="2" class="text-text-primary" />
+        </button>
         <router-view />
       </div>
     </main>
@@ -119,12 +140,14 @@ import {
   Terminal,
   LogOut,
   LayoutDashboard,
+  Menu,
 } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const showUserMenu = ref(false)
+const sidebarOpen = ref(false)
 
 const panelUrl = computed(() => {
   return import.meta.env.VITE_PTERODACTYL_PANEL_URL || 'https://console.zyphron.cloud'

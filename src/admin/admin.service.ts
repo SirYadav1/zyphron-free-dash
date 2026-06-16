@@ -425,15 +425,17 @@ export class AdminService {
   }
 
   async getPterodactylConfig(): Promise<{
+    panelType: string;
     panelUrl: string;
     configured: boolean;
+    apiKeyConfigured: boolean;
   }> {
     return this.pterodactylService.getConfiguration();
   }
 
   async updatePterodactylConfig(
     panelUrl: string,
-    apiKey: string,
+    apiKey?: string,
     panelType?: string,
   ): Promise<any> {
     await this.pterodactylService.updateConfiguration(
