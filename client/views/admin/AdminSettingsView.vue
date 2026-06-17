@@ -18,7 +18,10 @@
       <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="space-y-1">
           <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
-            <Zap :size="18" :stroke-width="2" class="text-accent" /> AFK Earning Rates
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            AFK Earning Rates
           </h3>
           <p class="text-sm text-text-muted">Configure how many compute credits users earn from active sessions.</p>
         </div>
@@ -60,7 +63,10 @@
       <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="space-y-1">
           <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
-            <Server :size="18" :stroke-width="2" class="text-orange-400" /> Default Server Node
+            <svg class="w-5 h-5 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+            </svg>
+            Default Server Node
           </h3>
           <p class="text-sm text-text-muted">Choose which Pterodactyl node will be used for all new server deployments.</p>
         </div>
@@ -141,7 +147,10 @@
       <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="space-y-1">
           <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
-            <HardDrive :size="18" :stroke-width="2" class="text-cyan-400" /> Default Allocation Settings
+            <svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+            Default Allocation Settings
           </h3>
           <p class="text-sm text-text-muted">Configure default resource limits for all new servers. These apply when no specific product is selected.</p>
         </div>
@@ -227,7 +236,10 @@
         <div class="flex items-center justify-between mb-4">
           <div class="space-y-1">
             <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
-              <span class="text-blue-400">🚀</span> Global Server Blueprint
+              <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+              </svg>
+              Global Server Blueprint
             </h3>
             <p class="text-sm text-text-muted">Configure the default resources and node settings for all new servers.</p>
           </div>
@@ -338,7 +350,10 @@
       <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="space-y-1">
           <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
-            <span class="text-green-400">🔧</span> Panel API Configuration
+            <svg class="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Panel API Configuration
           </h3>
           <p class="text-sm text-text-muted">Configure your panel connection for server management (supports Pterodactyl & Revactyl).</p>
         </div>
@@ -414,8 +429,8 @@
         <div class="flex items-center justify-between mb-4">
           <div class="space-y-1">
             <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
-              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg class="w-5 h-5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
               </svg>
               Branding
             </h3>
