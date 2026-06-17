@@ -154,7 +154,39 @@ export class ServersService {
       relations: { user: true },
     });
     if (!server) throw new NotFoundException('Server not found');
-    return server;
+
+    // get Pterodactyl data if available
+    let pteroData: any = null;
+    if (server.pterodactyl_server_id) {
+      try {
+        const user = server.user;
+        if (user && user.pterodactyl_user_id) {
+          const pteroServers = await this.pterodactylService.getUserServers(user.pterodactyl_user_id);
+          pteroData = pteroServers.find((s: any) => s.attributes.id.toString() === server.pterodactyl_server_id)?.attributes || null;
+        }
+      } catch {}
+    }
+
+    return {
+      id: server.id,
+      serverName: server.server_name,
+      pterodactylServerId: server.pterodactyl_server_id,
+      identifier: pteroData?.identifier || null,
+      node: pteroData?.node || null,
+      status: server.status,
+      ramMb: server.ram_mb,
+      cpuPercent: server.cpu_percent,
+      diskMb: server.disk_mb,
+      expiresAt: server.expires_at,
+      renewalPrice: server.renewal_price,
+      isSuspended: !!server.is_suspended,
+      suspendedAt: server.suspended_at,
+      suspendReason: server.suspend_reason,
+      autoRenew: !!server.auto_renew,
+      lastActiveAt: server.last_active_at,
+      createdAt: server.created_at,
+      updatedAt: server.updated_at,
+    };
   }
 
   async getAllServers(): Promise<any[]> {

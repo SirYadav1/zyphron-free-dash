@@ -55,6 +55,7 @@ const routes = [
       { path: 'transactions', name: 'Transactions', component: () => import('../views/TransactionsView.vue') },
       { path: 'invoices', name: 'Invoices', component: () => import('../views/InvoicesView.vue') },
       { path: 'services', name: 'Services', component: () => import('../views/ServicesView.vue') },
+      { path: 'services/:categoryId', name: 'ServiceCategory', component: () => import('../views/ServiceCategoryView.vue') },
     ],
   },
   {
