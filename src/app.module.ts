@@ -31,6 +31,7 @@ import { EmailTemplatesModule } from './email-templates/email-templates.module';
 import { CreditsModule } from './credits/credits.module';
 import { ServiceCategoriesModule } from './service-categories/service-categories.module';
 import { CoinOrdersModule } from './coin-orders/coin-orders.module';
+import { EmailVerificationModule } from './email-verification/email-verification.module';
 import { Setting } from './entities/setting.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -97,6 +98,7 @@ import { AppService } from './app.service';
     CreditsModule,
     ServiceCategoriesModule,
     CoinOrdersModule,
+    EmailVerificationModule,
     TypeOrmModule.forFeature([Setting]),
   ],
   controllers: [AppController],
