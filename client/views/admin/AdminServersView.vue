@@ -106,42 +106,34 @@
             </div>
           </div>
 
-          <!-- Admin Details Row - RAM/Disk in middle -->
-          <div class="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 sm:grid-cols-5 gap-3 text-[11px]">
+          <!-- Admin Details Row -->
+          <div class="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 sm:grid-cols-6 gap-3 text-[11px]">
             <div>
               <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Owner</p>
               <p class="text-text-primary font-bold">{{ server.user?.username || '—' }}</p>
             </div>
-            <div class="flex items-center gap-2">
-              <MemoryStick :size="12" :stroke-width="2" class="text-purple-400 shrink-0" />
-              <div>
-                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">RAM</p>
-                <p class="text-text-primary font-bold">{{ formatRam(server.ramMb) }}</p>
-              </div>
+            <div>
+              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">ID</p>
+              <p class="text-text-primary font-mono font-bold">#{{ server.id }}</p>
             </div>
-            <div class="flex items-center gap-2">
-              <HardDrive :size="12" :stroke-width="2" class="text-orange-400 shrink-0" />
-              <div>
-                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Disk</p>
-                <p class="text-text-primary font-bold">{{ formatDisk(server.diskMb) }}</p>
-              </div>
+            <div>
+              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Allocation</p>
+              <p class="text-text-primary font-bold">{{ server.allocation || server.port || '—' }}</p>
             </div>
-            <div class="flex items-center gap-2">
-              <Calendar :size="12" :stroke-width="2" class="text-blue-400 shrink-0" />
-              <div>
-                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Created on</p>
-                <p class="text-text-primary font-bold">{{ formatDate(server.createdAt) }}</p>
-              </div>
+            <div>
+              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Created on</p>
+              <p class="text-text-primary font-bold">{{ formatDate(server.createdAt) }}</p>
             </div>
-            <div class="flex items-center gap-2">
-              <Clock :size="12" :stroke-width="2" class="text-amber-400 shrink-0" />
-              <div>
-                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Expires on</p>
-                <p class="text-text-primary font-bold">{{ formatDate(server.expiresAt) }}</p>
-                <p v-if="getDaysRemaining(server) !== null" :class="getDaysRemainingClass(server)" class="font-bold">
-                  {{ getDaysRemainingLabel(server) }}
-                </p>
-              </div>
+            <div>
+              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Expires on</p>
+              <p class="text-text-primary font-bold">{{ formatDate(server.expiresAt) }}</p>
+              <p v-if="getDaysRemaining(server) !== null" :class="getDaysRemainingClass(server)" class="font-bold">
+                {{ getDaysRemainingLabel(server) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Pterodactyl</p>
+              <p class="text-text-primary font-mono font-bold text-[10px]">{{ server.pterodactylServerId || '—' }}</p>
             </div>
           </div>
         </div>
