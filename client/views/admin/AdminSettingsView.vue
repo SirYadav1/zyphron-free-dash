@@ -32,7 +32,7 @@
     <!-- general tab -->
     <div v-if="activeTab === 'general'" class="space-y-6">
       <!-- AFK Earning Rates -->
-      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
@@ -44,7 +44,7 @@
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 bg-base/50 px-3 py-1.5 rounded-lg border border-border">
+            <div class="flex items-center gap-2 bg-[#0f172a]/50 px-3 py-1.5 rounded-lg border border-border">
               <input v-model="afkCoins" type="number" class="w-14 bg-transparent text-accent font-bold text-center text-sm border-none focus:ring-0 p-0" />
               <span class="text-[10px] text-text-muted font-bold">CR /</span>
               <input v-model="afkInterval" type="number" class="w-10 bg-transparent text-text-primary font-bold text-center text-sm border-none focus:ring-0 p-0" />
@@ -55,13 +55,13 @@
             </button>
           </div>
         </div>
-        <p class="text-[11px] text-text-muted bg-base/50 px-3 py-2 rounded-lg border border-border">
+        <p class="text-[11px] text-text-muted bg-[#0f172a]/50 px-3 py-2 rounded-lg border border-border">
           Users earn <span class="text-accent font-bold">{{ afkCoins || 0 }} CR</span> every <span class="text-text-primary font-bold">{{ afkInterval || 0 }} min</span> of active focus.
         </p>
       </div>
 
       <!-- Branding -->
-      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
             <Layers :size="16" class="text-purple-400" />
@@ -105,7 +105,7 @@
     <!-- pterodactyl tab -->
     <div v-if="activeTab === 'pterodactyl'" class="space-y-6">
       <!-- Panel API Configuration -->
-      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -145,7 +145,7 @@
           <label class="text-[10px] font-bold text-text-muted uppercase">API Key</label>
           <!-- Show masked key when configured and not editing -->
           <div v-if="pteroApiKeyConfigured && !pteroConfig.apiKey && !editingApiKey" class="flex items-center gap-3">
-            <div class="flex-1 flex items-center gap-2 bg-base/50 px-3 py-2 rounded-lg border border-border">
+            <div class="flex-1 flex items-center gap-2 bg-[#0f172a]/50 px-3 py-2 rounded-lg border border-border">
               <Lock :size="14" class="text-accent" />
               <span class="text-xs font-mono text-text-primary">{{ maskedApiKey }}</span>
               <span class="flex items-center gap-1 text-emerald-400 text-[10px] font-bold">
@@ -177,7 +177,7 @@
         </div>
 
         <!-- Show panel URL that's configured -->
-        <div v-if="pteroConfigured && pteroConfig.panelUrl" class="flex items-center gap-2 bg-base/50 px-3 py-2 rounded-lg border border-border">
+        <div v-if="pteroConfigured && pteroConfig.panelUrl" class="flex items-center gap-2 bg-[#0f172a]/50 px-3 py-2 rounded-lg border border-border">
           <Globe :size="14" class="text-accent" />
           <span class="text-[10px] text-text-muted font-bold">Configured Panel:</span>
           <a :href="pteroConfig.panelUrl" target="_blank" class="text-xs text-accent hover:text-white font-bold transition-colors">{{ pteroConfig.panelUrl }}</a>
@@ -195,7 +195,7 @@
       </div>
 
       <!-- Default Server Node -->
-      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
@@ -233,7 +233,7 @@
             </option>
           </select>
 
-          <div v-if="selectedNode" class="bg-base/50 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div v-if="selectedNode" class="bg-[#0f172a]/50 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Node</p><p class="text-text-primary font-bold">{{ selectedNode.name || 'Node #' + selectedNode.id }}</p></div>
             <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Host</p><p class="text-text-primary font-bold">{{ selectedNode.fqdn || '—' }}</p></div>
             <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">RAM</p><p class="text-text-primary font-bold">{{ formatRam(selectedNode.memory || selectedNode.ram) }}</p></div>
@@ -248,41 +248,145 @@
 
     <!-- email / smtp tab -->
     <div v-if="activeTab === 'email'" class="space-y-6">
-      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-            <Mail :size="16" class="text-blue-400" />
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-text-primary">Email / SMTP Settings</h3>
-            <p class="text-[11px] text-text-muted">Configure email delivery for notifications and verification</p>
+      <!-- SMTP Configuration -->
+      <div class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-border bg-[#0f172a]/50">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <Mail :size="16" class="text-blue-400" />
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-text-primary">Email / SMTP Configuration</h3>
+                <p class="text-[11px] text-text-muted">Configure email delivery for notifications and verification</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div class="space-y-1">
-            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Host</label>
-            <input :value="store.settings.smtp_host || ''" @change="updateSetting('smtp_host', $event.target.value)" type="text" class="input-field py-2" placeholder="smtp.example.com" />
+        <div class="p-5 space-y-4">
+          <!-- SMTP Connection -->
+          <div class="space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Host</label>
+                <input
+                  v-model="smtpForm.host"
+                  type="text"
+                  class="input-field py-2"
+                  placeholder="smtp.gmail.com"
+                />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Port</label>
+                <input
+                  v-model="smtpForm.port"
+                  type="number"
+                  class="input-field py-2"
+                  placeholder="587"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Username</label>
+                <input
+                  v-model="smtpForm.user"
+                  type="text"
+                  class="input-field py-2"
+                  placeholder="your-email@gmail.com"
+                />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Password</label>
+                <div class="relative">
+                  <input
+                    v-model="smtpForm.pass"
+                    :type="showSmtpPass ? 'text' : 'password'"
+                    class="input-field py-2 pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button @click="showSmtpPass = !showSmtpPass" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors">
+                    <Eye v-if="!showSmtpPass" :size="14" :stroke-width="2" />
+                    <EyeOff v-else :size="14" :stroke-width="2" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-text-muted uppercase">Mail From Address</label>
+                <input
+                  v-model="smtpForm.from"
+                  type="email"
+                  class="input-field py-2"
+                  placeholder="noreply@zyphron.cloud"
+                />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-text-muted uppercase">Mail From Name</label>
+                <input
+                  v-model="smtpForm.fromName"
+                  type="text"
+                  class="input-field py-2"
+                  placeholder="Zyphron Cloud"
+                />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-text-muted uppercase">Encryption</label>
+                <select v-model="smtpForm.encryption" class="input-field py-2">
+                  <option value="tls">TLS</option>
+                  <option value="ssl">SSL</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Port</label>
-            <input :value="store.settings.smtp_port || ''" @change="updateSetting('smtp_port', $event.target.value)" type="number" class="input-field py-2" placeholder="587" />
+
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-3 pt-3 border-t border-border">
+            <button
+              @click="saveSmtpSettings"
+              :disabled="savingSmtp"
+              class="px-5 py-2 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors"
+            >
+              <span v-if="savingSmtp" class="flex items-center gap-2">
+                <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Saving...
+              </span>
+              <span v-else class="flex items-center gap-2">
+                <Save :size="14" /> Save SMTP Settings
+              </span>
+            </button>
+            <button
+              @click="sendTestEmail"
+              :disabled="sendingTestEmail"
+              class="px-5 py-2 text-[11px] font-bold text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/10 disabled:opacity-40 transition-colors"
+            >
+              <span v-if="sendingTestEmail" class="flex items-center gap-2">
+                <div class="w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+                Sending...
+              </span>
+              <span v-else class="flex items-center gap-2">
+                <Send :size="14" /> Send Test Email
+              </span>
+            </button>
           </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP User</label>
-            <input :value="store.settings.smtp_user || ''" @change="updateSetting('smtp_user', $event.target.value)" type="text" class="input-field py-2" placeholder="user@example.com" />
+
+          <!-- Test Email Address -->
+          <div v-if="smtpForm.host" class="flex items-center gap-2 text-[11px] text-text-muted">
+            <MailCheck :size="14" class="text-accent" />
+            <span>Test emails will be sent from <strong class="text-text-primary">{{ smtpForm.from || 'noreply@example.com' }}</strong></span>
           </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Password</label>
-            <input :value="store.settings.smtp_pass || ''" @change="updateSetting('smtp_pass', $event.target.value)" type="password" class="input-field py-2" placeholder="••••••••" />
+
+          <!-- SMTP Status Messages -->
+          <div v-if="smtpSuccess" class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs font-bold text-emerald-400">
+            ✓ {{ smtpSuccess }}
           </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-bold text-text-muted uppercase">From Email</label>
-            <input :value="store.settings.smtp_from || ''" @change="updateSetting('smtp_from', $event.target.value)" type="email" class="input-field py-2" placeholder="noreply@example.com" />
-          </div>
-          <div class="space-y-1">
-            <label class="text-[10px] font-bold text-text-muted uppercase">From Name</label>
-            <input :value="store.settings.smtp_from_name || ''" @change="updateSetting('smtp_from_name', $event.target.value)" type="text" class="input-field py-2" placeholder="My Panel" />
+          <div v-if="smtpError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-bold text-red-400">
+            ✕ {{ smtpError }}
           </div>
         </div>
       </div>
@@ -291,7 +395,7 @@
     <!-- server defaults tab -->
     <div v-if="activeTab === 'server'" class="space-y-6">
       <!-- Default Allocation Settings -->
-      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
@@ -370,7 +474,7 @@
 
     <!-- security tab -->
     <div v-if="activeTab === 'security'" class="space-y-6">
-      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
             <Shield :size="16" class="text-red-400" />
@@ -402,7 +506,7 @@
     </div>
 
     <!-- all settings table (always visible) -->
-    <div class="bg-base-secondary border border-border rounded-xl overflow-hidden">
+    <div class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
       <div class="px-5 py-3 border-b border-border flex items-center justify-between">
         <h3 class="text-sm font-bold text-text-primary">All Settings</h3>
         <span class="text-[10px] text-text-muted font-bold">{{ Object.keys(store.settings).length }} keys</span>
@@ -450,7 +554,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
-import { AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive, Eye, EyeOff, Layers, Lock, Globe, Mail, Shield } from 'lucide-vue-next'
+import {
+  AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive,
+  Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck,
+} from 'lucide-vue-next'
 
 const store = useAdminStore()
 const editingKey = ref(null)
@@ -511,6 +618,22 @@ const pteroApiKeyConfigured = ref(false)
 const showApiKey = ref(false)
 const editingApiKey = ref(false)
 const maskedApiKey = ref('')
+
+// SMTP form
+const smtpForm = ref({
+  host: '',
+  port: '587',
+  user: '',
+  pass: '',
+  from: '',
+  fromName: '',
+  encryption: 'tls',
+})
+const savingSmtp = ref(false)
+const sendingTestEmail = ref(false)
+const smtpSuccess = ref('')
+const smtpError = ref('')
+const showSmtpPass = ref(false)
 
 const selectedNode = computed(() => {
   if (!selectedNodeId.value || !nodes.value.length) return null
@@ -583,6 +706,17 @@ onMounted(async () => {
     docker_image: getSettingStr('docker_image', 'ghcr.io/pterodactyl/yolks:java_25'),
     startup_command: getSettingStr('startup_command', ''),
     auto_start: getSettingNum('auto_start', 1),
+  }
+
+  // load SMTP settings from store
+  smtpForm.value = {
+    host: store.settings.smtp_host || '',
+    port: store.settings.smtp_port || '587',
+    user: store.settings.smtp_user || '',
+    pass: store.settings.smtp_pass || '',
+    from: store.settings.smtp_from || '',
+    fromName: store.settings.smtp_from_name || '',
+    encryption: store.settings.smtp_encryption || 'tls',
   }
 
   await loadPterodactylConfig()
@@ -679,5 +813,54 @@ async function testPterodactyl() {
     pteroStatus.value = { success: false, message: 'Connection test failed' }
     pteroConfigured.value = false
   } finally { testingPtero.value = false }
+}
+
+// SMTP Functions
+async function saveSmtpSettings() {
+  savingSmtp.value = true; smtpError.value = ''; smtpSuccess.value = ''
+  try {
+    await Promise.all([
+      store.updateSetting('smtp_host', smtpForm.value.host),
+      store.updateSetting('smtp_port', smtpForm.value.port),
+      store.updateSetting('smtp_user', smtpForm.value.user),
+      store.updateSetting('smtp_pass', smtpForm.value.pass),
+      store.updateSetting('smtp_from', smtpForm.value.from),
+      store.updateSetting('smtp_from_name', smtpForm.value.fromName),
+      store.updateSetting('smtp_encryption', smtpForm.value.encryption),
+    ])
+    smtpSuccess.value = 'SMTP settings saved successfully!'
+  } catch (err) {
+    smtpError.value = err.response?.data?.message || 'Failed to save SMTP settings'
+  } finally {
+    savingSmtp.value = false
+  }
+}
+
+async function sendTestEmail() {
+  sendingTestEmail.value = true; smtpError.value = ''; smtpSuccess.value = ''
+  try {
+    // first save current settings, then send test
+    await Promise.all([
+      store.updateSetting('smtp_host', smtpForm.value.host),
+      store.updateSetting('smtp_port', smtpForm.value.port),
+      store.updateSetting('smtp_user', smtpForm.value.user),
+      store.updateSetting('smtp_pass', smtpForm.value.pass),
+      store.updateSetting('smtp_from', smtpForm.value.from),
+      store.updateSetting('smtp_from_name', smtpForm.value.fromName),
+      store.updateSetting('smtp_encryption', smtpForm.value.encryption),
+    ])
+    const { data } = await client.post('/admin/settings/smtp-test', {
+      to: smtpForm.value.user || smtpForm.value.from,
+    })
+    if (data.success) {
+      smtpSuccess.value = data.message || 'Test email sent successfully!'
+    } else {
+      smtpError.value = data.message || 'Failed to send test email'
+    }
+  } catch (err) {
+    smtpError.value = err.response?.data?.message || 'Failed to send test email'
+  } finally {
+    sendingTestEmail.value = false
+  }
 }
 </script>

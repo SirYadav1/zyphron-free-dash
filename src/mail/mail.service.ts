@@ -37,12 +37,15 @@ export class MailService {
       const smtpPort = settingsMap.get('smtp_port') || process.env.MAIL_PORT || '587';
       const smtpUser = settingsMap.get('smtp_user') || process.env.MAIL_USER;
       const smtpPass = settingsMap.get('smtp_pass') || process.env.MAIL_PASS;
+      const smtpEncryption = settingsMap.get('smtp_encryption') || process.env.MAIL_ENCRYPTION || 'tls';
 
       if (smtpUser && smtpPass) {
+        const port = parseInt(String(smtpPort));
+        const secure = smtpEncryption === 'ssl' || port === 465;
         this.transporter = nodemailer.createTransport({
           host: smtpHost,
-          port: parseInt(String(smtpPort)),
-          secure: parseInt(String(smtpPort)) === 465,
+          port,
+          secure,
           auth: {
             user: smtpUser,
             pass: smtpPass,
@@ -88,7 +91,7 @@ export class MailService {
   /**
    * Get current SMTP configuration status (masked password)
    */
-  async getSmtpConfig(): Promise<{ configured: boolean; host: string; port: number; user: string; from: string }> {
+  async getSmtpConfig(): Promise<{ configured: boolean; host: string; port: number; user: string; from: string; from_name: string; encryption: string }> {
     const settings = await this.settingRepo.find();
     const settingsMap = new Map(settings.map(s => [s.key, s.value]));
 
@@ -98,6 +101,8 @@ export class MailService {
       port: parseInt(settingsMap.get('smtp_port') || process.env.MAIL_PORT || '587'),
       user: settingsMap.get('smtp_user') || process.env.MAIL_USER || '',
       from: settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from_name: settingsMap.get('smtp_from_name') || process.env.MAIL_FROM_NAME || 'Zyphron',
+      encryption: settingsMap.get('smtp_encryption') || process.env.MAIL_ENCRYPTION || 'tls',
     };
   }
 
