@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { ShopProduct } from '../entities/shop-product.entity';
 import { User } from '../entities/user.entity';
 import { Transaction } from '../entities/transaction.entity';
+import { Invoice } from '../entities/invoice.entity';
+import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 
 @Injectable()
 export class CreditsService {
@@ -14,6 +16,9 @@ export class CreditsService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
+    @InjectRepository(Invoice)
+    private readonly invoiceRepo: Repository<Invoice>,
+    private readonly activityLogsService: ActivityLogsService,
   ) {}
 
   async getCreditPackages(): Promise<any[]> {
@@ -65,12 +70,53 @@ export class CreditsService {
       }),
     );
 
+    // generate invoice for the purchase
+    const now = new Date();
+    const timestamp = now.getTime().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const invoiceNumber = `INV-${now.getFullYear()}-${timestamp}-${random}`;
+
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 7);
+
+    await this.invoiceRepo.save(
+      this.invoiceRepo.create({
+        user_id: userId,
+        invoice_number: invoiceNumber,
+        amount: pkg.price || 0,
+        tax_amount: 0,
+        total_amount: pkg.price || 0,
+        currency: pkg.currency_code || 'USD',
+        status: 'paid',
+        paid_at: now.toISOString(),
+        due_date: dueDate.toISOString(),
+      }),
+    );
+
+    // log activity
+    await this.activityLogsService.create({
+      log_name: 'credit_purchase',
+      description: `User ${user.username || user.email} purchased ${creditAmount} credits (${pkg.display}) for ${pkg.currency_code || 'USD'} ${pkg.price || 0}`,
+      subject_type: 'ShopProduct',
+      subject_id: pkg.id,
+      event: 'credit_purchased',
+      causer_type: 'User',
+      causer_id: userId,
+      properties: {
+        credits_added: creditAmount,
+        package_display: pkg.display,
+        price: pkg.price,
+        currency: pkg.currency_code,
+      },
+    });
+
     const updatedUser = await this.userRepo.findOne({ where: { id: userId } });
 
     return {
       message: `Successfully purchased ${creditAmount} credits`,
       creditsAdded: creditAmount,
       totalCredits: updatedUser?.coins || 0,
+      invoiceNumber,
     };
   }
 }

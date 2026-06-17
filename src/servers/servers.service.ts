@@ -6,8 +6,10 @@ import { User } from '../entities/user.entity';
 import { Setting } from '../entities/setting.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { Product } from '../entities/product.entity';
+import { Invoice } from '../entities/invoice.entity';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
 import { MailService } from '../mail/mail.service';
+import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -23,8 +25,11 @@ export class ServersService {
     private readonly transactionRepo: Repository<Transaction>,
     @InjectRepository(Product)
     private readonly productRepo: Repository<Product>,
+    @InjectRepository(Invoice)
+    private readonly invoiceRepo: Repository<Invoice>,
     private pterodactylService: PterodactylService,
     private mailService: MailService,
+    private activityLogsService: ActivityLogsService,
   ) {}
 
   private async getSetting(key: string, defaultValue: string): Promise<string> {
@@ -467,6 +472,50 @@ export class ServersService {
         description: `Created server ${finalServerName} (${productDisplay})`,
       }),
     );
+
+    // generate invoice for server creation
+    const now = new Date();
+    const timestamp = now.getTime().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const invoiceNumber = `INV-${now.getFullYear()}-${timestamp}-${random}`;
+
+    const invoiceDueDate = new Date();
+    invoiceDueDate.setDate(invoiceDueDate.getDate() + 7);
+
+    await this.invoiceRepo.save(
+      this.invoiceRepo.create({
+        user_id: userId,
+        invoice_number: invoiceNumber,
+        amount: costCoins,
+        tax_amount: 0,
+        total_amount: costCoins,
+        currency: 'COINS',
+        status: 'paid',
+        paid_at: now.toISOString(),
+        due_date: invoiceDueDate.toISOString(),
+      }),
+    );
+
+    // log activity
+    await this.activityLogsService.create({
+      log_name: 'server',
+      description: `User ${user.username || user.email} created server ${finalServerName} (${productDisplay}) for ${costCoins} coins`,
+      subject_type: 'Server',
+      subject_id: 0, // Will be set after save
+      event: 'server_created',
+      causer_type: 'User',
+      causer_id: userId,
+      properties: {
+        server_name: finalServerName,
+        product: productDisplay,
+        ram: ramMb,
+        cpu: cpuPercent,
+        disk: diskMb,
+        cost: costCoins,
+        duration_days: durationDays,
+        invoice: invoiceNumber,
+      },
+    });
 
     // read renewal price setting
     const renewalPriceSetting = parseInt(

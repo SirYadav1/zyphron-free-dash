@@ -6,6 +6,8 @@ import { User } from '../entities/user.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { ShopProduct } from '../entities/shop-product.entity';
 import { Product } from '../entities/product.entity';
+import { Invoice } from '../entities/invoice.entity';
+import { ActivityLogsModule } from '../activity-logs/activity-logs.module';
 import { ServersService } from './servers.service';
 import { ServersController } from './servers.controller';
 import { AdminServersController } from './admin-servers.controller';
@@ -17,9 +19,10 @@ import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Server, Setting, User, Transaction, ShopProduct, Product]),
+    TypeOrmModule.forFeature([Server, Setting, User, Transaction, ShopProduct, Product, Invoice]),
     PterodactylModule,
     MailModule,
+    ActivityLogsModule,
   ],
   controllers: [ServersController, AdminServersController, ServerRenewalController],
   providers: [ServersService, ServerLifecycleService, ServerRenewalService],

@@ -20,6 +20,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
 import { EmailVerificationService } from '../email-verification/email-verification.service';
+import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 
 @Injectable()
 export class AuthService {
@@ -38,6 +39,7 @@ export class AuthService {
     private configService: ConfigService,
     private pterodactylService: PterodactylService,
     private emailVerificationService: EmailVerificationService,
+    private activityLogsService: ActivityLogsService,
   ) {}
 
   async register(dto: RegisterDto, ipAddress?: string) {
@@ -115,6 +117,22 @@ export class AuthService {
       this.logger.warn(`Failed to send verification email: ${emailErr.message}`);
       // don't fail registration if email sending fails
     }
+
+    // log registration activity
+    await this.activityLogsService.create({
+      log_name: 'auth',
+      description: `New user registered: ${dto.username} (${dto.email})`,
+      subject_type: 'User',
+      subject_id: 0,
+      event: 'registered',
+      causer_type: 'User',
+      causer_id: user.id,
+      properties: {
+        email: dto.email,
+        username: dto.username,
+        ip_address: ipAddress || 'unknown',
+      },
+    }).catch(err => this.logger.warn(`Failed to log registration activity: ${err.message}`));
 
     const token = this.signToken(user.id);
 
@@ -211,6 +229,21 @@ export class AuthService {
 
     // update last_active timestamp
     await this.userRepo.update(user.id, { last_active: new Date().toISOString() });
+
+    // log login activity
+    await this.activityLogsService.create({
+      log_name: 'auth',
+      description: `User ${user.username || user.email} logged in`,
+      subject_type: 'User',
+      subject_id: 0,
+      event: 'login',
+      causer_type: 'User',
+      causer_id: user.id,
+      properties: {
+        email: user.email,
+        username: user.username,
+      },
+    }).catch(err => this.logger.warn(`Failed to log login activity: ${err.message}`));
 
     // check if 2FA is enabled - return requires2FA flag instead of token
     if (user.two_factor_enabled) {
