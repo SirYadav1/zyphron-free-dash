@@ -138,6 +138,7 @@ export class ServersService {
         renewalPrice: server.renewal_price,
         isSuspended: !!server.is_suspended,
         suspendedAt: server.suspended_at,
+        suspendReason: server.suspend_reason,
         autoRenew: !!server.auto_renew,
         createdAt: server.created_at,
       };

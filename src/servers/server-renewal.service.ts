@@ -86,6 +86,7 @@ export class ServerRenewalService {
         is_suspended: 1,
         suspended_at: now.toISOString(),
         status: 'suspended',
+        suspend_reason: 'expired',
       });
 
       suspendedCount++;
