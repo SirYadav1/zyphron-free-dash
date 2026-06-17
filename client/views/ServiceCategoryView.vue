@@ -4,7 +4,7 @@
     <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/[0.03] rounded-full blur-3xl"></div>
     <div class="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/[0.03] rounded-full blur-3xl"></div>
 
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <div class="relative z-10 app-container py-8 space-y-8">
       <!-- Back Button -->
       <button
         @click="goBack"
