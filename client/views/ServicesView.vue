@@ -30,7 +30,7 @@
     </div>
 
     <!-- STEP 1: Category Selection -->
-    <div v-else-if="!selectedCategory" class="space-y-8">
+    <div v-if="!loading && !selectedCategory" class="space-y-8">
       <!-- Search Bar -->
       <div class="card-surface p-4 flex items-center gap-3">
         <Search :size="18" :stroke-width="2" class="text-text-muted shrink-0" />
@@ -104,7 +104,7 @@
     </div>
 
     <!-- STEP 2: Plan Selection (within category) -->
-    <div v-else-if="selectedCategory && !selectedPlan" class="space-y-6">
+    <div v-if="!loading && selectedCategory && !selectedPlan" class="space-y-6">
       <!-- Category Header -->
       <div class="card-surface overflow-hidden flex flex-col sm:flex-row items-stretch">
         <!-- Banner image strip -->
@@ -113,7 +113,7 @@
           <div v-else class="w-full h-full bg-gradient-to-br from-accent/20 via-accent/10 to-surface flex items-center justify-center">
             <Package :size="32" :stroke-width="1.5" class="text-accent/60" />
           </div>
-          <!-- Fade overlay (right edge on desktop, bottom on mobile) -->
+          <!-- Fade overlay -->
           <div class="absolute inset-0 sm:bg-gradient-to-r sm:from-transparent sm:to-surface bg-gradient-to-t from-surface to-transparent"></div>
         </div>
         <div class="flex-1 p-5 sm:p-6">
@@ -131,37 +131,43 @@
         <div class="loading-spinner"></div>
       </div>
 
-      <!-- Plans Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Plans Grid - BIGGER CARDS with selected highlight -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <div
           v-for="(plan, index) in categoryProducts"
           :key="plan.id"
           @click="selectPlan(plan)"
-          class="stagger-item card-surface p-6 flex flex-col transition-all hover:border-accent/30 cursor-pointer group"
+          class="stagger-item card-surface p-7 flex flex-col transition-all cursor-pointer group"
+          :class="selectedPlan?.id === plan.id
+            ? 'border-accent/60 bg-accent/[0.05] ring-2 ring-accent/30 shadow-lg shadow-accent/10'
+            : 'hover:border-accent/30 hover:bg-accent/[0.02]'"
           :style="{ animationDelay: (index * 0.06) + 's' }"
         >
-          <div class="flex-1 space-y-4">
+          <div class="flex-1 space-y-5">
             <!-- Plan Name & Description -->
             <div>
               <div class="flex items-center gap-2">
-                <h4 class="font-bold text-text-primary text-lg group-hover:text-accent transition-colors">{{ plan.name }}</h4>
+                <h4 class="font-bold text-text-primary text-xl group-hover:text-accent transition-colors">{{ plan.name }}</h4>
+                <div v-if="selectedPlan?.id === plan.id" class="w-5 h-5 rounded-full bg-accent flex items-center justify-center">
+                  <Check :size="12" :stroke-width="3" class="text-white" />
+                </div>
               </div>
-              <p v-if="plan.description" class="text-sm text-text-muted mt-1 line-clamp-2">{{ plan.description }}</p>
+              <p v-if="plan.description" class="text-sm text-text-muted mt-1.5 line-clamp-2">{{ plan.description }}</p>
             </div>
 
-            <!-- Specs Grid -->
-            <div class="grid grid-cols-3 gap-2">
-              <div class="p-3 bg-base/50 rounded-lg text-center border border-border">
-                <p class="text-[9px] font-bold text-text-muted uppercase mb-1">RAM</p>
-                <p class="text-sm font-bold text-text-primary">{{ formatRam(plan.ram) }}</p>
+            <!-- Specs Grid - BIGGER -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="p-4 bg-base/50 rounded-xl text-center border border-border">
+                <p class="text-[10px] font-bold text-text-muted uppercase mb-1.5">RAM</p>
+                <p class="text-lg font-bold text-accent">{{ formatRam(plan.ram) }}</p>
               </div>
-              <div class="p-3 bg-base/50 rounded-lg text-center border border-border">
-                <p class="text-[9px] font-bold text-text-muted uppercase mb-1">CPU</p>
-                <p class="text-sm font-bold text-text-primary">{{ plan.cpu }}%</p>
+              <div class="p-4 bg-base/50 rounded-xl text-center border border-border">
+                <p class="text-[10px] font-bold text-text-muted uppercase mb-1.5">CPU</p>
+                <p class="text-lg font-bold text-accent">{{ plan.cpu }}%</p>
               </div>
-              <div class="p-3 bg-base/50 rounded-lg text-center border border-border">
-                <p class="text-[9px] font-bold text-text-muted uppercase mb-1">Disk</p>
-                <p class="text-sm font-bold text-text-primary">{{ formatDisk(plan.disk) }}</p>
+              <div class="p-4 bg-base/50 rounded-xl text-center border border-border">
+                <p class="text-[10px] font-bold text-text-muted uppercase mb-1.5">Disk</p>
+                <p class="text-lg font-bold text-accent">{{ formatDisk(plan.disk) }}</p>
               </div>
             </div>
 
@@ -184,11 +190,11 @@
             <!-- Price & Duration -->
             <div class="flex items-center justify-between pt-4 border-t border-border">
               <div>
-                <span class="text-xl font-bold text-accent tabular-nums">{{ plan.coin_price }}</span>
+                <span class="text-2xl font-bold text-accent tabular-nums">{{ plan.coin_price }}</span>
                 <span class="text-sm text-accent/70 ml-1">coins</span>
               </div>
               <div class="text-right">
-                <p class="text-xs font-bold text-text-muted">{{ plan.duration_days }} days</p>
+                <p class="text-sm font-bold text-text-muted">{{ plan.duration_days }} days</p>
                 <p class="text-[10px] text-text-muted">{{ plan.duration_days }} day{{ plan.duration_days !== 1 ? 's' : '' }}</p>
               </div>
             </div>
@@ -203,7 +209,7 @@
     </div>
 
     <!-- STEP 3: Egg Selection + Server Name -->
-    <div v-else-if="selectedPlan && !serverCreated" class="space-y-6 max-w-3xl">
+    <div v-if="!loading && selectedPlan && !serverCreated" class="space-y-6 max-w-3xl">
       <!-- Selected Plan Summary -->
       <div class="card-surface p-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
@@ -318,7 +324,7 @@
             <button
               @click="deployServer"
               :disabled="deploying || !serverName || !selectedEgg || (selectedPlan.coin_price > (authStore.user?.coins || 0))"
-              class="btn-primary px-8 py-2.5 flex items-center gap-2"
+              class="btn-primary px-8 py-3 text-sm flex items-center gap-2"
             >
               <Loader2 v-if="deploying" :size="16" :stroke-width="2" class="animate-spin" />
               <Rocket v-else :size="16" :stroke-width="2" />
@@ -334,25 +340,46 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- STEP 4: Success -->
-    <div v-else-if="serverCreated" class="card-surface p-12 text-center space-y-6" style="animation: scaleIn 0.5s ease-out both;">
-      <div class="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-        <CheckCircle2 :size="32" :stroke-width="1.5" class="text-green-500" />
-      </div>
-      <div>
-        <h3 class="text-xl font-bold text-text-primary">Server Deployed!</h3>
-        <p class="text-sm text-text-muted mt-2">
-          Your server <span class="text-accent font-medium">{{ serverName }}-free-dash</span> is being created.
-          <br/>It will appear in your servers list shortly.
-        </p>
-      </div>
-      <div class="flex items-center justify-center gap-4">
-        <router-link to="/servers" class="btn-primary px-6 py-2.5">View Servers</router-link>
-        <router-link to="/home" class="btn-secondary px-6 py-2.5">Dashboard</router-link>
+  <!-- Deploying Modal (outside main div to avoid v-if chain issues) -->
+  <Teleport to="body">
+    <div v-if="deploying" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div class="card-surface p-10 rounded-2xl max-w-md w-full mx-4 text-center space-y-6" style="animation: scaleIn 0.3s ease-out;">
+        <div v-if="!deployComplete" class="space-y-6">
+          <div class="w-20 h-20 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto">
+            <div class="w-10 h-10 border-[3px] border-accent border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-text-primary">Your server is being installed...</h3>
+            <p class="text-sm text-text-muted mt-2">
+              Setting up <span class="text-accent font-medium">{{ serverName }}-free-dash</span>
+            </p>
+            <p class="text-xs text-text-muted mt-1">This may take a few minutes. Please don't close this page.</p>
+          </div>
+          <div class="w-full bg-base/50 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-accent h-full rounded-full animate-pulse" style="width: 60%; animation: deployProgress 3s ease-in-out infinite;"></div>
+          </div>
+        </div>
+        <div v-else class="space-y-6">
+          <div class="w-20 h-20 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto">
+            <CheckCircle :size="36" :stroke-width="1.5" class="text-green-500" />
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-text-primary">Server ready!</h3>
+            <p class="text-sm text-text-muted mt-2">
+              Your server <span class="text-accent font-medium">{{ serverName }}-free-dash</span> is deployed.
+            </p>
+            <p class="text-xs text-text-muted mt-1">You will receive an email. Manage from Dashboard.</p>
+          </div>
+          <div class="flex items-center justify-center gap-3">
+            <router-link to="/servers" class="btn-primary px-6 py-2.5">View Servers</router-link>
+            <router-link to="/home" class="btn-secondary px-6 py-2.5">Dashboard</router-link>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -377,7 +404,6 @@ import {
   Coins,
   Loader2,
   Rocket,
-  CheckCircle2,
 } from 'lucide-vue-next'
 
 const serversStore = useServersStore()
@@ -397,6 +423,7 @@ const selectedEgg = ref(null)
 const serverName = ref('')
 const deploying = ref(false)
 const serverCreated = ref(false)
+const deployComplete = ref(false)
 const searchQuery = ref('')
 
 const filteredCategories = computed(() => {
@@ -444,10 +471,8 @@ function selectPlan(plan) {
   selectedEgg.value = null
 
   if (plan.egg_id) {
-    // Plan has a specific egg — auto-select it, skip egg selection
     selectedEgg.value = { id: plan.egg_id, attributes: { name: plan.egg_name || 'Egg #' + plan.egg_id } }
   } else {
-    // Neutral egg — load available eggs for user to choose
     loadEggs(plan)
   }
 }
@@ -492,6 +517,7 @@ function formatDisk(mb) {
 async function deployServer() {
   if (!serverName.value || !selectedPlan.value || !selectedEgg.value) return
   deploying.value = true
+  deployComplete.value = false
   error.value = ''
   try {
     await serversStore.createServer(serverName.value, selectedPlan.value.id, {
@@ -499,11 +525,22 @@ async function deployServer() {
       nestId: selectedPlan.value.nest_id
     })
     await authStore.fetchProfile()
-    serverCreated.value = true
+    deployComplete.value = true
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to create server'
-  } finally {
     deploying.value = false
   }
 }
 </script>
+
+<style scoped>
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes deployProgress {
+  0% { width: 20%; }
+  50% { width: 70%; }
+  100% { width: 20%; }
+}
+</style>

@@ -1,14 +1,35 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsefulLink } from '../entities/useful-link.entity';
 
 @Injectable()
-export class UsefulLinksService {
+export class UsefulLinksService implements OnModuleInit {
+  private readonly logger = new Logger(UsefulLinksService.name);
+
   constructor(
     @InjectRepository(UsefulLink)
     private readonly linkRepo: Repository<UsefulLink>,
   ) {}
+
+  async onModuleInit() {
+    await this.seed();
+  }
+
+  private async seed(): Promise<void> {
+    const count = await this.linkRepo.count();
+    if (count > 0) return;
+
+    this.logger.log('Seeding default useful links...');
+    const defaults = [
+      { title: 'Zyphron Console', link: 'https://console.zyphron.cloud', position: 'sidebar' },
+      { title: 'Discord Server', link: 'https://discord.gg/zyphron', position: 'sidebar' },
+    ];
+    for (const d of defaults) {
+      await this.linkRepo.save(this.linkRepo.create(d));
+    }
+    this.logger.log('Default useful links seeded.');
+  }
 
   async findAll(): Promise<UsefulLink[]> {
     return this.linkRepo.find({ order: { title: 'ASC' } });

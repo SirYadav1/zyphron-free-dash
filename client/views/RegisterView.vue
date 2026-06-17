@@ -175,11 +175,8 @@ async function handleRegister() {
   if (passwordMismatch.value) return
   try {
     const result = await store.register(username.value, email.value, password.value, firstName.value, lastName.value)
-    if (result.access_token) {
-      sessionStorage.setItem('access_token', result.access_token)
-    }
-    await store.fetchProfile()
-    router.push('/home')
+    // after registration, redirect to email verification pending page
+    router.push({ path: '/verify', query: { email: email.value } })
   } catch {
     // error is handled in the store
   }

@@ -17,6 +17,9 @@ export class Ticket {
   @Column({ type: 'text', unique: true })
   ticket_id: string;
 
+  @Column({ type: 'text', unique: true, nullable: true })
+  ticket_number: string;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -38,6 +41,9 @@ export class Ticket {
 
   @Column({ type: 'text', nullable: true })
   server: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  closed_html: string | null;
 
   @CreateDateColumn({ type: 'text' })
   created_at: string;

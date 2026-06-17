@@ -82,6 +82,8 @@ export class RolesService {
       'payments.view', 'settings.view', 'settings.edit',
       'roles.view', 'roles.edit',
       'tickets.view', 'tickets.edit',
+      'tickets.accept', 'tickets.reject', 'tickets.chat',
+      'coins.approve',
       'vouchers.view', 'vouchers.edit',
     ];
     for (const name of defaultPermissions) {

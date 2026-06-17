@@ -18,8 +18,6 @@ import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { VerifyEmailDto } from './dto/verify-email.dto';
-import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { SetupAdminDto } from './dto/setup-admin.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -44,17 +42,6 @@ export class AuthController {
   @Post('login-2fa')
   async loginWith2FA(@Body() body: { email: string; code: string }) {
     return this.authService.loginWith2FA(body.email, body.code);
-  }
-
-  @Post('verify-email')
-  async verifyEmail(@Body() dto: VerifyEmailDto) {
-    return this.authService.verifyEmail(dto.token);
-  }
-
-  @Throttle({ default: { limit: 3, ttl: 3600000 } })
-  @Post('resend-verification')
-  async resendVerification(@Body() dto: ResendVerificationDto) {
-    return this.authService.resendVerification(dto.email);
   }
 
   @Get('me')

@@ -74,6 +74,31 @@
             </router-link>
           </div>
         </div>
+
+        <!-- Useful Links Section -->
+        <div v-if="usefulLinks.length > 0" class="py-2 px-1 rounded-xl">
+          <div class="flex items-center gap-3 px-2 mb-3">
+            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+            <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-text-muted/40">Quick Links</span>
+            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+          </div>
+          <div class="space-y-0.5">
+            <a
+              v-for="link in usefulLinks"
+              :key="link.id"
+              :href="link.link"
+              target="_blank"
+              rel="noopener"
+              @click="sidebarOpen = false"
+              class="nav-item group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative text-text-muted hover:text-text-primary hover:bg-white/[0.04]"
+            >
+              <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 bg-white/[0.03] group-hover:bg-white/[0.06]">
+                <ExternalLink :size="16" :stroke-width="2" />
+              </span>
+              <span class="flex-1 truncate">{{ link.title }}</span>
+            </a>
+          </div>
+        </div>
       </nav>
 
       <!-- Sidebar Footer -->
@@ -81,7 +106,7 @@
         <div class="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-4 border border-accent/15">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-              <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <Coins :size="20" class="text-accent" />
             </div>
             <div>
               <p class="text-[10px] font-bold text-accent/60 uppercase tracking-widest">Balance</p>
@@ -125,7 +150,7 @@
         <div class="flex items-center gap-4">
           <!-- Credits Display -->
           <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-accent/5 border border-accent/10">
-            <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <Coins :size="14" class="text-accent" />
             <span class="text-xs font-bold text-accent">{{ authStore.user?.coins || 0 }}</span>
           </div>
 
@@ -166,18 +191,29 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useAfkStore } from '../stores/afk'
 import ZyphronLogo from '../components/ZyphronLogo.vue'
+import client from '../api/client'
+import { ExternalLink, Coins } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const afkStore = useAfkStore()
 const sidebarOpen = ref(false)
+const usefulLinks = ref([])
 
 onMounted(async () => {
   try {
     await authStore.fetchProfile()
   } catch {
     router.push('/login')
+  }
+
+  // fetch useful links from API for sidebar
+  try {
+    const { data } = await client.get('/useful-links')
+    usefulLinks.value = Array.isArray(data) ? data.filter(l => l.position === 'sidebar' || !l.position) : []
+  } catch {
+    usefulLinks.value = []
   }
 
   // session management: pause AFK on tab hide, resume on tab show
@@ -188,18 +224,14 @@ onMounted(async () => {
 
 function handleVisibilityChange() {
   if (document.hidden) {
-    // Tab became hidden - pause AFK timer
     afkStore.pauseTick()
   } else {
-    // Tab became visible again - resume AFK timer
     afkStore.resumeTick()
   }
 }
 
 function handleBeforeUnload() {
-  // If user navigates away entirely, stop AFK session
   if (afkStore.sessionId && afkStore.tabId) {
-    // Use sendBeacon for reliable delivery during page unload
     const token = sessionStorage.getItem('access_token')
     if (token) {
       navigator.sendBeacon('/api/afk/stop', new Blob([JSON.stringify({

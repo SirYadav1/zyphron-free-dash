@@ -48,8 +48,22 @@ export class TicketsService {
     }
 
     const ticketId = randomBytes(4).toString('hex');
+
+    // generate sequential ticket number: ZYPHC-XXXX
+    const lastTicket = await this.ticketRepo.findOne({
+      order: { id: 'DESC' },
+      select: { ticket_number: true },
+    });
+    let nextNum = 1;
+    if (lastTicket?.ticket_number) {
+      const match = lastTicket.ticket_number.match(/ZYPHC-(\d+)/);
+      if (match) nextNum = parseInt(match[1], 10) + 1;
+    }
+    const ticketNumber = `ZYPHC-${String(nextNum).padStart(4, '0')}`;
+
     const ticket = this.ticketRepo.create({
       ticket_id: ticketId,
+      ticket_number: ticketNumber,
       user_id: userId,
       title: dto.title,
       priority: dto.priority || 'Medium',
@@ -118,6 +132,26 @@ export class TicketsService {
     });
   }
 
+  async searchTickets(email?: string, userId?: string): Promise<Ticket[]> {
+    if (email) {
+      const user = await this.userRepo.findOne({ where: { email } });
+      if (!user) return [];
+      return this.ticketRepo.find({
+        where: { user_id: user.id },
+        order: { created_at: 'DESC' },
+        relations: { user: true },
+      });
+    }
+    if (userId) {
+      return this.ticketRepo.find({
+        where: { user_id: userId },
+        order: { created_at: 'DESC' },
+        relations: { user: true },
+      });
+    }
+    return this.getAllTickets();
+  }
+
   async getCategories(): Promise<TicketCategory[]> {
     return this.categoryRepo.find({ order: { name: 'ASC' } });
   }
@@ -155,7 +189,50 @@ export class TicketsService {
     if (!ticket) throw new NotFoundException('Ticket not found');
     if (userId && ticket.user_id !== userId)
       throw new NotFoundException('Ticket not found');
-    await this.ticketRepo.update(id, { status: 'closed' });
+
+    // generate HTML snapshot of the conversation
+    const comments = await this.commentRepo.find({
+      where: { ticket_id: id },
+      order: { created_at: 'ASC' },
+      relations: { user: true },
+    });
+
+    const commentRows = comments.map((c) => {
+      const author = c.user
+        ? `${c.user.username || 'User'} (${c.user.email || 'N/A'})`
+        : `User ${c.user_id}`;
+      const role = c.is_admin ? 'Admin' : 'User';
+      const ts = c.created_at;
+      return `
+        <div style="margin-bottom:12px;padding:12px;border-radius:8px;background:${c.is_admin ? '#1e293b' : '#0f172a'};border:1px solid #334155;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <strong style="color:#e2e8f0;">${role}: ${author}</strong>
+            <span style="color:#64748b;font-size:12px;">${ts}</span>
+          </div>
+          <div style="color:#cbd5e1;white-space:pre-wrap;">${c.comment}</div>
+        </div>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Ticket ${ticket.ticket_number || ticket.ticket_id}</title></head>
+<body style="font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;max-width:800px;margin:0 auto;padding:20px;">
+  <h1 style="color:#7c3aed;">${ticket.title}</h1>
+  <p><strong>Ticket #:</strong> ${ticket.ticket_number || ticket.ticket_id}</p>
+  <p><strong>Priority:</strong> ${ticket.priority}</p>
+  <p><strong>Status:</strong> Closed</p>
+  <p><strong>Created:</strong> ${ticket.created_at}</p>
+  <p><strong>Server:</strong> ${ticket.server || 'N/A'}</p>
+  <hr style="border-color:#334155;" />
+  <h2 style="color:#94a3b8;">Conversation</h2>
+  ${commentRows || '<p>No comments.</p>'}
+</body>
+</html>`;
+
+    await this.ticketRepo.update(id, {
+      status: 'closed',
+      closed_html: html,
+    });
     return { message: 'Ticket closed', ticketId: id };
   }
 }

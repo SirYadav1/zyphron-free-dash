@@ -12,200 +12,152 @@
       <CheckCircle :size="14" :stroke-width="2.5" /> {{ success }}
     </div>
 
-    <!-- AFK Earning Rates -->
-    <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <Zap :size="16" class="text-amber-400" />
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-text-primary">AFK Earning Rates</h3>
-            <p class="text-[11px] text-text-muted">Compute credits earned from active sessions</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2 bg-base/50 px-3 py-1.5 rounded-lg border border-border">
-            <input v-model="afkCoins" type="number" class="w-14 bg-transparent text-accent font-bold text-center text-sm border-none focus:ring-0 p-0" />
-            <span class="text-[10px] text-text-muted font-bold">CR /</span>
-            <input v-model="afkInterval" type="number" class="w-10 bg-transparent text-text-primary font-bold text-center text-sm border-none focus:ring-0 p-0" />
-            <span class="text-[10px] text-text-muted font-bold">MIN</span>
-          </div>
-          <button @click="saveAfkRates" :disabled="savingAfk" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-            {{ savingAfk ? 'Saving...' : 'Apply' }}
-          </button>
-        </div>
-      </div>
-      <p class="text-[11px] text-text-muted bg-base/50 px-3 py-2 rounded-lg border border-border">
-        Users earn <span class="text-accent font-bold">{{ afkCoins || 0 }} CR</span> every <span class="text-text-primary font-bold">{{ afkInterval || 0 }} min</span> of active focus.
-      </p>
+    <!-- Category Tabs -->
+    <div class="flex flex-wrap gap-2 border-b border-border pb-3">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        @click="activeTab = tab.id"
+        :class="[
+          'px-4 py-2 text-[11px] font-bold rounded-lg transition-all',
+          activeTab === tab.id
+            ? 'bg-accent text-white shadow-md shadow-accent/20'
+            : 'text-text-muted hover:text-text-primary hover:bg-white/[0.05] border border-border'
+        ]"
+      >
+        {{ tab.label }}
+      </button>
     </div>
 
-    <!-- Default Server Node -->
-    <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- general tab -->
+    <div v-if="activeTab === 'general'" class="space-y-6">
+      <!-- AFK Earning Rates -->
+      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <Zap :size="16" class="text-amber-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">AFK Earning Rates</h3>
+              <p class="text-[11px] text-text-muted">Compute credits earned from active sessions</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 bg-base/50 px-3 py-1.5 rounded-lg border border-border">
+              <input v-model="afkCoins" type="number" class="w-14 bg-transparent text-accent font-bold text-center text-sm border-none focus:ring-0 p-0" />
+              <span class="text-[10px] text-text-muted font-bold">CR /</span>
+              <input v-model="afkInterval" type="number" class="w-10 bg-transparent text-text-primary font-bold text-center text-sm border-none focus:ring-0 p-0" />
+              <span class="text-[10px] text-text-muted font-bold">MIN</span>
+            </div>
+            <button @click="saveAfkRates" :disabled="savingAfk" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+              {{ savingAfk ? 'Saving...' : 'Apply' }}
+            </button>
+          </div>
+        </div>
+        <p class="text-[11px] text-text-muted bg-base/50 px-3 py-2 rounded-lg border border-border">
+          Users earn <span class="text-accent font-bold">{{ afkCoins || 0 }} CR</span> every <span class="text-text-primary font-bold">{{ afkInterval || 0 }} min</span> of active focus.
+        </p>
+      </div>
+
+      <!-- Branding -->
+      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-            <Server :size="16" class="text-orange-400" />
+          <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+            <Layers :size="16" class="text-purple-400" />
           </div>
           <div>
-            <h3 class="text-sm font-bold text-text-primary">Default Server Node</h3>
-            <p class="text-[11px] text-text-muted">Pterodactyl node for new deployments</p>
+            <h3 class="text-sm font-bold text-text-primary">Branding</h3>
+            <p class="text-[11px] text-text-muted">Login page image & favicon</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button @click="loadNodes" :disabled="loadingNodes" class="px-3 py-1.5 text-[10px] font-bold text-orange-400 border border-orange-500/20 rounded-lg hover:bg-orange-500/10 disabled:opacity-40 transition-colors">
-            {{ loadingNodes ? 'Loading...' : 'Refresh' }}
-          </button>
-          <button @click="saveDefaultNode" :disabled="savingNode || !selectedNodeId" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-            {{ savingNode ? 'Saving...' : 'Save Node' }}
-          </button>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Login Image URL</label>
+            <div class="flex gap-2">
+              <input v-model="loginImageUrl" type="text" placeholder="https://example.com/bg.png" class="input-field py-2 flex-1" />
+              <button @click="saveLoginImage" :disabled="savingLoginImage" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+                {{ savingLoginImage ? '...' : 'Save' }}
+              </button>
+            </div>
+            <div v-if="loginImageUrl" class="mt-2 rounded-lg overflow-hidden border border-border max-w-[180px]">
+              <img :src="loginImageUrl" @error="loginImageError = true" @load="loginImageError = false" class="w-full h-20 object-cover" />
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Favicon URL</label>
+            <div class="flex gap-2">
+              <input v-model="faviconUrl" type="text" placeholder="https://example.com/favicon.ico" class="input-field py-2 flex-1" />
+              <button @click="saveFavicon" :disabled="savingFavicon" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+                {{ savingFavicon ? '...' : 'Save' }}
+              </button>
+            </div>
+            <div v-if="faviconUrl" class="flex items-center gap-2 mt-2">
+              <img :src="faviconUrl" @error="faviconError = true" @load="faviconError = false" class="w-6 h-6 rounded border border-border" />
+              <span v-if="faviconError" class="text-[10px] text-red-400">Invalid</span>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div v-if="loadingNodes" class="flex items-center gap-3 py-4">
-        <div class="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-xs text-text-muted">Fetching nodes from Pterodactyl...</p>
-      </div>
-
-      <div v-else-if="nodes.length === 0" class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 text-xs">
-        <p class="text-yellow-400 font-bold">No nodes found. Configure Panel API first.</p>
-      </div>
-
-      <div v-else class="space-y-3">
-        <select v-model="selectedNodeId" class="input-field py-2">
-          <option :value="null" disabled>Select a node...</option>
-          <option v-for="node in nodes" :key="node.id" :value="node.id">
-            {{ node.name }} — {{ node.fqdn }} ({{ formatRam(node.ram) }}, {{ formatDisk(node.disk) }})
-          </option>
-        </select>
-
-        <div v-if="selectedNode" class="bg-base/50 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Node</p><p class="text-text-primary font-bold">{{ selectedNode.name }}</p></div>
-          <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Host</p><p class="text-text-primary font-bold">{{ selectedNode.fqdn }}</p></div>
-          <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">RAM</p><p class="text-text-primary font-bold">{{ formatRam(selectedNode.ram) }}</p></div>
-          <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Disk</p><p class="text-text-primary font-bold">{{ formatDisk(selectedNode.disk) }}</p></div>
-        </div>
-
-        <p v-if="nodeSuccess" class="text-xs font-bold text-emerald-400">✓ {{ nodeSuccess }}</p>
-        <p v-if="nodeError" class="text-xs font-bold text-red-400">✕ {{ nodeError }}</p>
       </div>
     </div>
 
-    <!-- Default Allocation Settings -->
-    <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-            <HardDrive :size="16" class="text-cyan-400" />
+    <!-- pterodactyl tab -->
+    <div v-if="activeTab === 'pterodactyl'" class="space-y-6">
+      <!-- Panel API Configuration -->
+      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+              <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">Panel API</h3>
+              <p class="text-[11px] text-text-muted">Pterodactyl / Revactyl connection</p>
+            </div>
           </div>
-          <div>
-            <h3 class="text-sm font-bold text-text-primary">Default Allocation</h3>
-            <p class="text-[11px] text-text-muted">Resource limits for new servers (startup depends on nest/egg)</p>
-          </div>
-        </div>
-        <button @click="saveAllocationSettings" :disabled="savingAllocation" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-          {{ savingAllocation ? 'Saving...' : 'Save Allocation' }}
-        </button>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">RAM</label>
-          <input v-model.number="allocationSettings.ram_mb" type="number" class="input-field py-2" placeholder="2048" />
-          <p class="text-[10px] text-text-muted">{{ formatRam(allocationSettings.ram_mb || 0) }}</p>
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">CPU</label>
-          <input v-model.number="allocationSettings.cpu_percent" type="number" class="input-field py-2" placeholder="100" />
-          <p class="text-[10px] text-text-muted">{{ allocationSettings.cpu_percent || 0 }}%</p>
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Disk</label>
-          <input v-model.number="allocationSettings.disk_mb" type="number" class="input-field py-2" placeholder="5120" />
-          <p class="text-[10px] text-text-muted">{{ formatDisk(allocationSettings.disk_mb || 0) }}</p>
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Swap</label>
-          <input v-model.number="allocationSettings.swap_mb" type="number" class="input-field py-2" placeholder="0" />
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Databases</label>
-          <input v-model.number="allocationSettings.databases_limit" type="number" class="input-field py-2" placeholder="0" />
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Allocations</label>
-          <input v-model.number="allocationSettings.allocations_limit" type="number" class="input-field py-2" placeholder="1" />
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Backups</label>
-          <input v-model.number="allocationSettings.backup_limit" type="number" class="input-field py-2" placeholder="0" />
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Docker Image</label>
-          <input v-model="allocationSettings.docker_image" type="text" class="input-field py-2" placeholder="ghcr.io/pterodactyl/yolks:java_25" />
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-2 gap-3">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Startup Command</label>
-          <input v-model="allocationSettings.startup_command" type="text" class="input-field py-2" placeholder="Auto from nest/egg if blank" />
-          <p class="text-[10px] text-text-muted">Leave blank — startup comes from egg config</p>
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Auto Start</label>
-          <select v-model="allocationSettings.auto_start" class="input-field py-2">
-            <option :value="1">Yes</option>
-            <option :value="0">No</option>
-          </select>
-        </div>
-      </div>
-
-      <p v-if="allocationSuccess" class="text-xs font-bold text-emerald-400">✓ {{ allocationSuccess }}</p>
-      <p v-if="allocationError" class="text-xs font-bold text-red-400">✕ {{ allocationError }}</p>
-    </div>
-
-    <!-- Panel API Configuration -->
-    <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-            <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-text-primary">Panel API</h3>
-            <p class="text-[11px] text-text-muted">Pterodactyl / Revactyl connection</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button @click="testPterodactyl" :disabled="testingPtero" class="px-3 py-1.5 text-[10px] font-bold text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/10 disabled:opacity-40 transition-colors">
-            {{ testingPtero ? 'Testing...' : 'Test' }}
-          </button>
-          <button @click="savePterodactylConfig" :disabled="savingPtero" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-            {{ savingPtero ? 'Saving...' : 'Save Config' }}
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Panel Type</label>
-          <select v-model="pteroConfig.panelType" class="input-field py-2">
-            <option value="pterodactyl">Pterodactyl</option>
-            <option value="revactyl">Revactyl</option>
-          </select>
-        </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Panel URL</label>
-          <input v-model="pteroConfig.panelUrl" type="text" placeholder="https://panel.example.com" class="input-field py-2" />
-        </div>
-        <div class="space-y-1 md:col-span-2">
-          <label class="text-[10px] font-bold text-text-muted uppercase">API Key</label>
           <div class="flex items-center gap-2">
+            <button @click="testPterodactyl" :disabled="testingPtero" class="px-3 py-1.5 text-[10px] font-bold text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/10 disabled:opacity-40 transition-colors">
+              {{ testingPtero ? 'Testing...' : 'Test' }}
+            </button>
+            <button @click="savePterodactylConfig" :disabled="savingPtero" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+              {{ savingPtero ? 'Saving...' : 'Save Config' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Panel Type</label>
+            <select v-model="pteroConfig.panelType" class="input-field py-2">
+              <option value="pterodactyl">Pterodactyl</option>
+              <option value="revactyl">Revactyl</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Panel URL</label>
+            <input v-model="pteroConfig.panelUrl" type="text" placeholder="https://panel.example.com" class="input-field py-2" />
+          </div>
+        </div>
+
+        <!-- API Key with masked display -->
+        <div class="space-y-2">
+          <label class="text-[10px] font-bold text-text-muted uppercase">API Key</label>
+          <!-- Show masked key when configured and not editing -->
+          <div v-if="pteroApiKeyConfigured && !pteroConfig.apiKey && !editingApiKey" class="flex items-center gap-3">
+            <div class="flex-1 flex items-center gap-2 bg-base/50 px-3 py-2 rounded-lg border border-border">
+              <Lock :size="14" class="text-accent" />
+              <span class="text-xs font-mono text-text-primary">{{ maskedApiKey }}</span>
+              <span class="flex items-center gap-1 text-emerald-400 text-[10px] font-bold">
+                <CheckCircle :size="12" :stroke-width="2.5" /> Configured
+              </span>
+            </div>
+            <button @click="editingApiKey = true" class="px-3 py-1.5 text-[10px] font-bold text-accent border border-accent/20 rounded-lg hover:bg-accent/10 transition-colors">
+              Update Key
+            </button>
+          </div>
+          <!-- Show input when editing or not configured -->
+          <div v-else class="flex items-center gap-2">
             <div class="flex-1 relative">
               <input
                 v-model="pteroConfig.apiKey"
@@ -218,72 +170,244 @@
                 <EyeOff v-else :size="14" :stroke-width="2" />
               </button>
             </div>
-            <span v-if="pteroApiKeyConfigured && !pteroConfig.apiKey" class="flex items-center gap-1 text-emerald-400 text-[10px] font-bold whitespace-nowrap">
-              <CheckCircle :size="12" :stroke-width="2.5" /> Saved
-            </span>
+            <button v-if="editingApiKey" @click="editingApiKey = false" class="px-3 py-1.5 text-[10px] font-bold text-text-muted border border-border rounded-lg hover:bg-white/[0.05] transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <!-- Show panel URL that's configured -->
+        <div v-if="pteroConfigured && pteroConfig.panelUrl" class="flex items-center gap-2 bg-base/50 px-3 py-2 rounded-lg border border-border">
+          <Globe :size="14" class="text-accent" />
+          <span class="text-[10px] text-text-muted font-bold">Configured Panel:</span>
+          <a :href="pteroConfig.panelUrl" target="_blank" class="text-xs text-accent hover:text-white font-bold transition-colors">{{ pteroConfig.panelUrl }}</a>
+        </div>
+
+        <div v-if="pteroStatus" class="p-3 rounded-lg text-xs font-medium flex items-start gap-2"
+          :class="pteroStatus.success ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'">
+          <span v-if="pteroStatus.success">✓</span>
+          <span v-else>✕</span>
+          <div class="flex-1">
+            <div>{{ pteroStatus.message }}</div>
+            <div v-if="pteroStatus.nodeCount" class="mt-1 font-bold">{{ pteroStatus.nodeCount }} nodes available</div>
           </div>
         </div>
       </div>
 
-      <div v-if="pteroStatus" class="p-3 rounded-lg text-xs font-medium flex items-start gap-2"
-        :class="pteroStatus.success ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'">
-        <span v-if="pteroStatus.success">✓</span>
-        <span v-else>✕</span>
-        <div class="flex-1">
-          <div>{{ pteroStatus.message }}</div>
-          <div v-if="pteroStatus.nodeCount" class="mt-1 font-bold">{{ pteroStatus.nodeCount }} nodes available</div>
+      <!-- Default Server Node -->
+      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+              <Server :size="16" class="text-orange-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">Default Server Node</h3>
+              <p class="text-[11px] text-text-muted">Pterodactyl node for new deployments</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button @click="loadNodes" :disabled="loadingNodes" class="px-3 py-1.5 text-[10px] font-bold text-orange-400 border border-orange-500/20 rounded-lg hover:bg-orange-500/10 disabled:opacity-40 transition-colors">
+              {{ loadingNodes ? 'Loading...' : 'Refresh' }}
+            </button>
+            <button @click="saveDefaultNode" :disabled="savingNode || !selectedNodeId" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+              {{ savingNode ? 'Saving...' : 'Save Node' }}
+            </button>
+          </div>
+        </div>
+
+        <div v-if="loadingNodes" class="flex items-center gap-3 py-4">
+          <div class="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-xs text-text-muted">Fetching nodes from Pterodactyl...</p>
+        </div>
+
+        <div v-else-if="nodes.length === 0" class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 text-xs">
+          <p class="text-yellow-400 font-bold">No nodes found. Configure Panel API first.</p>
+        </div>
+
+        <div v-else class="space-y-3">
+          <select v-model="selectedNodeId" class="input-field py-2">
+            <option :value="null" disabled>Select a node...</option>
+            <option v-for="node in nodes" :key="node.id" :value="node.id">
+              {{ node.name || 'Node #' + node.id }} — {{ node.fqdn || 'unknown' }} ({{ formatRam(node.memory || node.ram) }}, {{ formatDisk(node.disk || node.diskSpace) }})
+            </option>
+          </select>
+
+          <div v-if="selectedNode" class="bg-base/50 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Node</p><p class="text-text-primary font-bold">{{ selectedNode.name || 'Node #' + selectedNode.id }}</p></div>
+            <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Host</p><p class="text-text-primary font-bold">{{ selectedNode.fqdn || '—' }}</p></div>
+            <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">RAM</p><p class="text-text-primary font-bold">{{ formatRam(selectedNode.memory || selectedNode.ram) }}</p></div>
+            <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Disk</p><p class="text-text-primary font-bold">{{ formatDisk(selectedNode.disk || selectedNode.diskSpace) }}</p></div>
+          </div>
+
+          <p v-if="nodeSuccess" class="text-xs font-bold text-emerald-400">✓ {{ nodeSuccess }}</p>
+          <p v-if="nodeError" class="text-xs font-bold text-red-400">✕ {{ nodeError }}</p>
         </div>
       </div>
     </div>
 
-    <!-- Branding -->
-    <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-          <Layers :size="16" class="text-purple-400" />
+    <!-- email / smtp tab -->
+    <div v-if="activeTab === 'email'" class="space-y-6">
+      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <Mail :size="16" class="text-blue-400" />
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-text-primary">Email / SMTP Settings</h3>
+            <p class="text-[11px] text-text-muted">Configure email delivery for notifications and verification</p>
+          </div>
         </div>
-        <div>
-          <h3 class="text-sm font-bold text-text-primary">Branding</h3>
-          <p class="text-[11px] text-text-muted">Login page image & favicon</p>
-        </div>
-      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="space-y-2">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Login Image URL</label>
-          <div class="flex gap-2">
-            <input v-model="loginImageUrl" type="text" placeholder="https://example.com/bg.png" class="input-field py-2 flex-1" />
-            <button @click="saveLoginImage" :disabled="savingLoginImage" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-              {{ savingLoginImage ? '...' : 'Save' }}
-            </button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Host</label>
+            <input :value="store.settings.smtp_host || ''" @change="updateSetting('smtp_host', $event.target.value)" type="text" class="input-field py-2" placeholder="smtp.example.com" />
           </div>
-          <div v-if="loginImageUrl" class="mt-2 rounded-lg overflow-hidden border border-border max-w-[180px]">
-            <img :src="loginImageUrl" @error="loginImageError = true" @load="loginImageError = false" class="w-full h-20 object-cover" />
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Port</label>
+            <input :value="store.settings.smtp_port || ''" @change="updateSetting('smtp_port', $event.target.value)" type="number" class="input-field py-2" placeholder="587" />
           </div>
-        </div>
-        <div class="space-y-2">
-          <label class="text-[10px] font-bold text-text-muted uppercase">Favicon URL</label>
-          <div class="flex gap-2">
-            <input v-model="faviconUrl" type="text" placeholder="https://example.com/favicon.ico" class="input-field py-2 flex-1" />
-            <button @click="saveFavicon" :disabled="savingFavicon" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-              {{ savingFavicon ? '...' : 'Save' }}
-            </button>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP User</label>
+            <input :value="store.settings.smtp_user || ''" @change="updateSetting('smtp_user', $event.target.value)" type="text" class="input-field py-2" placeholder="user@example.com" />
           </div>
-          <div v-if="faviconUrl" class="flex items-center gap-2 mt-2">
-            <img :src="faviconUrl" @error="faviconError = true" @load="faviconError = false" class="w-6 h-6 rounded border border-border" />
-            <span v-if="faviconError" class="text-[10px] text-red-400">Invalid</span>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">SMTP Password</label>
+            <input :value="store.settings.smtp_pass || ''" @change="updateSetting('smtp_pass', $event.target.value)" type="password" class="input-field py-2" placeholder="••••••••" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">From Email</label>
+            <input :value="store.settings.smtp_from || ''" @change="updateSetting('smtp_from', $event.target.value)" type="email" class="input-field py-2" placeholder="noreply@example.com" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">From Name</label>
+            <input :value="store.settings.smtp_from_name || ''" @change="updateSetting('smtp_from_name', $event.target.value)" type="text" class="input-field py-2" placeholder="My Panel" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- All Settings Table -->
+    <!-- server defaults tab -->
+    <div v-if="activeTab === 'server'" class="space-y-6">
+      <!-- Default Allocation Settings -->
+      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+              <HardDrive :size="16" class="text-cyan-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">Default Allocation</h3>
+              <p class="text-[11px] text-text-muted">Resource limits for new servers (startup depends on nest/egg)</p>
+            </div>
+          </div>
+          <button @click="saveAllocationSettings" :disabled="savingAllocation" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+            {{ savingAllocation ? 'Saving...' : 'Save Allocation' }}
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">RAM</label>
+            <input v-model.number="allocationSettings.ram_mb" type="number" class="input-field py-2" placeholder="2048" />
+            <p class="text-[10px] text-text-muted">{{ formatRam(allocationSettings.ram_mb || 0) }}</p>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">CPU</label>
+            <input v-model.number="allocationSettings.cpu_percent" type="number" class="input-field py-2" placeholder="100" />
+            <p class="text-[10px] text-text-muted">{{ allocationSettings.cpu_percent || 0 }}%</p>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Disk</label>
+            <input v-model.number="allocationSettings.disk_mb" type="number" class="input-field py-2" placeholder="5120" />
+            <p class="text-[10px] text-text-muted">{{ formatDisk(allocationSettings.disk_mb || 0) }}</p>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Swap</label>
+            <input v-model.number="allocationSettings.swap_mb" type="number" class="input-field py-2" placeholder="0" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Databases</label>
+            <input v-model.number="allocationSettings.databases_limit" type="number" class="input-field py-2" placeholder="0" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Allocations</label>
+            <input v-model.number="allocationSettings.allocations_limit" type="number" class="input-field py-2" placeholder="1" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Backups</label>
+            <input v-model.number="allocationSettings.backup_limit" type="number" class="input-field py-2" placeholder="0" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Docker Image</label>
+            <input v-model="allocationSettings.docker_image" type="text" class="input-field py-2" placeholder="ghcr.io/pterodactyl/yolks:java_25" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Startup Command</label>
+            <input v-model="allocationSettings.startup_command" type="text" class="input-field py-2" placeholder="Auto from nest/egg if blank" />
+            <p class="text-[10px] text-text-muted">Leave blank — startup comes from egg config</p>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Auto Start</label>
+            <select v-model="allocationSettings.auto_start" class="input-field py-2">
+              <option :value="1">Yes</option>
+              <option :value="0">No</option>
+            </select>
+          </div>
+        </div>
+
+        <p v-if="allocationSuccess" class="text-xs font-bold text-emerald-400">✓ {{ allocationSuccess }}</p>
+        <p v-if="allocationError" class="text-xs font-bold text-red-400">✕ {{ allocationError }}</p>
+      </div>
+    </div>
+
+    <!-- security tab -->
+    <div v-if="activeTab === 'security'" class="space-y-6">
+      <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+            <Shield :size="16" class="text-red-400" />
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-text-primary">Security Settings</h3>
+            <p class="text-[11px] text-text-muted">Manage security and access control</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Registration Open</label>
+            <select :value="store.settings.registration_open || 'true'" @change="updateSetting('registration_open', $event.target.value)" class="input-field py-2">
+              <option value="true">Open</option>
+              <option value="false">Closed</option>
+            </select>
+            <p class="text-[10px] text-text-muted">Allow new user registrations</p>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Require Email Verification</label>
+            <select :value="store.settings.require_email_verification || 'false'" @change="updateSetting('require_email_verification', $event.target.value)" class="input-field py-2">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- all settings table (always visible) -->
     <div class="bg-base-secondary border border-border rounded-xl overflow-hidden">
       <div class="px-5 py-3 border-b border-border flex items-center justify-between">
         <h3 class="text-sm font-bold text-text-primary">All Settings</h3>
         <span class="text-[10px] text-text-muted font-bold">{{ Object.keys(store.settings).length }} keys</span>
       </div>
-      <div v-if="Object.keys(store.settings).length > 0" class="divide-y divide-border/50">
+      <div v-if="Object.keys(store.settings).length > 0" class="divide-y divide-border/50 max-h-80 overflow-y-auto">
         <div
           v-for="(value, key) in store.settings"
           :key="key"
@@ -326,7 +450,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
-import { AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive, Eye, EyeOff, Layers } from 'lucide-vue-next'
+import { AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive, Eye, EyeOff, Layers, Lock, Globe, Mail, Shield } from 'lucide-vue-next'
 
 const store = useAdminStore()
 const editingKey = ref(null)
@@ -334,6 +458,15 @@ const editValue = ref('')
 const saving = ref(false)
 const error = ref('')
 const success = ref('')
+
+const activeTab = ref('general')
+const tabs = [
+  { id: 'general', label: '⚙️ General' },
+  { id: 'pterodactyl', label: '🖥️ Pterodactyl' },
+  { id: 'email', label: '📧 Email / SMTP' },
+  { id: 'server', label: '📦 Server Defaults' },
+  { id: 'security', label: '🔒 Security' },
+]
 
 const savingAfk = ref(false)
 const afkCoins = ref(10)
@@ -376,6 +509,8 @@ const pteroStatus = ref(null)
 const pteroConfigured = ref(false)
 const pteroApiKeyConfigured = ref(false)
 const showApiKey = ref(false)
+const editingApiKey = ref(false)
+const maskedApiKey = ref('')
 
 const selectedNode = computed(() => {
   if (!selectedNodeId.value || !nodes.value.length) return null
@@ -383,11 +518,13 @@ const selectedNode = computed(() => {
 })
 
 function formatRam(mb) {
+  if (!mb) return '0 MB'
   if (mb >= 1024) return (mb / 1024).toFixed(0) + ' GB'
   return mb + ' MB'
 }
 
 function formatDisk(mb) {
+  if (!mb) return '0 MB'
   if (mb >= 1024) return (mb / 1024).toFixed(0) + ' GB'
   return mb + ' MB'
 }
@@ -407,7 +544,7 @@ async function saveDefaultNode() {
   savingNode.value = true; nodeError.value = ''; nodeSuccess.value = ''
   try {
     await store.updateSetting('default_node_id', selectedNodeId.value.toString())
-    nodeSuccess.value = `Default node: "${selectedNode.value?.name}" (ID: ${selectedNodeId.value})`
+    nodeSuccess.value = `Default node: "${selectedNode.value?.name || 'Node #' + selectedNodeId.value}" (ID: ${selectedNodeId.value})`
   } catch (err) { nodeError.value = err.response?.data?.message || 'Failed' }
   finally { savingNode.value = false }
 }
@@ -483,6 +620,14 @@ async function saveAfkRates() {
   finally { savingAfk.value = false }
 }
 
+async function updateSetting(key, value) {
+  error.value = ''; success.value = ''
+  try {
+    await store.updateSetting(key, value)
+    success.value = `"${key}" updated`
+  } catch (err) { error.value = err.response?.data?.message || 'Failed' }
+}
+
 function startEdit(key, value) {
   editingKey.value = key; editValue.value = value; error.value = ''; success.value = ''
 }
@@ -504,6 +649,7 @@ async function loadPterodactylConfig() {
     pteroConfig.value.panelType = data.panelType || 'pterodactyl'
     pteroConfigured.value = data.configured || false
     pteroApiKeyConfigured.value = data.apiKeyConfigured || false
+    maskedApiKey.value = data.maskedApiKey || data.masked_key || ''
   } catch (err) { console.error('Failed to load Pterodactyl config:', err) }
 }
 
@@ -515,6 +661,7 @@ async function savePterodactylConfig() {
     success.value = 'Panel config saved!'
     pteroConfigured.value = true
     pteroConfig.value.apiKey = ''
+    editingApiKey.value = false
     await loadPterodactylConfig()
   } catch (err) { error.value = err.response?.data?.message || 'Failed' }
   finally { savingPtero.value = false }

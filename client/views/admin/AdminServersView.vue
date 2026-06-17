@@ -15,7 +15,7 @@
       <div class="w-8 h-8 border-[3px] border-accent border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <!-- Server Cards (Pterodactyl Style) -->
+    <!-- Server Cards -->
     <div v-else-if="filteredServers.length > 0" class="space-y-3">
       <div
         v-for="server in filteredServers"
@@ -32,8 +32,8 @@
             <!-- Server Info -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent flex-shrink-0">
-                  <Server :size="14" :stroke-width="2" />
+                <div class="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent flex-shrink-0">
+                  <Server :size="16" :stroke-width="2" />
                 </div>
                 <div class="min-w-0">
                   <p class="text-sm font-bold text-text-primary truncate">{{ server.serverName }}</p>
@@ -42,19 +42,28 @@
               </div>
             </div>
 
-            <!-- Resources -->
+            <!-- Resources with Icons -->
             <div class="hidden md:flex items-center gap-5 flex-shrink-0">
-              <div class="text-center">
-                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">CPU</p>
-                <p class="text-xs font-bold text-text-primary">{{ server.cpuPercent }}%</p>
+              <div class="flex items-center gap-2">
+                <Cpu :size="14" :stroke-width="2" class="text-blue-400" />
+                <div class="text-center">
+                  <p class="text-[9px] text-text-muted uppercase font-bold">CPU</p>
+                  <p class="text-xs font-bold text-text-primary">{{ server.cpuPercent }}%</p>
+                </div>
               </div>
-              <div class="text-center">
-                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">RAM</p>
-                <p class="text-xs font-bold text-text-primary">{{ formatRam(server.ramMb) }}</p>
+              <div class="flex items-center gap-2">
+                <MemoryStick :size="14" :stroke-width="2" class="text-purple-400" />
+                <div class="text-center">
+                  <p class="text-[9px] text-text-muted uppercase font-bold">RAM</p>
+                  <p class="text-xs font-bold text-text-primary">{{ formatRam(server.ramMb) }}</p>
+                </div>
               </div>
-              <div class="text-center">
-                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Disk</p>
-                <p class="text-xs font-bold text-text-primary">{{ formatDisk(server.diskMb) }}</p>
+              <div class="flex items-center gap-2">
+                <HardDrive :size="14" :stroke-width="2" class="text-orange-400" />
+                <div class="text-center">
+                  <p class="text-[9px] text-text-muted uppercase font-bold">Disk</p>
+                  <p class="text-xs font-bold text-text-primary">{{ formatDisk(server.diskMb) }}</p>
+                </div>
               </div>
             </div>
 
@@ -63,51 +72,64 @@
               <span :class="statusBadgeClass(server)" class="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider hidden sm:inline-block">
                 {{ getStatusLabel(server) }}
               </span>
-              <div class="flex items-center gap-1">
+              <div class="flex items-center gap-1.5">
                 <a v-if="server.pterodactylServerId && pteroUrl" :href="`${pteroUrl}/admin/servers/view/${server.pterodactylServerId}`" target="_blank"
-                  class="p-1.5 rounded-lg text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all" title="Panel">
-                  <ExternalLink :size="14" :stroke-width="2" />
+                  class="p-2 rounded-lg text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all" title="Panel">
+                  <ExternalLink :size="16" :stroke-width="2" />
                 </a>
-                <!-- Suspend/Unsuspend -->
+                <!-- Suspend/Unsuspend - BIGGER buttons -->
                 <button v-if="server.status === 'active'" @click="handleSuspend(server)"
-                  class="px-2.5 py-1 text-[9px] font-bold text-yellow-400 border border-yellow-500/20 rounded-lg hover:bg-yellow-500/10 transition-colors" title="Suspend">
-                  Suspend
+                  class="px-3.5 py-1.5 text-[11px] font-bold text-yellow-400 border border-yellow-500/30 rounded-lg hover:bg-yellow-500/15 transition-colors flex items-center gap-1.5" title="Suspend">
+                  <Ban :size="13" :stroke-width="2.5" /> Suspend
                 </button>
                 <button v-else @click="handleUnsuspend(server)"
-                  class="px-2.5 py-1 text-[9px] font-bold text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/10 transition-colors" title="Unsuspend">
-                  Unban
+                  class="px-3.5 py-1.5 text-[11px] font-bold text-emerald-400 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/15 transition-colors flex items-center gap-1.5" title="Unsuspend">
+                  <CheckCircle :size="13" :stroke-width="2.5" /> Unban
                 </button>
                 <button @click="handleDelete(server)"
-                  class="p-1.5 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all" title="Delete">
-                  <Trash2 :size="14" :stroke-width="2" />
+                  class="px-3.5 py-1.5 text-[11px] font-bold text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/15 transition-colors flex items-center gap-1.5" title="Delete">
+                  <Trash2 :size="13" :stroke-width="2.5" /> Delete
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Admin Details Row -->
-          <div class="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+          <!-- Admin Details Row - RAM/Disk in middle -->
+          <div class="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 sm:grid-cols-5 gap-3 text-[11px]">
             <div>
               <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Owner</p>
               <p class="text-text-primary font-bold">{{ server.user?.username || '—' }}</p>
-              <p class="text-text-muted">Login: {{ formatDateTime(server.user?.last_active) }}</p>
             </div>
-            <div>
-              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Created</p>
-              <p class="text-text-primary font-bold">{{ formatDate(server.createdAt) }}</p>
-              <p class="text-text-muted">{{ formatTimeAgo(server.createdAt) }}</p>
+            <div class="flex items-center gap-2">
+              <MemoryStick :size="12" :stroke-width="2" class="text-purple-400 shrink-0" />
+              <div>
+                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">RAM</p>
+                <p class="text-text-primary font-bold">{{ formatRam(server.ramMb) }}</p>
+              </div>
             </div>
-            <div>
-              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Expires</p>
-              <p class="text-text-primary font-bold">{{ formatDate(server.expiresAt) }}</p>
-              <p v-if="getDaysRemaining(server) !== null" :class="getDaysRemainingClass(server)" class="font-bold">
-                {{ getDaysRemainingLabel(server) }}
-              </p>
+            <div class="flex items-center gap-2">
+              <HardDrive :size="12" :stroke-width="2" class="text-orange-400 shrink-0" />
+              <div>
+                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Disk</p>
+                <p class="text-text-primary font-bold">{{ formatDisk(server.diskMb) }}</p>
+              </div>
             </div>
-            <div>
-              <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Last Active</p>
-              <p class="text-text-primary font-bold">{{ formatDateTime(server.lastActive) || 'Never' }}</p>
-              <p class="text-text-muted">{{ formatTimeAgo(server.lastActive) }}</p>
+            <div class="flex items-center gap-2">
+              <Calendar :size="12" :stroke-width="2" class="text-blue-400 shrink-0" />
+              <div>
+                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Created on</p>
+                <p class="text-text-primary font-bold">{{ formatDate(server.createdAt) }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <Clock :size="12" :stroke-width="2" class="text-amber-400 shrink-0" />
+              <div>
+                <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Expires on</p>
+                <p class="text-text-primary font-bold">{{ formatDate(server.expiresAt) }}</p>
+                <p v-if="getDaysRemaining(server) !== null" :class="getDaysRemainingClass(server)" class="font-bold">
+                  {{ getDaysRemainingLabel(server) }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -126,7 +148,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
-import { Server, ExternalLink, Trash2 } from 'lucide-vue-next'
+import { Server, ExternalLink, Trash2, MemoryStick, Cpu, HardDrive, Calendar, Clock, Ban, CheckCircle } from 'lucide-vue-next'
 
 const store = useAdminStore()
 const pteroUrl = ref('')
@@ -231,17 +253,27 @@ function getStatusLabel(server) {
 }
 
 async function handleSuspend(server) {
-  if (!confirm(`Suspend "${server.serverName}"?`)) return
-  try { await store.suspendServer(server.id) } catch {}
+  const reason = prompt(`Suspend "${server.serverName}"?\n\nEnter reason (optional):`)
+  if (reason === null) return // cancelled
+  try {
+    await client.post(`/admin/servers/${server.id}/suspend`, { reason: reason || 'Suspended by admin' })
+    await store.fetchServers()
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to suspend')
+  }
 }
 
 async function handleUnsuspend(server) {
   if (!confirm(`Unban "${server.serverName}"?`)) return
-  try { await store.unsuspendServer(server.id) } catch {}
+  try { await store.unsuspendServer(server.id) } catch (err) {
+    alert(err.response?.data?.message || 'Failed to unsuspend')
+  }
 }
 
 async function handleDelete(server) {
   if (!confirm(`Delete "${server.serverName}"? This is permanent.`)) return
-  try { await client.post(`/admin/servers/${server.id}/delete`); await store.fetchServers() } catch {}
+  try { await client.post(`/admin/servers/${server.id}/delete`); await store.fetchServers() } catch (err) {
+    alert(err.response?.data?.message || 'Failed to delete')
+  }
 }
 </script>

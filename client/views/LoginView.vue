@@ -151,6 +151,9 @@ async function handleLogin() {
     if (result.requires2FA) {
       requires2FA.value = true
       twoFAError.value = ''
+    } else if (result.requiresEmailVerification) {
+      // redirect to verification pending page with email
+      router.push({ path: '/verify', query: { email: result.email } })
     } else {
       router.push('/home')
     }

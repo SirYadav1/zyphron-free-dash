@@ -20,7 +20,7 @@
             <Server :size="20" :stroke-width="2" />
           </div>
           <div>
-            <p class="text-label">Servers</p>
+            <p class="text-label">Total Servers</p>
             <p class="text-2xl font-bold text-text-primary tabular-nums">{{ animatedStats.servers }}</p>
           </div>
         </div>
@@ -28,24 +28,12 @@
 
       <div class="card-surface p-5 space-y-2 card-hover">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
-            <Coins :size="20" :stroke-width="2" />
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+            <CheckCircle :size="20" :stroke-width="2" />
           </div>
           <div>
-            <p class="text-label">Credits</p>
-            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ animatedStats.credits }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card-surface p-5 space-y-2 card-hover">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500">
-            <ShieldCheck :size="20" :stroke-width="2" />
-          </div>
-          <div>
-            <p class="text-label">Server Slots</p>
-            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ animatedStats.slots }} / {{ authStore.user?.serverLimit || 1 }}</p>
+            <p class="text-label">Active</p>
+            <p class="text-2xl font-bold text-emerald-400 tabular-nums">{{ animatedStats.active }}</p>
           </div>
         </div>
       </div>
@@ -53,11 +41,23 @@
       <div class="card-surface p-5 space-y-2 card-hover">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500">
-            <Activity :size="20" :stroke-width="2" />
+            <Clock :size="20" :stroke-width="2" />
           </div>
           <div>
-            <p class="text-label">Uptime</p>
-            <p class="text-2xl font-bold text-text-primary tabular-nums">99.99<span class="text-sm text-text-muted">%</span></p>
+            <p class="text-label">Expiring Soon</p>
+            <p class="text-2xl font-bold text-yellow-400 tabular-nums">{{ expiringSoonCount }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-surface p-5 space-y-2 card-hover">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+            <Coins :size="20" :stroke-width="2" />
+          </div>
+          <div>
+            <p class="text-label">Credits</p>
+            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ animatedStats.credits }}</p>
           </div>
         </div>
       </div>
@@ -78,31 +78,56 @@
         <p class="text-sm text-text-muted leading-relaxed">Welcome to Zyphron. Configure this message in Settings.</p>
       </div>
 
-      <!-- Useful Links -->
+      <!-- Useful Links from API -->
       <div class="card-surface p-6 card-hover">
         <div class="flex items-center gap-2 mb-4">
           <Link :size="16" :stroke-width="2" class="text-accent" />
           <h3 class="text-sm font-bold text-text-primary uppercase tracking-wider">Useful Links</h3>
         </div>
         <div class="space-y-2">
-          <a :href="serverStats.panelUrl || 'https://console.zyphron.cloud'" target="_blank" rel="noopener" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group">
+          <!-- Dynamic links from API -->
+          <a
+            v-for="link in usefulLinks"
+            :key="link.id"
+            :href="link.link"
+            target="_blank"
+            rel="noopener"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group"
+          >
             <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
-              <Terminal :size="12" :stroke-width="2" />
+              <ExternalLink :size="12" :stroke-width="2" />
             </span>
-            <span class="group-hover:text-text-primary transition-colors">Pterodactyl Panel</span>
+            <div class="flex-1 min-w-0">
+              <span class="group-hover:text-text-primary transition-colors truncate block">{{ link.title }}</span>
+              <span v-if="link.description" class="text-[10px] text-text-muted/60 truncate block">{{ link.description }}</span>
+            </div>
           </a>
-          <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group">
-            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
-              <Database :size="12" :stroke-width="2" />
-            </span>
-            <span class="group-hover:text-text-primary transition-colors">phpMyAdmin</span>
-          </a>
-          <a href="https://discord.gg/zyphron" target="_blank" rel="noopener" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group">
-            <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
-              <MessageSquare :size="12" :stroke-width="2" />
-            </span>
-            <span class="group-hover:text-text-primary transition-colors">Discord</span>
-          </a>
+
+          <!-- Fallback static links if no API links -->
+          <template v-if="usefulLinks.length === 0">
+            <a
+              :href="serverStats.panelUrl || 'https://console.zyphron.cloud'"
+              target="_blank"
+              rel="noopener"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group"
+            >
+              <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
+                <Terminal :size="12" :stroke-width="2" />
+              </span>
+              <span class="group-hover:text-text-primary transition-colors">Pterodactyl Panel</span>
+            </a>
+            <a
+              href="https://discord.gg/zyphron"
+              target="_blank"
+              rel="noopener"
+              class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group"
+            >
+              <span class="w-6 h-6 rounded bg-accent/10 flex items-center justify-center text-accent">
+                <MessageSquare :size="12" :stroke-width="2" />
+              </span>
+              <span class="group-hover:text-text-primary transition-colors">Discord</span>
+            </a>
+          </template>
         </div>
       </div>
     </div>
@@ -120,22 +145,22 @@
           :style="{ animationDelay: (index * 0.08) + 's' }"
         >
 
-          <div class="flex items-start justify-between mb-6">
-            <div class="space-y-1">
+          <div class="flex items-start justify-between mb-4">
+            <div class="space-y-1 min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <h4 class="font-bold text-text-primary group-hover:text-accent transition-colors">{{ server.serverName }}</h4>
-                <a v-if="server.identifier" :href="`${store.stats.panelUrl || 'https://console.zyphron.cloud'}/server/${server.identifier}`" target="_blank" class="p-1 rounded bg-white/5 hover:bg-white/10 text-text-muted hover:text-accent transition-colors">
+                <h4 class="font-bold text-text-primary group-hover:text-accent transition-colors truncate">{{ server.serverName }}</h4>
+                <a v-if="server.identifier" :href="`${serverStats.panelUrl || 'https://console.zyphron.cloud'}/server/${server.identifier}`" target="_blank" class="p-1 rounded bg-white/5 hover:bg-white/10 text-text-muted hover:text-accent transition-colors flex-shrink-0">
                   <ExternalLink :size="14" :stroke-width="2" />
                 </a>
               </div>
             </div>
-            <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-base border border-border">
+            <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-base border border-border flex-shrink-0">
               <div :class="statusColorClass(server.status)" class="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]"></div>
               <span class="text-[10px] font-bold uppercase tracking-wider" :class="statusTextClass(server.status)">{{ server.status }}</span>
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="grid grid-cols-3 gap-4 mb-4">
             <div class="space-y-1">
               <p class="text-label opacity-40">CPU</p>
               <p class="text-sm font-bold text-text-primary">{{ server.cpuPercent || 0 }}%</p>
@@ -153,7 +178,7 @@
           <div class="pt-4 border-t border-border flex items-center justify-between">
             <span class="text-[11px] font-medium text-text-muted">{{ formatDate(server.createdAt) }}</span>
             <div class="flex items-center gap-4">
-              <router-link :to="`/store/${server.id}`" class="text-xs font-bold text-text-muted hover:text-accent transition-colors">Upgrade</router-link>
+              <router-link :to="`/servers/${server.id}/renew`" class="text-xs font-bold text-text-muted hover:text-accent transition-colors">Renew</router-link>
               <router-link :to="`/servers/${server.id}/settings`" class="text-xs font-bold text-text-muted hover:text-accent transition-colors">Settings</router-link>
             </div>
           </div>
@@ -170,7 +195,7 @@
         <h3 class="text-lg font-bold text-text-primary">No Servers Yet</h3>
         <p class="text-sm text-text-muted max-w-sm mx-auto">You haven't deployed any servers yet. Create your first server to get started.</p>
       </div>
-      <router-link to="/servers/create" class="btn-primary inline-flex">Deploy Your First Server</router-link>
+      <router-link to="/services" class="btn-primary inline-flex">Deploy Your First Server</router-link>
     </div>
 
     <!-- Partner Program & Activity Logs -->
@@ -210,19 +235,19 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useServersStore } from '../stores/servers'
 import { useAuthStore } from '../stores/auth'
+import client from '../api/client'
 import {
   Plus,
   Server,
   Coins,
-  ShieldCheck,
-  Activity,
+  Clock,
+  CheckCircle,
   Megaphone,
   Link,
   Terminal,
-  Database,
   MessageSquare,
   ExternalLink,
   Users,
@@ -233,12 +258,13 @@ const store = useServersStore()
 const authStore = useAuthStore()
 
 const serverStats = computed(() => store.stats)
+const usefulLinks = ref([])
 
 // animated counter logic
 const animatedStats = reactive({
   servers: 0,
+  active: 0,
   credits: 0,
-  slots: 0,
 })
 
 function animateCounter(key, target) {
@@ -257,41 +283,58 @@ function animateCounter(key, target) {
   requestAnimationFrame(step)
 }
 
+// count servers expiring within 3 days
+const expiringSoonCount = computed(() => {
+  const now = new Date()
+  const threeDays = 3 * 24 * 60 * 60 * 1000
+  return store.servers.filter(s => {
+    if (!s.expiresAt) return false
+    const expiry = new Date(s.expiresAt)
+    const diff = expiry.getTime() - now.getTime()
+    return diff > 0 && diff < threeDays
+  }).length
+})
+
 onMounted(async () => {
   try {
     await Promise.all([store.fetchServers(), store.fetchStats()])
+  } catch {}
+  // Fetch useful links from API
+  try {
+    const { data } = await client.get('/useful-links')
+    usefulLinks.value = Array.isArray(data) ? data.filter(l => l.position !== 'sidebar' || !l.position) : []
   } catch {
-    // Error handled in store
+    // Fallback to static links
   }
 })
 
 // animate when data changes
 watch(() => store.stats, (newStats) => {
   if (newStats) {
-    animateCounter('servers', newStats.active || 0)
+    animateCounter('servers', newStats.total || 0)
+    animateCounter('active', newStats.active || 0)
   }
 }, { immediate: true })
 
 watch(() => authStore.user, (user) => {
   if (user) {
     animateCounter('credits', user.coins || 0)
-    animateCounter('slots', user.serverLimit || 1)
   }
 }, { immediate: true })
 
 function statusColorClass(status) {
   return {
-    active: 'text-accent bg-accent',
-    suspended: 'text-yellow-500 bg-yellow-500',
-    expired: 'text-red-500 bg-red-500',
+    active: 'text-emerald-500 bg-emerald-500',
+    suspended: 'text-red-500 bg-red-500',
+    expired: 'text-yellow-500 bg-yellow-500',
   }[status] || 'text-white/20 bg-white/20'
 }
 
 function statusTextClass(status) {
   return {
-    active: 'text-accent',
-    suspended: 'text-yellow-500',
-    expired: 'text-red-400',
+    active: 'text-emerald-400',
+    suspended: 'text-red-400',
+    expired: 'text-yellow-400',
   }[status] || 'text-text-muted'
 }
 

@@ -1,8 +1,15 @@
 <template>
   <div class="max-w-4xl mx-auto space-y-10">
-    <div class="space-y-1">
-      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Create Ticket</h2>
-      <p class="text-sm text-text-muted">Submit a support request to our team.</p>
+    <div class="flex items-center gap-3">
+      <router-link to="/ticket" class="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </router-link>
+      <div class="space-y-1">
+        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Create Ticket</h2>
+        <p class="text-sm text-text-muted">Submit a support request to our team.</p>
+      </div>
     </div>
 
     <div v-if="error" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-sm font-bold">
@@ -46,9 +53,9 @@
         </div>
 
         <div class="space-y-1.5">
-          <label for="server" class="text-label">Server (optional)</label>
+          <label for="server" class="text-label">Related Server (optional)</label>
           <select id="server" v-model="form.serverId" class="input-field">
-            <option :value="null">No server</option>
+            <option :value="null">No specific server</option>
             <option v-for="s in servers" :key="s.id" :value="s.id">{{ s.serverName }}</option>
           </select>
         </div>
@@ -119,7 +126,6 @@ async function handleSubmit() {
       priority: form.priority,
       message: form.message.trim(),
     }
-    // BUG-C4 FIX: Send 'server' as string to match backend DTO (was serverId which got stripped)
     if (form.serverId) {
       payload.server = String(form.serverId)
     }
