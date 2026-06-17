@@ -29,6 +29,7 @@ interface CreateServerInput {
   ram: number;
   cpu: number;
   disk: number;
+  swap?: number;
   databasesLimit: number;
   allocationsLimit: number;
   backupLimit: number;
@@ -298,7 +299,7 @@ export class PterodactylService {
       environment: eggData.environment,
       limits: {
         memory: input.ram,
-        swap: 0,
+        swap: input.swap || 0,
         cpu: input.cpu,
         disk: input.disk,
         io: 500,

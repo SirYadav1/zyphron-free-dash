@@ -135,6 +135,91 @@
       </div>
     </div>
 
+    <!-- Default Allocation Settings Section -->
+    <div class="card-surface p-6 space-y-6 border border-accent/10 relative overflow-hidden">
+      <div class="absolute inset-0 bg-cyan-500/[0.02] pointer-events-none"></div>
+      <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <HardDrive :size="18" :stroke-width="2" class="text-cyan-400" /> Default Allocation Settings
+          </h3>
+          <p class="text-sm text-text-muted">Configure default resource limits for all new servers. These apply when no specific product is selected.</p>
+        </div>
+        <button 
+          @click="saveAllocationSettings" 
+          :disabled="savingAllocation"
+          class="btn-primary px-6 py-2 text-xs"
+        >
+          {{ savingAllocation ? 'Saving...' : 'Save Settings' }}
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">RAM (MB)</label>
+          <input v-model.number="allocationSettings.ram_mb" type="number" class="input-field py-2" placeholder="2048" />
+          <p class="text-[10px] text-text-muted">{{ formatRam(allocationSettings.ram_mb || 0) }}</p>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">CPU (%)</label>
+          <input v-model.number="allocationSettings.cpu_percent" type="number" class="input-field py-2" placeholder="100" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Disk (MB)</label>
+          <input v-model.number="allocationSettings.disk_mb" type="number" class="input-field py-2" placeholder="5120" />
+          <p class="text-[10px] text-text-muted">{{ formatDisk(allocationSettings.disk_mb || 0) }}</p>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Swap (MB)</label>
+          <input v-model.number="allocationSettings.swap_mb" type="number" class="input-field py-2" placeholder="0" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Databases</label>
+          <input v-model.number="allocationSettings.databases_limit" type="number" class="input-field py-2" placeholder="0" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Allocations</label>
+          <input v-model.number="allocationSettings.allocations_limit" type="number" class="input-field py-2" placeholder="1" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Backups</label>
+          <input v-model.number="allocationSettings.backup_limit" type="number" class="input-field py-2" placeholder="0" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Docker Image</label>
+          <input v-model="allocationSettings.docker_image" type="text" class="input-field py-2" placeholder="ghcr.io/pterodactyl/yolks:java_25" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Startup Command</label>
+          <input v-model="allocationSettings.startup_command" type="text" class="input-field py-2" placeholder="java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Server JAR File</label>
+          <input v-model="allocationSettings.server_jarfile" type="text" class="input-field py-2" placeholder="server.jar" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Auto Start</label>
+          <select v-model="allocationSettings.auto_start" class="input-field py-2">
+            <option :value="1">Yes</option>
+            <option :value="0">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div v-if="allocationSuccess" class="p-3 bg-green-500/10 border border-green-500/20 rounded-md text-xs font-bold text-green-500 flex items-center gap-2">
+        <CheckCircle :size="14" :stroke-width="2.5" /> {{ allocationSuccess }}
+      </div>
+      <div v-if="allocationError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2">
+        <AlertTriangle :size="14" :stroke-width="2.5" /> {{ allocationError }}
+      </div>
+    </div>
+
     <!-- Default Blueprint Config Section -->
     <div class="card-surface p-6 space-y-6 border border-accent/10 relative overflow-hidden">
       <div class="absolute inset-0 bg-blue-500/[0.02] pointer-events-none"></div>
@@ -441,7 +526,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
-import { AlertTriangle, CheckCircle, Zap, Check, X, Server } from 'lucide-vue-next'
+import { AlertTriangle, CheckCircle, Zap, Check, X, Server, HardDrive } from 'lucide-vue-next'
 
 const store = useAdminStore()
 const editingKey = ref(null)
@@ -467,6 +552,23 @@ const nodes = ref([])
 const selectedNodeId = ref(null)
 const nodeSuccess = ref('')
 const nodeError = ref('')
+
+const savingAllocation = ref(false)
+const allocationSettings = ref({
+  ram_mb: 2048,
+  cpu_percent: 100,
+  disk_mb: 5120,
+  swap_mb: 0,
+  databases_limit: 0,
+  allocations_limit: 1,
+  backup_limit: 0,
+  docker_image: 'ghcr.io/pterodactyl/yolks:java_25',
+  startup_command: '',
+  server_jarfile: 'server.jar',
+  auto_start: 1,
+})
+const allocationSuccess = ref('')
+const allocationError = ref('')
 
 const savingBlueprint = ref(false)
 const blueprint = ref({
@@ -561,6 +663,24 @@ async function saveDefaultNode() {
   }
 }
 
+async function saveAllocationSettings() {
+  savingAllocation.value = true
+  allocationError.value = ''
+  allocationSuccess.value = ''
+  try {
+    const promises = Object.entries(allocationSettings.value).map(([key, val]) => {
+      const settingKey = `default_${key}`
+      return store.updateSetting(settingKey, val.toString())
+    })
+    await Promise.all(promises)
+    allocationSuccess.value = 'Default allocation settings saved successfully!'
+  } catch (err) {
+    allocationError.value = err.response?.data?.message || 'Failed to save allocation settings'
+  } finally {
+    savingAllocation.value = false
+  }
+}
+
 onMounted(async () => {
   await store.fetchSettings()
   if (store.settings['afk_coins_per_minute']) {
@@ -609,6 +729,21 @@ onMounted(async () => {
       const exists = nodes.value.find(n => n.id === selectedNodeId.value)
       if (!exists) selectedNodeId.value = null
     }
+  }
+
+  // Load allocation settings
+  allocationSettings.value = {
+    ram_mb: getSettingNum('ram_mb', 2048),
+    cpu_percent: getSettingNum('cpu_percent', 100),
+    disk_mb: getSettingNum('disk_mb', 5120),
+    swap_mb: getSettingNum('swap_mb', 0),
+    databases_limit: getSettingNum('databases_limit', 0),
+    allocations_limit: getSettingNum('allocations_limit', 1),
+    backup_limit: getSettingNum('backup_limit', 0),
+    docker_image: getSettingStr('docker_image', 'ghcr.io/pterodactyl/yolks:java_25'),
+    startup_command: getSettingStr('startup_command', ''),
+    server_jarfile: getSettingStr('server_jarfile', 'server.jar'),
+    auto_start: getSettingNum('auto_start', 1),
   }
 })
 
