@@ -10,12 +10,25 @@
           <span v-if="suspendedCount > 0" class="text-red-400"> &middot; {{ suspendedCount }} suspended</span>
         </p>
       </div>
-      <router-link to="/services" class="btn-primary inline-flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-        </svg>
-        Deploy Server
-      </router-link>
+      <div class="flex items-center gap-3">
+        <!-- Open Console (first active server) -->
+        <a
+          v-if="firstActiveServer && firstActiveServer.identifier && pteroUrl"
+          :href="`${pteroUrl}/server/${firstActiveServer.identifier}`"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-secondary inline-flex items-center gap-2"
+        >
+          <ExternalLink :size="16" :stroke-width="2" />
+          Open Console
+        </a>
+        <router-link to="/services" class="btn-primary inline-flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Deploy Server
+        </router-link>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -52,7 +65,8 @@
       <div
         v-for="server in store.servers"
         :key="server.id"
-        class="card-surface border-l-4 transition-all hover:border-l-accent group cursor-pointer"
+        @click="openSettings(server.id)"
+        class="card-surface border-l-4 transition-all hover:border-l-accent hover:bg-surface/80 group cursor-pointer"
         :class="statusBorderColor(server)"
       >
         <div class="p-5">
@@ -68,7 +82,7 @@
               </div>
             </div>
 
-            <!-- Status Badge -->
+            <!-- Status Badge + Actions -->
             <div class="flex items-center gap-2 flex-shrink-0">
               <span
                 :class="statusBadgeClass(server)"
@@ -77,6 +91,27 @@
                 <span :class="statusDotClass(server)" class="w-1.5 h-1.5 rounded-full"></span>
                 {{ getStatusLabel(server) }}
               </span>
+              <!-- Inline action buttons -->
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <a
+                  v-if="server.pterodactylServerId && server.identifier && pteroUrl"
+                  :href="`${pteroUrl}/server/${server.identifier}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  @click.stop
+                  class="p-1.5 rounded-md text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+                  title="Open Console"
+                >
+                  <ExternalLink :size="13" :stroke-width="2" />
+                </a>
+                <button
+                  @click.stop="handleDelete(server.id)"
+                  class="p-1.5 rounded-md text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  title="Delete"
+                >
+                  <Trash2 :size="13" :stroke-width="2" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -125,6 +160,7 @@
               <p v-if="server.suspendedAt" class="text-[10px] text-amber-400/50 mt-1">{{ formatDate(server.suspendedAt) }}</p>
               <router-link
                 :to="`/servers/${server.id}/renew`"
+                @click.stop
                 class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md bg-amber-500/20 text-amber-300 text-xs font-bold hover:bg-amber-500/30 transition-all"
               >
                 <RefreshCw :size="13" :stroke-width="2" />
@@ -164,7 +200,7 @@
           </div>
 
           <!-- Dates Row -->
-          <div class="flex items-center gap-4 text-[11px] text-text-muted mb-3">
+          <div class="flex items-center gap-4 text-[11px] text-text-muted">
             <div class="flex items-center gap-1.5">
               <Calendar :size="12" />
               <span>Created {{ formatDate(server.createdAt) }}</span>
@@ -182,48 +218,6 @@
               <span>Auto-Renew</span>
             </div>
           </div>
-
-          <!-- Actions -->
-          <div class="flex items-center justify-between pt-3 border-t border-border">
-            <div class="flex items-center gap-1.5 text-[11px] text-text-muted">
-              <span class="w-1.5 h-1.5 rounded-full" :class="statusDotClass(server)"></span>
-              <span class="font-medium">{{ getStatusLabel(server) }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <!-- Open Console Button -->
-              <a
-                v-if="server.pterodactylServerId && server.identifier && pteroUrl"
-                :href="`${pteroUrl}/server/${server.identifier}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="p-2 rounded-lg text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all"
-                title="Open Console"
-              >
-                <ExternalLink :size="14" :stroke-width="2" />
-              </a>
-              <router-link
-                :to="`/servers/${server.id}/renew`"
-                class="p-2 rounded-lg text-text-muted hover:text-amber-400 hover:bg-amber-500/10 transition-all"
-                title="Renew"
-              >
-                <RefreshCw :size="14" :stroke-width="2" />
-              </router-link>
-              <router-link
-                :to="`/servers/${server.id}/settings`"
-                class="p-2 rounded-lg text-text-muted hover:text-accent hover:bg-accent/10 transition-all"
-                title="Settings"
-              >
-                <Settings :size="14" :stroke-width="2" />
-              </router-link>
-              <button
-                @click.stop="handleDelete(server.id)"
-                class="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
-                title="Delete"
-              >
-                <Trash2 :size="14" :stroke-width="2" />
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -232,11 +226,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useServersStore } from '../stores/servers'
 import client from '../api/client'
 import {
   Server,
-  Settings,
   Trash2,
   AlertTriangle,
   MemoryStick,
@@ -249,10 +243,12 @@ import {
 } from 'lucide-vue-next'
 
 const store = useServersStore()
+const router = useRouter()
 const pteroUrl = ref('')
 
 const activeCount = computed(() => store.servers.filter(s => s.status === 'active').length)
 const suspendedCount = computed(() => store.servers.filter(s => s.status === 'suspended').length)
+const firstActiveServer = computed(() => store.servers.find(s => s.status === 'active' && s.identifier))
 
 onMounted(async () => {
   try {
@@ -270,6 +266,10 @@ onMounted(async () => {
     } catch {}
   }
 })
+
+function openSettings(serverId) {
+  router.push(`/servers/${serverId}/settings`)
+}
 
 function getNodeHost(server) {
   if (server.nodeHost) return server.nodeHost
