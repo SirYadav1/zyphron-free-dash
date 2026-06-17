@@ -239,7 +239,7 @@
             <button @click="loadNodes" :disabled="loadingNodes" class="px-3 py-1.5 text-[10px] font-bold text-orange-400 border border-orange-500/20 rounded-lg hover:bg-orange-500/10 disabled:opacity-40 transition-colors">
               {{ loadingNodes ? 'Loading...' : 'Refresh' }}
             </button>
-            <button @click="saveDefaultNode" :disabled="savingNode || !selectedNodeId" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+            <button @click="saveDefaultNode" :disabled="savingNode" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
               {{ savingNode ? 'Saving...' : 'Save Node' }}
             </button>
           </div>
@@ -255,9 +255,9 @@
         </div>
 
         <div v-else class="space-y-3">
-          <select v-model="selectedNodeId" class="input-field py-2">
+          <select v-model="selectedNodeId" class="input-field py-2" @change="selectedNodeId = Number($event.target.value)">
             <option :value="null" disabled>Select a node...</option>
-            <option v-for="node in nodes" :key="node.id" :value="node.id">
+            <option v-for="node in nodes" :key="node.id" :value="Number(node.id)">
               {{ node.name || 'Node #' + node.id }} — {{ node.fqdn || 'unknown' }} ({{ formatRam(node.memory || node.ram) }}, {{ formatDisk(node.disk || node.diskSpace) }})
             </option>
           </select>
@@ -314,6 +314,36 @@
                   class="input-field py-2"
                   placeholder="587"
                 />
+              </div>
+            </div>
+
+            <!-- SMTP Setup Guide -->
+            <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-3">
+              <div class="flex items-center gap-2">
+                <Info :size="14" class="text-blue-400" />
+                <p class="text-xs font-bold text-blue-400">SMTP Setup Guide</p>
+              </div>
+              <div class="text-[11px] text-blue-300/80 space-y-2">
+                <p class="font-bold text-blue-300">Gmail:</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                  <li>Host: <code class="bg-blue-500/10 px-1 rounded">smtp.gmail.com</code></li>
+                  <li>Port: <code class="bg-blue-500/10 px-1 rounded">587</code></li>
+                  <li>Username: Your Gmail address</li>
+                  <li>Password: <a href="https://myaccount.google.com/apppasswords" target="_blank" class="underline hover:text-white">App Password</a> (NOT your real password)</li>
+                  <li>Encryption: TLS</li>
+                </ul>
+                <p class="font-bold text-blue-300 mt-3">Pterodactyl Panel:</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                  <li>Host: Your panel's SMTP host (check Panel → Admin → Settings → Mail)</li>
+                  <li>Port: Usually 587 (TLS) or 465 (SSL)</li>
+                  <li>Username: SMTP username from panel config</li>
+                  <li>Password: SMTP password from panel config</li>
+                </ul>
+                <p class="font-bold text-blue-300 mt-3">Resend / SendGrid / Mailgun:</p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                  <li>Use their SMTP credentials from dashboard</li>
+                  <li>Host/Port/Username/Password found in their SMTP settings page</li>
+                </ul>
               </div>
             </div>
 
@@ -670,7 +700,7 @@ const showSmtpPass = ref(false)
 
 const selectedNode = computed(() => {
   if (!selectedNodeId.value || !nodes.value.length) return null
-  return nodes.value.find(n => n.id === selectedNodeId.value)
+  return nodes.value.find(n => Number(n.id) === Number(selectedNodeId.value))
 })
 
 function formatRam(mb) {
