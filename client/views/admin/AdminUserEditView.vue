@@ -26,6 +26,10 @@
           <input v-model="form.email" type="email" class="input-field w-full" />
         </div>
         <div class="space-y-1">
+          <label class="text-label">New Password <span class="text-text-muted text-xs">(leave blank to keep current)</span></label>
+          <input v-model="form.password" type="password" class="input-field w-full" placeholder="Enter new password..." />
+        </div>
+        <div class="space-y-1">
           <label class="text-label">Coins</label>
           <input v-model.number="form.coins" type="number" min="0" class="input-field w-full" />
         </div>
@@ -81,6 +85,7 @@ const userRoles = ref([])
 const form = ref({
   username: '',
   email: '',
+  password: '',
   coins: 0,
   isAdmin: false
 })
@@ -125,7 +130,10 @@ async function handleSave() {
   error.value = ''
   success.value = ''
   try {
-    await client.put(`/admin/users/${route.params.id}`, form.value)
+    // Only send password if user entered a new one
+    const payload = { ...form.value }
+    if (!payload.password) delete payload.password
+    await client.put(`/admin/users/${route.params.id}`, payload)
     success.value = 'User updated successfully'
     setTimeout(() => router.push(`/admin/users/${route.params.id}`), 1000)
   } catch (err) {

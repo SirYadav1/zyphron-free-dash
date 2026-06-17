@@ -41,6 +41,10 @@ class UpdateUserDto {
   last_name?: string;
 
   @IsOptional()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
   @IsNumber()
   @Min(0)
   coins?: number;

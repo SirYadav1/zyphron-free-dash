@@ -140,7 +140,7 @@ export class AdminService {
   }
 
   async updateUser(id: string, data: Partial<any>): Promise<any> {
-    const allowedFields = ['username', 'email', 'first_name', 'last_name', 'coins', 'isAdmin'];
+    const allowedFields = ['username', 'email', 'first_name', 'last_name', 'password', 'coins', 'isAdmin'];
     const updateData: any = {};
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
@@ -151,6 +151,11 @@ export class AdminService {
             throw new BadRequestException('Coins must be a non-negative number');
           }
           updateData[field] = coins;
+        }
+        else if (field === 'password') {
+          // Hash password before saving
+          const bcrypt = require('bcrypt');
+          updateData[field] = await bcrypt.hash(data[field], 10);
         }
         else updateData[field] = data[field];
       }

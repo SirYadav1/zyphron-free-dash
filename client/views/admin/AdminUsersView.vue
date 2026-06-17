@@ -15,83 +15,87 @@
       </div>
     </div>
 
-    <!-- User Cards Grid -->
-    <div v-if="filteredUsers.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div
-        v-for="user in filteredUsers"
-        :key="user.id"
-        class="card-surface p-5 space-y-4 hover:border-accent/20 transition-all group relative"
-      >
-        <!-- Top row: Avatar + Status -->
-        <div class="flex items-start justify-between">
-          <div class="flex items-center gap-3">
-            <!-- Avatar / Initials -->
-            <div
-              :class="user.isBanned ? 'bg-red-500/20 text-red-400' : user.isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-accent/10 text-accent'"
-              class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-            >
-              {{ getInitials(user.username) }}
-            </div>
-            <div class="min-w-0">
-              <p class="text-sm font-bold text-text-primary truncate">{{ user.username }}</p>
-              <p class="text-[11px] text-text-muted truncate">{{ user.email || 'No email' }}</p>
-            </div>
-          </div>
-          <!-- Online/Offline indicator -->
-          <div class="flex-shrink-0" :title="isOnline(user) ? 'Online' : 'Offline'">
-            <div
-              :class="isOnline(user) ? 'bg-emerald-400' : 'bg-gray-500'"
-              class="w-2.5 h-2.5 rounded-full"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Role badges -->
-        <div class="flex flex-wrap gap-1.5">
-          <span
-            v-if="user.isAdmin"
-            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400"
-          >Admin</span>
-          <span
-            v-for="role in getUserRoles(user)"
-            :key="role.name"
-            :class="getRoleBadgeClass(role.name)"
-            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-          >{{ role.name }}</span>
-          <span
-            v-if="!user.isAdmin && (!userRolesMap[user.id] || userRolesMap[user.id].length === 0)"
-            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-500/15 text-gray-400"
-          >User</span>
-        </div>
-
-        <!-- Coins + Status row -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <span class="text-accent font-bold text-sm">{{ user.coins }}</span>
-            <span class="text-[10px] text-text-muted uppercase tracking-widest">coins</span>
-          </div>
-          <span
-            :class="userStatusClass(user)"
-            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-          >{{ userStatusText(user) }}</span>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-2 pt-2 border-t border-border/50">
-          <button
-            @click="openEditModal(user)"
-            class="flex-1 px-3 py-1.5 text-[11px] font-bold text-accent border border-accent/20 rounded-lg hover:bg-accent/10 transition-colors"
-          >Edit</button>
-          <button
-            @click="openRolesModal(user)"
-            class="flex-1 px-3 py-1.5 text-[11px] font-bold text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/10 transition-colors"
-          >Roles</button>
-          <button
-            @click="handleDelete(user)"
-            class="px-3 py-1.5 text-[11px] font-bold text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors"
-          >✕</button>
-        </div>
-      </div>
+    <!-- Users List -->
+    <div v-if="filteredUsers.length > 0" class="card-surface overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border bg-base/50 text-left">
+            <th class="px-5 py-3 text-label">User</th>
+            <th class="px-5 py-3 text-label">Roles</th>
+            <th class="px-5 py-3 text-label text-center">Coins</th>
+            <th class="px-5 py-3 text-label text-center">Status</th>
+            <th class="px-5 py-3 text-label text-right w-40">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="user in filteredUsers"
+            :key="user.id"
+            class="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
+          >
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div
+                  :class="user.isBanned ? 'bg-red-500/20 text-red-400' : user.isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-accent/10 text-accent'"
+                  class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                >
+                  {{ getInitials(user.username) }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-bold text-text-primary truncate">{{ user.username }}</p>
+                  <p class="text-[11px] text-text-muted truncate">{{ user.email || 'No email' }}</p>
+                </div>
+                <div class="flex-shrink-0 ml-2" :title="isOnline(user) ? 'Online' : 'Offline'">
+                  <div :class="isOnline(user) ? 'bg-emerald-400' : 'bg-gray-500'" class="w-2 h-2 rounded-full"></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-4">
+              <div class="flex flex-wrap gap-1">
+                <span
+                  v-if="user.isAdmin"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400"
+                >Admin</span>
+                <span
+                  v-for="role in getUserRoles(user)"
+                  :key="role.name"
+                  :class="getRoleBadgeClass(role.name)"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                >{{ role.name }}</span>
+                <span
+                  v-if="!user.isAdmin && (!userRolesMap[user.id] || userRolesMap[user.id].length === 0)"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-500/15 text-gray-400"
+                >User</span>
+              </div>
+            </td>
+            <td class="px-5 py-4 text-center">
+              <span class="text-accent font-bold">{{ user.coins }}</span>
+            </td>
+            <td class="px-5 py-4 text-center">
+              <span
+                :class="userStatusClass(user)"
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+              >{{ userStatusText(user) }}</span>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <div class="flex gap-2 justify-end">
+                <button
+                  @click="openEditModal(user)"
+                  class="px-3 py-1.5 text-[11px] font-bold text-accent border border-accent/20 rounded-lg hover:bg-accent/10 transition-colors"
+                >Edit</button>
+                <button
+                  @click="openRolesModal(user)"
+                  class="px-3 py-1.5 text-[11px] font-bold text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/10 transition-colors"
+                >Roles</button>
+                <button
+                  @click="handleDelete(user)"
+                  class="px-3 py-1.5 text-[11px] font-bold text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors"
+                >✕</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Empty state -->
