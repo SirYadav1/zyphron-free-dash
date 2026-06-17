@@ -60,6 +60,35 @@
         </p>
       </div>
 
+      <!-- Message of the Day -->
+      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+              <MessageSquare :size="16" class="text-blue-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">Message of the Day</h3>
+              <p class="text-[11px] text-text-muted">Displayed on user dashboard</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" v-model="motdEnabled" class="w-4 h-4 rounded border-border bg-base text-accent focus:ring-accent" />
+              <span class="text-[10px] font-bold text-text-muted uppercase">{{ motdEnabled ? 'Visible' : 'Hidden' }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <textarea v-model="motdMessage" rows="3" class="input-field w-full text-sm" placeholder="Enter your message of the day..."></textarea>
+          <div class="flex justify-end">
+            <button @click="saveMotd" :disabled="savingMotd" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+              {{ savingMotd ? 'Saving...' : 'Save MOTD' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Branding -->
       <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
         <div class="flex items-center gap-3">
@@ -556,7 +585,7 @@ import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
 import {
   AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive,
-  Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck,
+  Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck, MessageSquare,
 } from 'lucide-vue-next'
 
 const store = useAdminStore()
@@ -578,6 +607,10 @@ const tabs = [
 const savingAfk = ref(false)
 const afkCoins = ref(10)
 const afkInterval = ref(1)
+
+const motdMessage = ref('')
+const motdEnabled = ref(false)
+const savingMotd = ref(false)
 
 const loginImageUrl = ref('')
 const faviconUrl = ref('')
@@ -688,6 +721,8 @@ onMounted(async () => {
   await store.fetchSettings()
   if (store.settings['afk_coins_per_minute']) afkCoins.value = parseInt(store.settings['afk_coins_per_minute']) || 10
   if (store.settings['afk_time_interval_minutes']) afkInterval.value = parseInt(store.settings['afk_time_interval_minutes']) || 1
+  if (store.settings['motd_message']) motdMessage.value = store.settings['motd_message']
+  if (store.settings['motd_enabled']) motdEnabled.value = store.settings['motd_enabled'] === 'true'
   if (store.settings['login_image_url']) loginImageUrl.value = store.settings['login_image_url']
   if (store.settings['favicon_url']) faviconUrl.value = store.settings['favicon_url']
   if (store.settings['default_node_id']) selectedNodeId.value = parseInt(store.settings['default_node_id']) || null
@@ -735,6 +770,17 @@ async function saveLoginImage() {
   try { await store.updateSetting('login_image_url', loginImageUrl.value); success.value = 'Login image updated' }
   catch (err) { error.value = err.response?.data?.message || 'Failed' }
   finally { savingLoginImage.value = false }
+}
+
+async function saveMotd() {
+  savingMotd.value = true; error.value = ''; success.value = ''
+  try {
+    await store.updateSetting('motd_message', motdMessage.value)
+    await store.updateSetting('motd_enabled', motdEnabled.value.toString())
+    success.value = 'MOTD updated'
+  }
+  catch (err) { error.value = err.response?.data?.message || 'Failed' }
+  finally { savingMotd.value = false }
 }
 
 async function saveFavicon() {

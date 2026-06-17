@@ -437,7 +437,20 @@ export class PterodactylService {
   async getNodes(): Promise<any[]> {
     try {
       const res = await this.request<any>('/nodes');
-      return res.data || [];
+      const raw = res.data || [];
+      // unwrap Pterodactyl v1 format: { id, attributes: { name, fqdn, ... } }
+      return raw.map((n: any) => ({
+        id: n.id,
+        name: n.attributes?.name || n.name || 'Node #' + n.id,
+        fqdn: n.attributes?.fqdn || n.fqdn || 'unknown',
+        memory: n.attributes?.memory || n.memory || 0,
+        disk: n.attributes?.disk || n.disk || 0,
+        disk_overallocate: n.attributes?.disk_overallocate || n.disk_overallocate || 0,
+        memory_overallocate: n.attributes?.memory_overallocate || n.memory_overallocate || 0,
+        daemon_listen: n.attributes?.daemon_listen || n.daemon_listen,
+        scheme: n.attributes?.scheme || n.scheme,
+       behind_proxy: n.attributes?.behind_proxy || n.behind_proxy,
+      }));
     } catch (error) {
       this.logger.error('Failed to fetch nodes from Pterodactyl', error);
       return [];

@@ -70,12 +70,12 @@
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- MOTD Card -->
-      <div class="card-surface p-6 lg:col-span-2 card-hover">
+      <div v-if="motdEnabled && motdMessage" class="card-surface p-6 lg:col-span-2 card-hover border-accent/20 bg-accent/5">
         <div class="flex items-center gap-2 mb-4">
           <Megaphone :size="16" :stroke-width="2" class="text-accent" />
-          <h3 class="text-sm font-bold text-text-primary uppercase tracking-wider">Message of the Day</h3>
+          <h3 class="text-sm font-bold text-accent uppercase tracking-wider">Message of the Day</h3>
         </div>
-        <p class="text-sm text-text-muted leading-relaxed">Welcome to Zyphron. Configure this message in Settings.</p>
+        <p class="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{{ motdMessage }}</p>
       </div>
 
       <!-- Useful Links from API -->
@@ -259,6 +259,8 @@ const authStore = useAuthStore()
 
 const serverStats = computed(() => store.stats)
 const usefulLinks = ref([])
+const motdMessage = ref('')
+const motdEnabled = ref(false)
 
 // animated counter logic
 const animatedStats = reactive({
@@ -299,6 +301,13 @@ onMounted(async () => {
   try {
     await Promise.all([store.fetchServers(), store.fetchStats()])
   } catch {}
+  // Fetch MOTD
+  try {
+    const { data } = await client.get('/admin/settings')
+    if (data.motd_message) motdMessage.value = data.motd_message
+    if (data.motd_enabled) motdEnabled.value = data.motd_enabled === 'true'
+  } catch {}
+
   // Fetch useful links from API
   try {
     const { data } = await client.get('/useful-links')
