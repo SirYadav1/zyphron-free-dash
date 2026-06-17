@@ -168,8 +168,16 @@ export class AuthService {
       // try by username
       user = await this.userRepo.findOne({ where: { username: identifier } });
     }
-    if (!user || !user.password_hash) {
-      throw new UnauthorizedException('Invalid credentials');
+    if (!user) {
+      // User not found - check if email format to give better error
+      if (identifier.includes('@')) {
+        throw new UnauthorizedException('No account found with this email address');
+      } else {
+        throw new UnauthorizedException('No account found with this username');
+      }
+    }
+    if (!user.password_hash) {
+      throw new UnauthorizedException('This account uses social login. Please sign in with Discord.');
     }
 
     const passwordValid = await bcrypt.compare(
@@ -177,7 +185,7 @@ export class AuthService {
       user.password_hash,
     );
     if (!passwordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Incorrect password. Please try again.');
     }
 
     if (user.is_banned) {
@@ -232,6 +240,7 @@ export class AuthService {
         isAdmin: !!user.is_admin,
         coins: updatedUser?.coins ?? (user.coins + dailyBonus),
         profilePhoto: user.profile_photo,
+        language: user.language || 'en',
         pterodactylUserId: user.pterodactyl_user_id,
         discordId: user.discord_id,
       },
@@ -302,6 +311,7 @@ export class AuthService {
         isAdmin: !!user.is_admin,
         coins: updatedUser2FA?.coins ?? (user.coins + dailyBonus),
         profilePhoto: user.profile_photo,
+        language: user.language || 'en',
         pterodactylUserId: user.pterodactyl_user_id,
         discordId: user.discord_id,
       },
@@ -333,6 +343,7 @@ export class AuthService {
       isAdmin: !!user.is_admin,
       coins: user.coins,
       profilePhoto: user.profile_photo,
+      language: user.language || 'en',
       pterodactylUserId: user.pterodactyl_user_id,
       pterodactylUsername: user.pterodactyl_username,
       discordId: user.discord_id,

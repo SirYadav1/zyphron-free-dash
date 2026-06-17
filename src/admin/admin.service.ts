@@ -141,7 +141,7 @@ export class AdminService {
   }
 
   async updateUser(id: string, data: Partial<any>): Promise<any> {
-    const allowedFields = ['username', 'email', 'first_name', 'last_name', 'password', 'coins', 'isAdmin'];
+    const allowedFields = ['username', 'email', 'first_name', 'last_name', 'password', 'coins', 'isAdmin', 'language'];
     const updateData: any = {};
     for (const field of allowedFields) {
       if (data[field] !== undefined) {
