@@ -12,6 +12,7 @@ import {
 import { ServersService } from './servers.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from '../common/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('servers')
@@ -35,11 +36,13 @@ export class ServersController {
     return servers;
   }
   @Get('nests')
+  @UseGuards(AdminGuard)
   async getNests() {
     return this.serversService.getNests();
   }
 
   @Get('nests/:id/eggs')
+  @UseGuards(AdminGuard)
   async getEggs(@Param('id', ParseIntPipe) id: number) {
     return this.serversService.getEggsByNest(id);
   }
