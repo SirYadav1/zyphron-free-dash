@@ -92,8 +92,9 @@
               <p class="text-xs font-semibold text-text-primary leading-none">{{ authStore.user?.username }}</p>
               <p class="text-[10px] font-medium text-text-muted mt-1">{{ authStore.user?.email?.split('@')[0] }}</p>
             </div>
-            <div class="w-8 h-8 rounded-full bg-accent/20 border border-accent/20 flex items-center justify-center text-accent text-xs font-bold ring-2 ring-surface">
-              {{ authStore.user?.username?.charAt(0).toUpperCase() }}
+            <div class="w-8 h-8 rounded-full bg-accent/20 border border-accent/20 flex items-center justify-center text-accent text-xs font-bold ring-2 ring-surface overflow-hidden">
+              <img v-if="authStore.user?.profilePhoto" :src="authStore.user.profilePhoto" alt="Profile" class="w-full h-full object-cover" />
+              <span v-else>{{ authStore.user?.username?.charAt(0).toUpperCase() }}</span>
             </div>
             <button @click="handleLogout" class="p-1.5 text-text-muted hover:text-red-400 transition-colors" title="Logout">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useAfkStore } from '../stores/afk'
@@ -133,6 +134,42 @@ onMounted(async () => {
   } catch {
     router.push('/login')
   }
+
+  // Session management: pause AFK on tab hide, resume on tab show
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  // Logout when user navigates away from site entirely
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    // Tab became hidden - pause AFK timer
+    afkStore.pauseTick()
+  } else {
+    // Tab became visible again - resume AFK timer
+    afkStore.resumeTick()
+  }
+}
+
+function handleBeforeUnload() {
+  // If user navigates away entirely, stop AFK session
+  if (afkStore.sessionId && afkStore.tabId) {
+    // Use sendBeacon for reliable delivery during page unload
+    const token = sessionStorage.getItem('access_token')
+    if (token) {
+      navigator.sendBeacon('/api/afk/stop', new Blob([JSON.stringify({
+        sessionId: afkStore.sessionId,
+        tabId: afkStore.tabId,
+      })], { type: 'application/json' }))
+    }
+    afkStore.stopHeartbeat()
+    afkStore.stopTick()
+  }
+}
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  window.removeEventListener('beforeunload', handleBeforeUnload)
 })
 
 const navSections = computed(() => {
@@ -172,8 +209,18 @@ const navSections = computed(() => {
         },
         {
           path: '/store',
-          label: 'Coin Shop',
+          label: 'Buy Coins',
           icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+        },
+        {
+          path: '/store/pending',
+          label: 'Pending Payments',
+          icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+        },
+        {
+          path: '/store/successful',
+          label: 'Successful Payments',
+          icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
         },
         {
           path: '/transactions',

@@ -143,6 +143,7 @@ export class AuthService {
         emailVerified: true,
         isAdmin: !!user.is_admin,
         coins: updatedUser?.coins ?? (user.coins + dailyBonus),
+        profilePhoto: user.profile_photo,
         pterodactylUserId: user.pterodactyl_user_id,
         discordId: user.discord_id,
       },
@@ -199,6 +200,7 @@ export class AuthService {
         emailVerified: true,
         isAdmin: !!user.is_admin,
         coins: updatedUser2FA?.coins ?? (user.coins + dailyBonus),
+        profilePhoto: user.profile_photo,
         pterodactylUserId: user.pterodactyl_user_id,
         discordId: user.discord_id,
       },
@@ -229,6 +231,7 @@ export class AuthService {
       emailVerified: true,
       isAdmin: !!user.is_admin,
       coins: user.coins,
+      profilePhoto: user.profile_photo,
       pterodactylUserId: user.pterodactyl_user_id,
       pterodactylUsername: user.pterodactyl_username,
       discordId: user.discord_id,
@@ -274,6 +277,21 @@ export class AuthService {
     }
 
     return this.getProfile(userId);
+  }
+
+  async uploadProfilePhoto(userId: string, file: Express.Multer.File) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const photoUrl = `/uploads/profiles/${file.filename}`;
+    await this.userRepo.update(userId, { profile_photo: photoUrl });
+
+    return {
+      message: 'Profile photo uploaded successfully',
+      profilePhoto: photoUrl,
+    };
   }
 
   async setupAdmin(
