@@ -2,9 +2,9 @@
   <div class="space-y-10 max-w-2xl">
     <div class="space-y-1">
       <div class="flex items-center gap-3">
-        <router-link to="/admin/products" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to Products</router-link>
+        <router-link to="/admin/services" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to Services</router-link>
       </div>
-      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Edit Product</h2>
+      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Edit Service</h2>
       <p class="text-sm text-text-muted">Modify server product details</p>
     </div>
 
@@ -119,7 +119,7 @@
           <button @click="handleSubmit" :disabled="saving" class="btn-primary px-6 py-2">
             {{ saving ? 'Saving...' : 'Save Changes' }}
           </button>
-          <router-link to="/admin/products" class="btn-secondary px-6 py-2 text-center">Cancel</router-link>
+          <router-link to="/admin/services" class="btn-secondary px-6 py-2 text-center">Cancel</router-link>
         </div>
       </template>
     </div>
@@ -184,7 +184,7 @@ onMounted(async () => {
 
   // Load product data
   try {
-    const { data } = await client.get(`/admin/products/${route.params.id}`)
+    const { data } = await client.get(`/admin/services/${route.params.id}`)
     const p = data.product || data
     form.value = {
       name: p.name || '',
@@ -252,9 +252,9 @@ async function handleSubmit() {
   error.value = ''
   success.value = ''
   try {
-    await client.put(`/admin/products/${route.params.id}`, form.value)
-    success.value = 'Product updated successfully'
-    setTimeout(() => router.push('/admin/products'), 1000)
+    await client.put(`/admin/services/${route.params.id}`, form.value)
+    success.value = 'Service updated successfully'
+    setTimeout(() => router.push('/admin/services'), 1000)
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to update product'
   } finally {
