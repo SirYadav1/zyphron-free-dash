@@ -17,10 +17,12 @@ export class InvoicesService {
   ) {}
 
   async generateInvoiceNumber(): Promise<string> {
-    const count = await this.invoiceRepo.count();
-    const seq = (count + 1).toString().padStart(5, '0');
-    const year = new Date().getFullYear();
-    return `INV-${year}-${seq}`;
+    // BUG-H3 FIX: Use timestamp + random suffix to prevent race condition duplicates
+    const now = new Date();
+    const year = now.getFullYear();
+    const timestamp = now.getTime().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `INV-${year}-${timestamp}-${random}`;
   }
 
   async findByUser(userId: string): Promise<Invoice[]> {
@@ -31,9 +33,14 @@ export class InvoicesService {
     });
   }
 
-  async findById(id: number): Promise<Invoice> {
+  async findById(id: number, userId?: string): Promise<Invoice> {
+    const where: any = { id };
+    // BUG-H1 FIX: If userId provided, verify ownership (prevent IDOR)
+    if (userId) {
+      where.user_id = userId;
+    }
     const invoice = await this.invoiceRepo.findOne({
-      where: { id },
+      where,
       relations: { user: true, payment: true },
     });
     if (!invoice) {

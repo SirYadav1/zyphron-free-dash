@@ -191,7 +191,7 @@ export class ServerRenewalService {
       server: updatedServer!,
       message: `Server renewed for ${renewalDays} days`,
       newExpiresAt: newExpiryDate.toISOString(),
-      remainingCoins: user.coins - renewalPrice,
+      remainingCoins: (await this.userRepo.findOne({ where: { id: userId } }))?.coins ?? (user.coins - renewalPrice),  // BUG-M14 FIX: Re-fetch actual balance
       renewalDays,
       cost: renewalPrice,
     };

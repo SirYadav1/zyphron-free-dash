@@ -39,7 +39,7 @@
           </div>
           <div>
             <p class="text-label">Credits</p>
-            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ authStore.user?.coins?.toFixed(2) || '0.00' }}</p>
+            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ authStore.user?.coins || 0 }}</p>
           </div>
         </div>
       </div>
@@ -195,8 +195,8 @@
         </div>
         <p class="text-xs text-text-muted mb-3">Refer friends and earn commission on their purchases.</p>
         <div class="bg-base/50 rounded-lg p-3 border border-border">
-          <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Your Referral Link</p>
-          <p class="text-sm font-mono text-accent">https://zyphron.gg/ref/{{ authStore.user?.referralCode || '...' }}</p>
+          <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Referral System</p>
+          <p class="text-sm text-text-muted">Coming soon — referral links will be generated here.</p>
         </div>
         <div class="flex items-center gap-4 mt-3 text-xs text-text-muted">
           <span>Referred: <strong class="text-text-primary">0</strong></span>

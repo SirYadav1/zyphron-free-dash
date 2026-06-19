@@ -197,7 +197,7 @@ export class StoreService {
     return {
       message: `${type.toUpperCase()} upgraded by ${amount}`,
       cost: totalCost,
-      remainingCoins: user.coins - totalCost,
+      remainingCoins: (await this.userRepo.findOne({ where: { id: userId } }))?.coins ?? (user.coins - totalCost),  // BUG-M13 FIX: Re-fetch actual balance
       server: {
         [field]: newValue,
       },

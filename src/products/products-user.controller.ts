@@ -1,8 +1,9 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('products')
 export class ProductsUserController {
@@ -39,7 +40,9 @@ export class ProductsUserController {
     }));
   }
 
+  // BUG-H4 FIX: Added JwtAuthGuard to prevent unauthenticated access to Pterodactyl panel structure
   @Get('nests/:nestId/eggs')
+  @UseGuards(JwtAuthGuard)
   async getEggsByNest(@Param('nestId', ParseIntPipe) nestId: number) {
     return this.pterodactylService.getEggsByNest(nestId);
   }

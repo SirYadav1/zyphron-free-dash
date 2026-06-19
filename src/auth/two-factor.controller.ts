@@ -5,6 +5,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -38,8 +39,9 @@ export class TwoFactorController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async enable(@CurrentUser() user: any, @Body('code') code: string) {
+    // BUG-M11 FIX: Throw BadRequestException instead of returning error object
     if (!code || code.length !== 6) {
-      return { error: 'Please provide a valid 6-digit code' };
+      throw new BadRequestException('Please provide a valid 6-digit code');
     }
     await this.twoFactorService.enable(user.id, code);
     return { message: 'Two-factor authentication enabled successfully' };
@@ -53,8 +55,9 @@ export class TwoFactorController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async disable(@CurrentUser() user: any, @Body('code') code: string) {
+    // BUG-M11 FIX: Throw BadRequestException instead of returning error object
     if (!code || code.length !== 6) {
-      return { error: 'Please provide a valid 6-digit code' };
+      throw new BadRequestException('Please provide a valid 6-digit code');
     }
     await this.twoFactorService.disable(user.id, code);
     return { message: 'Two-factor authentication disabled successfully' };
@@ -67,8 +70,9 @@ export class TwoFactorController {
   @Post('verify-login')
   @HttpCode(HttpStatus.OK)
   async verifyLogin(@Body() body: { email: string; code: string }) {
+    // BUG-M11 FIX: Throw BadRequestException instead of returning error object
     if (!body.email || !body.code || body.code.length !== 6) {
-      return { error: 'Please provide email and a valid 6-digit code' };
+      throw new BadRequestException('Please provide email and a valid 6-digit code');
     }
     const user = await this.twoFactorService.verifyLoginCode(body.email, body.code);
     return {

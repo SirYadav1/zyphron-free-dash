@@ -34,8 +34,12 @@ export class InvoicesController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.invoicesService.findById(id);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: string,
+  ) {
+    // BUG-H1 FIX: Pass userId to prevent IDOR
+    return this.invoicesService.findById(id, userId);
   }
 
   @Post()

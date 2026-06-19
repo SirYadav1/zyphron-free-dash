@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
@@ -134,6 +134,13 @@ export class TicketsService {
     type: string,
     value: string,
   ): Promise<TicketBlacklist> {
+    // BUG-M3 FIX: Validate blacklist type
+    const validTypes = ['email', 'username', 'ip'];
+    if (!validTypes.includes(type)) {
+      throw new BadRequestException(
+        `Invalid blacklist type. Must be one of: ${validTypes.join(', ')}`,
+      );
+    }
     return this.blacklistRepo.save(this.blacklistRepo.create({ type, value }));
   }
 

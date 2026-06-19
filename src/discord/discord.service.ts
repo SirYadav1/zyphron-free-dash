@@ -24,18 +24,35 @@ export class DiscordService {
     private pterodactylService: PterodactylService,
   ) {}
 
-  getOAuthUrl(state: string): string {
+  // BUG-H7 FIX: PKCE support — generate code_verifier and code_challenge
+  generatePKCE(): { codeVerifier: string; codeChallenge: string } {
+    const codeVerifier = crypto.randomBytes(32)
+      .toString('base64url')
+      .substring(0, 128);
+    // Create SHA256 hash of code_verifier for code_challenge
+    const codeChallenge = crypto.createHash('sha256')
+      .update(codeVerifier)
+      .digest('base64url');
+    return { codeVerifier, codeChallenge };
+  }
+
+  getOAuthUrl(state: string, codeChallenge?: string): string {
     const clientId = process.env.DISCORD_CLIENT_ID;
     const redirectUri = process.env.DISCORD_CALLBACK_URL;
     const scopes = ['identify', 'guilds.join'];
-    return `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || '')}&response_type=code&scope=${scopes.join('%20')}&state=${encodeURIComponent(state)}`;
+    let url = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || '')}&response_type=code&scope=${scopes.join('%20')}&state=${encodeURIComponent(state)}`;
+    // BUG-H7 FIX: Add PKCE code_challenge if provided
+    if (codeChallenge) {
+      url += `&code_challenge=${encodeURIComponent(codeChallenge)}&code_challenge_method=S256`;
+    }
+    return url;
   }
 
-  async handleCallback(code: string, userId: string): Promise<any> {
+  async handleCallback(code: string, userId: string, codeVerifier?: string): Promise<any> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-    const tokenResponse = await this.exchangeCode(code);
+    const tokenResponse = await this.exchangeCode(code, codeVerifier);
     const discordUser = await this.getDiscordUser(tokenResponse.access_token);
 
     const isMember = await this.isUserInGuild(discordUser.id);
@@ -300,21 +317,27 @@ export class DiscordService {
     }
   }
 
-  private async exchangeCode(code: string): Promise<any> {
+  private async exchangeCode(code: string, codeVerifier?: string): Promise<any> {
     const clientId = process.env.DISCORD_CLIENT_ID;
     const clientSecret = process.env.DISCORD_CLIENT_SECRET;
     const redirectUri = process.env.DISCORD_CALLBACK_URL;
 
+    const params: Record<string, string> = {
+      client_id: clientId || '',
+      client_secret: clientSecret || '',
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri || '',
+    };
+    // BUG-H7 FIX: Include code_verifier for PKCE if provided
+    if (codeVerifier) {
+      params.code_verifier = codeVerifier;
+    }
+
     const response = await fetch('https://discord.com/api/oauth2/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: clientId || '',
-        client_secret: clientSecret || '',
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri || '',
-      }),
+      body: new URLSearchParams(params),
     });
 
     if (!response.ok) {
