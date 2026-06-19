@@ -22,6 +22,18 @@
           <input v-model="form.name" type="text" class="input-field w-full" />
         </div>
 
+        <div class="space-y-1">
+          <label class="text-label">Hierarchy Level</label>
+          <select v-model="form.level" class="input-field w-full">
+            <option :value="0">0 — Default</option>
+            <option :value="1">1 — Owner (Highest)</option>
+            <option :value="2">2 — Co-Founder</option>
+            <option :value="3">3 — CEO</option>
+            <option :value="4">4 — Staff</option>
+          </select>
+          <p class="text-xs text-text-muted mt-1">Lower number = higher authority</p>
+        </div>
+
         <div class="space-y-3 pt-4 border-t border-border">
           <p class="text-label">Permissions</p>
           <div class="space-y-2 max-h-96 overflow-y-auto">
@@ -60,7 +72,8 @@ const success = ref('')
 const role = ref({})
 const form = ref({
   name: '',
-  permissions: []
+  permissions: [],
+  level: 0
 })
 
 const availablePermissions = [
@@ -80,7 +93,8 @@ onMounted(async () => {
     role.value = data
     form.value = {
       name: data.name || '',
-      permissions: data.permissions || []
+      permissions: data.permissions || [],
+      level: data.level || 0
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to load role'

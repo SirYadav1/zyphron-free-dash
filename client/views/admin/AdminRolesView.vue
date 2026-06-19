@@ -15,6 +15,7 @@
             <tr class="border-b border-border bg-base/50 text-left">
               <th class="px-5 py-3 text-label">ID</th>
               <th class="px-5 py-3 text-label">Name</th>
+              <th class="px-5 py-3 text-label">Level</th>
               <th class="px-5 py-3 text-label">Permissions</th>
               <th class="px-5 py-3 text-label">Users</th>
               <th class="px-5 py-3 text-label text-right">Actions</th>
@@ -24,6 +25,9 @@
             <tr v-for="r in roles" :key="r.id" class="border-b border-border/50 hover:bg-white/[0.02] transition-colors">
               <td class="px-5 py-3 text-text-muted text-xs">{{ r.id }}</td>
               <td class="px-5 py-3 text-text-primary font-bold text-sm">{{ r.name }}</td>
+              <td class="px-5 py-3">
+                <span class="px-2 py-0.5 rounded text-xs font-mono" :class="r.level === 1 ? 'bg-red-500/10 text-red-400' : r.level === 2 ? 'bg-orange-500/10 text-orange-400' : r.level === 3 ? 'bg-yellow-500/10 text-yellow-400' : r.level === 4 ? 'bg-blue-500/10 text-blue-400' : 'bg-white/5 text-text-muted'">{{ r.level || 0 }}</span>
+              </td>
               <td class="px-5 py-3">
                 <div class="flex flex-wrap gap-1">
                   <span v-for="perm in (r.permissions || []).slice(0, 4)" :key="perm" class="px-1.5 py-0.5 rounded bg-accent/5 text-accent text-[10px] font-mono">{{ perm }}</span>
