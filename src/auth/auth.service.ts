@@ -8,11 +8,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { User } from '../entities/user.entity';
-import { UserRole } from '../entities/user-role.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { Setting } from '../entities/setting.entity';
 import { AfkSession } from '../entities/afk-session.entity';
@@ -37,7 +36,6 @@ export class AuthService {
 
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
-    @InjectRepository(UserRole) private userRoleRepo: Repository<UserRole>,
     @InjectRepository(Transaction)
     private transactionRepo: Repository<Transaction>,
     @InjectRepository(Setting) private settingRepo: Repository<Setting>,
@@ -53,6 +51,7 @@ export class AuthService {
     private emailVerificationService: EmailVerificationService,
     private activityLogsService: ActivityLogsService,
     private mailService: MailService,
+    private dataSource: DataSource,
   ) {}
 
   private checkAccountLockout(identifier: string): void {
@@ -83,8 +82,11 @@ export class AuthService {
 
   private async isUserAdmin(userId: string, is_admin: number): Promise<boolean> {
     if (is_admin) return true;
-    const hasRole = await this.userRoleRepo.findOne({ where: { user_id: userId } });
-    return !!hasRole;
+    const hasRole = await this.dataSource.query(
+      'SELECT id FROM user_roles WHERE user_id = ? LIMIT 1',
+      [userId],
+    );
+    return !!hasRole?.[0];
   }
 
   async register(dto: RegisterDto, ipAddress?: string) {

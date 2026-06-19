@@ -5,19 +5,11 @@ import {
   UnauthorizedException,
   ForbiddenException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../../entities/user.entity';
-import { UserRole } from '../../entities/user-role.entity';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
-    @InjectRepository(UserRole)
-    private readonly userRoleRepo: Repository<UserRole>,
-  ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -28,14 +20,20 @@ export class AdminGuard implements CanActivate {
     }
 
     // check is_admin flag
-    const dbUser = await this.userRepo.findOne({ where: { id: user.id } });
-    if (dbUser && dbUser.is_admin) {
+    const dbUser = await this.dataSource.query(
+      'SELECT is_admin FROM users WHERE id = ?',
+      [user.id],
+    );
+    if (dbUser?.[0]?.is_admin) {
       return true;
     }
 
     // check if user has any role assigned (Owner, Co-Founder, CEO, Staff = admin access)
-    const hasRole = await this.userRoleRepo.findOne({ where: { user_id: user.id } });
-    if (hasRole) {
+    const hasRole = await this.dataSource.query(
+      'SELECT id FROM user_roles WHERE user_id = ? LIMIT 1',
+      [user.id],
+    );
+    if (hasRole?.[0]) {
       return true;
     }
 
