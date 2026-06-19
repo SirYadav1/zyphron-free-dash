@@ -8,77 +8,67 @@
 
 ## 📋 Documentation Index
 
-### Primary Documents
-
-| Document | Description | Status |
-|----------|-------------|--------|
-| [CHANGELOG.md](CHANGELOG.md) | Complete changelog with timestamps | ✅ Active |
-| [BUG_REPORT.md](BUG_REPORT.md) | Current bug tracking report | ✅ Active |
-| [SECURITY.md](SECURITY.md) | Security scan and audit report | ✅ Active |
-
-### Historical Documents
+### 🔒 Security
 
 | Document | Description | Date |
 |----------|-------------|------|
-| [OLD_BUG_REPORT.md](OLD_BUG_REPORT.md) | Previous bug report | Jun 17 |
-| [OLD_SECURITY_REPORT.md](OLD_SECURITY_REPORT.md) | Previous security report | Jun 18 |
+| [SECURITY_AUDIT_2026-06-19.md](SECURITY_AUDIT_2026-06-19.md) | Full security audit with findings | Jun 19 |
+| [SECURITY.md](SECURITY.md) | Security overview & measures | Jun 19 |
+| [SECURITY-BUG-REPORT.md](SECURITY-BUG-REPORT.md) | Security bug history | Jun 18 |
+
+### 🐛 Bugs
+
+| Document | Description | Date |
+|----------|-------------|------|
+| [BUG_REPORT.md](BUG_REPORT.md) | Current bug tracking | Jun 17 |
 | [BUG_FIX_REPORT.md](BUG_FIX_REPORT.md) | Bug fixes summary | Jun 17 |
 | [QA-REPORT.md](QA-REPORT.md) | Quality assurance report | Jun 18 |
-| [REPORT-features.md](REPORT-features.md) | Features implementation report | Jun 18 |
+
+### 📋 Changelog & Features
+
+| Document | Description | Date |
+|----------|-------------|------|
+| [CHANGELOG.md](CHANGELOG.md) | Complete timeline (8 sessions) | Jun 19 |
+| [REPORT-features.md](REPORT-features.md) | Features implementation | Jun 18 |
 | [ROADMAP.md](ROADMAP.md) | Development roadmap | Jun 17 |
 
-### Project Documents
+### 📖 Project
 
-| Document | Location | Description |
-|----------|----------|-------------|
-| README.md | `/README.md` | Project overview |
-| SETUP_GUIDE.md | `/SETUP_GUIDE.md` | Setup instructions |
-| AGENTS.md | `/AGENTS.md` | AI agent context |
+| Document | Description | Location |
+|----------|-------------|----------|
+| README.md | Project overview | `/README.md` |
+| SETUP_GUIDE.md | Setup instructions | `/SETUP_GUIDE.md` |
+| AGENTS.md | AI agent context | `/AGENTS.md` |
 
----
+### 🔧 PRD & Panel Docs
 
-## 🔄 How to Use This Documentation
-
-### For Developers
-1. **Start with CHANGELOG.md** — See what's been done and when
-2. **Check BUG_REPORT.md** — Know what's broken and what's fixed
-3. **Review SECURITY.md** — Understand security posture
-
-### For New Team Members
-1. **Read README.md** — Project overview
-2. **Read SETUP_GUIDE.md** — How to set up locally
-3. **Read CHANGELOG.md** — Project history
-
-### For Auditors
-1. **Review SECURITY.md** — Security measures and audit trail
-2. **Check OLD_SECURITY_REPORT.md** — Previous security state
-3. **Review BUG_REPORT.md** — Bug history and resolution
+| Document | Description | Date |
+|----------|-------------|------|
+| [PRD-ctrlpanel-analysis.md](PRD-ctrlpanel-analysis.md) | Control panel PRD | Jun 17 |
+| [ctrlpanel-complete-docs.md](ctrlpanel-complete-docs.md) | Panel documentation | Jun 17 |
+| [ctrlpanel-docs-full.md](ctrlpanel-docs-full.md) | Full panel docs | Jun 17 |
 
 ---
 
-## 📊 Project Statistics
-
-| Metric | Value |
-|--------|-------|
-| Total Sessions | 8+ |
-| Total Commits | 1 (squashed) |
-| Files Changed | 137 |
-| Lines Added | 8,126 |
-| Lines Removed | 893 |
-| Bugs Fixed | 40 |
-| Security Issues Fixed | 15 |
-| Features Implemented | 50+ |
-
----
-
-## 🗓️ Development Timeline
+## 📊 File Count: 15 files in docs/
 
 ```
-Jun 17, 2026 — Initial implementation + security fixes
-Jun 18, 2026 — Features: 2FA, email templates, renewal
-Jun 19, 2026 — Store rename, services page, GitHub push
+docs/
+├── README.md                      # This index
+├── CHANGELOG.md                   # Timeline with timestamps
+├── SECURITY_AUDIT_2026-06-19.md   # Security scan results
+├── SECURITY.md                    # Security measures
+├── SECURITY-BUG-REPORT.md         # Security bugs
+├── BUG_REPORT.md                  # Bug tracking
+├── BUG_FIX_REPORT.md              # Bug fixes
+├── QA-REPORT.md                   # QA report
+├── REPORT-features.md             # Features
+├── ROADMAP.md                     # Roadmap
+├── PRD-ctrlpanel-analysis.md      # PRD
+├── ctrlpanel-complete-docs.md     # Panel docs
+└── ctrlpanel-docs-full.md         # Full panel docs
 ```
 
 ---
 
-*Documentation maintained by Hermes Agent*
+*All documentation centralized in `docs/` folder.*
