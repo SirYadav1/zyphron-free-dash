@@ -5,12 +5,12 @@ import { User } from '../entities/user.entity';
 import { Setting } from '../entities/setting.entity';
 import { EmailTemplatesService } from './email-templates.service';
 import { EmailTemplatesController } from './email-templates.controller';
-import { MailService } from '../mail/mail.service';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([EmailTemplate, User, Setting])],
+  imports: [TypeOrmModule.forFeature([EmailTemplate, User, Setting]), MailModule],
   controllers: [EmailTemplatesController],
-  providers: [EmailTemplatesService, MailService],
+  providers: [EmailTemplatesService],
   exports: [EmailTemplatesService],
 })
 export class EmailTemplatesModule {}
