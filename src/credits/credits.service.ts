@@ -18,7 +18,7 @@ export class CreditsService {
 
   async getCreditPackages(): Promise<any[]> {
     const packages = await this.shopProductRepo.find({
-      where: { type: 'credit_package', disabled: 0 },
+      where: { type: 'credits', disabled: 0 },
       order: { price: 'ASC' },
     });
     return packages.map((pkg) => ({

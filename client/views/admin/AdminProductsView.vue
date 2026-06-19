@@ -26,7 +26,7 @@
               <th class="px-5 py-3 text-label">Active</th>
               <th class="px-5 py-3 text-label">Name</th>
               <th class="px-5 py-3 text-label">Category</th>
-              <th class="px-5 py-3 text-label">Price</th>
+              <th class="px-5 py-3 text-label">Coins</th>
               <th class="px-5 py-3 text-label">Billing</th>
               <th class="px-5 py-3 text-label">Memory</th>
               <th class="px-5 py-3 text-label">CPU</th>
@@ -44,7 +44,7 @@
               </td>
               <td class="px-5 py-3 text-text-primary font-bold text-sm">{{ p.name }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ getCategoryName(p.category_id) }}</td>
-              <td class="px-5 py-3 text-accent font-bold">{{ p.price }}</td>
+              <td class="px-5 py-3 text-accent font-bold">{{ p.coin_price }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ p.billing_priority || '---' }}</td>
               <td class="px-5 py-3 text-blue-400 text-sm">{{ p.ram }}MB</td>
               <td class="px-5 py-3 text-amber-400 text-sm">{{ p.cpu }}%</td>

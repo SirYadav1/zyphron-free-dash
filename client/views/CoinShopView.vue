@@ -2,8 +2,8 @@
   <div class="max-w-4xl mx-auto space-y-10">
     <!-- Header -->
     <div class="space-y-1">
-      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Store</h2>
-      <p class="text-sm text-text-muted">Buy credit packages to deploy and manage your servers.</p>
+      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Coin Shop</h2>
+      <p class="text-sm text-text-muted">Buy coin packages to deploy and manage your servers.</p>
     </div>
 
     <!-- Current Balance -->
@@ -16,7 +16,7 @@
         </div>
         <div>
           <p class="text-xs font-bold text-text-muted uppercase tracking-widest">Current Balance</p>
-          <p class="text-2xl font-bold text-accent tabular-nums">{{ authStore.user?.coins || 0 }} <span class="text-sm font-medium text-text-muted">credits</span></p>
+          <p class="text-2xl font-bold text-accent tabular-nums">{{ authStore.user?.coins || 0 }} <span class="text-sm font-medium text-text-muted">coins</span></p>
         </div>
       </div>
       <router-link to="/servers/create" class="btn-primary px-5 py-2 text-sm">
@@ -46,11 +46,11 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       </div>
-      <p class="text-text-muted font-medium">No credit packages available yet.</p>
-      <p class="text-xs text-text-muted mt-1">Check back later or earn credits through the AFK system.</p>
+      <p class="text-text-muted font-medium">No coin packages available yet.</p>
+      <p class="text-xs text-text-muted mt-1">Check back later or earn coins through the AFK system.</p>
     </div>
 
-    <!-- Credit Packages Grid -->
+    <!-- Coin Packages Grid -->
     <div v-else class="space-y-4">
       <h3 class="text-label">Available Packages</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -76,7 +76,7 @@
             <!-- Credits Amount -->
             <div class="flex items-baseline gap-2">
               <span class="text-3xl font-bold text-accent tabular-nums">{{ pkg.quantity }}</span>
-              <span class="text-sm font-medium text-text-muted">credits</span>
+              <span class="text-sm font-medium text-text-muted">coins</span>
             </div>
 
             <!-- Price -->
@@ -107,10 +107,10 @@
           </svg>
         </div>
         <div class="space-y-1">
-          <p class="text-xs font-bold text-text-primary">How Credits Work</p>
+          <p class="text-xs font-bold text-text-primary">How Coins Work</p>
           <p class="text-[11px] text-text-muted leading-relaxed">
-            Credits are used to deploy and maintain servers on the Zyphron network.
-            Each server plan costs a specific number of credits. You can also earn credits
+            Coins are used to deploy and maintain servers on the Zyphron network.
+            Each server plan costs a specific number of coins. You can also earn coins
             by using the AFK earning system or purchasing packages here.
           </p>
         </div>
@@ -151,7 +151,7 @@ async function buyPackage(pkg) {
     success.value = data.message
     await authStore.fetchProfile()
   } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to purchase credits'
+    error.value = err.response?.data?.message || 'Failed to purchase coins'
   } finally {
     buying.value = false
   }

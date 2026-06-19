@@ -2,7 +2,7 @@
   <div class="space-y-10">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="space-y-1">
-        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Credit Packages</h2>
+        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Coin Packages</h2>
         <p class="text-sm text-text-muted">{{ items.length }} package{{ items.length !== 1 ? 's' : '' }} available in store</p>
       </div>
       <router-link to="/admin/store/create" class="btn-primary px-4 py-2 text-xs">Create Store Item</router-link>
@@ -25,7 +25,7 @@
             <tr v-for="item in items" :key="item.id" class="border-b border-border/50 hover:bg-white/[0.02] transition-colors">
               <td class="px-5 py-3">
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider" :class="item.type === 'credits' ? 'text-accent bg-accent/10' : 'text-purple-400 bg-purple-500/10'">
-                  {{ item.type }}
+                  {{ item.type === 'credits' ? 'Coins' : item.type }}
                 </span>
               </td>
               <td class="px-5 py-3 text-accent font-bold">₹{{ item.price }}</td>

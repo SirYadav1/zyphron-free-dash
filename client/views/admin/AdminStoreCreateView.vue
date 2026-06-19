@@ -15,7 +15,7 @@
       <div class="space-y-1">
         <label class="text-label">Type</label>
         <select v-model="form.type" class="input-field w-full">
-          <option value="credits">Credits</option>
+          <option value="credits">Coins</option>
           <option value="server_slots">Server Slots</option>
         </select>
       </div>
@@ -33,7 +33,7 @@
       </div>
       <div class="space-y-1">
         <label class="text-label">Display Name</label>
-        <input v-model="form.display" type="text" class="input-field w-full" placeholder="e.g. 100 Credits Pack" />
+        <input v-model="form.display" type="text" class="input-field w-full" placeholder="e.g. 1000 Coins Pack" />
       </div>
 
       <div class="flex gap-3 pt-4 border-t border-border">

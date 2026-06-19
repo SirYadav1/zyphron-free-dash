@@ -83,22 +83,6 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-label">Price ($)</label>
-            <input v-model.number="form.price" type="number" class="input-field w-full" />
-          </div>
-          <div class="space-y-1">
-            <label class="text-label">Billing Priority</label>
-            <select v-model="form.billing_priority" class="input-field w-full">
-              <option value="monthly">Monthly</option>
-              <option value="hourly">Hourly</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="half_annually">Half Annually</option>
-              <option value="annually">Annually</option>
-            </select>
-          </div>
-          <div class="space-y-1">
             <label class="text-label">CPU (%)</label>
             <input v-model.number="form.cpu" type="number" class="input-field w-full" />
           </div>
