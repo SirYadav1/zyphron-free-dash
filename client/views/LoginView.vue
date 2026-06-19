@@ -31,7 +31,7 @@
           <div class="space-y-1.5" style="animation: slideUp 0.4s ease-out 0.35s both;">
             <div class="flex items-center justify-between px-0.5">
               <label for="password" class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Password</label>
-              <a href="#" class="text-[11px] font-bold text-accent hover:underline">Forgot?</a>
+              <router-link to="/forgot-password" class="text-[11px] font-bold text-accent hover:underline">Forgot?</router-link>
             </div>
             <input
               id="password"

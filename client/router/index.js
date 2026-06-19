@@ -19,6 +19,12 @@ const routes = [
     meta: { guest: true },
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('../views/ForgotPasswordView.vue'),
+    meta: { guest: true },
+  },
+  {
     path: '/verify',
     name: 'VerifyPending',
     component: () => import('../views/VerifyPendingView.vue'),
