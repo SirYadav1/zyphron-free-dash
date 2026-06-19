@@ -9,19 +9,5 @@
   <body>
     <div id="app"></div>
     <script type="module" src="/client/main.js"></script>
-    <script>
-      (async () => {
-        try {
-          const res = await fetch('/api/public-settings')
-          const data = await res.json()
-          if (data.favicon_url) {
-            const link = document.getElementById('favicon-tag')
-            if (link) {
-              link.href = data.favicon_url
-            }
-          }
-        } catch {}
-      })()
-    </script>
   </body>
 </html>
