@@ -23,6 +23,7 @@ import { PterodactylService } from '../pterodactyl/pterodactyl.service';
 import { EmailVerificationService } from '../email-verification/email-verification.service';
 import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 import { MailService } from '../mail/mail.service';
+import { EncryptionUtil } from '../common/utils/encryption.util';
 
 @Injectable()
 export class AuthService {
@@ -642,14 +643,14 @@ export class AuthService {
 
     // generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpHash = await bcrypt.hash(otp, 10);
+    const encryptedOtp = EncryptionUtil.encrypt(otp);
 
     // expires in 10 minutes
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     const resetRecord = this.passwordResetRepo.create({
       email,
-      otp: otpHash,
+      otp: encryptedOtp,
       expires_at: expiresAt,
       attempts: 0,
       resend_count: recentCount + 1,
@@ -730,15 +731,16 @@ export class AuthService {
     resetRecord.attempts += 1;
     await this.passwordResetRepo.save(resetRecord);
 
-    const valid = await bcrypt.compare(otp, resetRecord.otp);
-    if (!valid) {
+    // decrypt stored OTP and compare
+    const storedOtp = EncryptionUtil.decrypt(resetRecord.otp);
+    if (storedOtp !== otp) {
       throw new BadRequestException(`Invalid code. ${5 - resetRecord.attempts} attempts remaining.`);
     }
 
     // otp ok, mark verified and issue the reset token
     resetRecord.verified = true;
     const resetToken = crypto.randomBytes(32).toString('hex');
-    resetRecord.reset_token = await bcrypt.hash(resetToken, 10);
+    resetRecord.reset_token = EncryptionUtil.encrypt(resetToken);
     await this.passwordResetRepo.save(resetRecord);
 
     return { reset_token: resetToken };
@@ -763,8 +765,9 @@ export class AuthService {
       throw new BadRequestException('Reset session expired. Please request a new code.');
     }
 
-    const tokenValid = await bcrypt.compare(resetToken, resetRecord.reset_token);
-    if (!tokenValid) {
+    // decrypt stored reset token and compare
+    const storedToken = EncryptionUtil.decrypt(resetRecord.reset_token);
+    if (storedToken !== resetToken) {
       throw new BadRequestException('Invalid reset token.');
     }
 
