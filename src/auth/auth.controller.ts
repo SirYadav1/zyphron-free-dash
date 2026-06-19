@@ -27,7 +27,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Throttle({ default: { limit: 3, ttl: 3600000 } })
+  @Throttle({ default: { limit: 10, ttl: 600000 } }) // 10 per 10 min
   @Post('register')
   async register(@Body() dto: RegisterDto, @Ip() ip: string) {
     return this.authService.register(dto, ip);

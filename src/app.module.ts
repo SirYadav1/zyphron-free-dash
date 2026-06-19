@@ -33,8 +33,11 @@ import { ServiceCategoriesModule } from './service-categories/service-categories
 import { CoinOrdersModule } from './coin-orders/coin-orders.module';
 import { EmailVerificationModule } from './email-verification/email-verification.module';
 import { Setting } from './entities/setting.entity';
+import { User } from './entities/user.entity';
+import { UserRole } from './entities/user-role.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AdminGuard } from './common/guards/admin.guard';
 
 @Module({
   imports: [
@@ -99,7 +102,7 @@ import { AppService } from './app.service';
     ServiceCategoriesModule,
     CoinOrdersModule,
     EmailVerificationModule,
-    TypeOrmModule.forFeature([Setting]),
+    TypeOrmModule.forFeature([Setting, User, UserRole]),
   ],
   controllers: [AppController],
   providers: [
@@ -108,6 +111,7 @@ import { AppService } from './app.service';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    AdminGuard,
   ],
 })
 export class AppModule {}

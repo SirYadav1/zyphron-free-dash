@@ -8,6 +8,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { TwoFactorController } from './two-factor.controller';
 import { TwoFactorService } from './two-factor.service';
 import { User } from '../entities/user.entity';
+import { UserRole } from '../entities/user-role.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { Setting } from '../entities/setting.entity';
 import { AfkSession } from '../entities/afk-session.entity';
@@ -23,6 +24,7 @@ import { MailModule } from '../mail/mail.module';
   imports: [
     TypeOrmModule.forFeature([
       User,
+      UserRole,
       Transaction,
       Setting,
       AfkSession,
