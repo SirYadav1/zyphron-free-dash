@@ -183,7 +183,7 @@ onMounted(async () => {
 
   // Load product data
   try {
-    const { data } = await client.get(`/admin/services/${route.params.id}`)
+    const { data } = await client.get(`/admin/products/${route.params.id}`)
     const p = data.product || data
     form.value = {
       name: p.name || '',
@@ -252,7 +252,7 @@ async function handleSubmit() {
   error.value = ''
   success.value = ''
   try {
-    await client.put(`/admin/services/${route.params.id}`, form.value)
+    await client.put(`/admin/products/${route.params.id}`, form.value)
     success.value = 'Service updated successfully'
     setTimeout(() => router.push('/admin/services'), 1000)
   } catch (err) {

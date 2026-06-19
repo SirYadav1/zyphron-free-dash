@@ -27,3 +27,4 @@ export { Permission } from './permission.entity';
 export { RolePermission } from './role-permission.entity';
 export { UserRole } from './user-role.entity';
 export { EmailTemplate } from './email-template.entity';
+export { CoinOrder } from './coin-order.entity';
