@@ -1,16 +1,20 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CoinOrder } from '../entities/coin-order.entity';
 import { User } from '../entities/user.entity';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class CoinOrdersService {
+  private readonly logger = new Logger(CoinOrdersService.name);
+
   constructor(
     @InjectRepository(CoinOrder)
     private readonly coinOrderRepo: Repository<CoinOrder>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly mailService: MailService,
   ) {}
 
   async createOrder(userId: string, dto: {
@@ -90,6 +94,20 @@ export class CoinOrdersService {
     if (user) {
       user.coins += order.coins_amount;
       await this.userRepo.save(user);
+
+      // Send payment approved email
+      try {
+        if (user.email) {
+          await this.mailService.sendPaymentApproved(
+            user.email,
+            user.username,
+            order.coins_amount,
+            order.id,
+          );
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to send payment approved email to ${user.email}:`, error.message);
+      }
     }
 
     order.status = 'approved';
@@ -99,8 +117,11 @@ export class CoinOrdersService {
 
   async declineOrder(id: number, message?: string) {
     const order = await this.getOrderById(id);
-    order.status = 'declined';
+    // Set status back to 'pending' so user can re-upload screenshot
+    order.status = 'pending';
     order.admin_message = message || null;
+    // Clear screenshot so user can upload a new one
+    order.screenshot_path = null;
     return this.coinOrderRepo.save(order);
   }
 

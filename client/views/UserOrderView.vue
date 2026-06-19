@@ -15,6 +15,28 @@
       <span>✅</span> {{ success }}
     </div>
 
+    <!-- Success Toast/Popup -->
+    <Teleport to="body">
+      <transition name="fade">
+        <div v-if="showSuccessPopup" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] px-4">
+          <div class="card-surface w-full max-w-md p-8 text-center space-y-6 shadow-2xl border border-accent/20">
+            <div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto">
+              <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-text-primary">Screenshot Uploaded! 🎉</h3>
+              <p class="text-sm text-text-muted mt-2">Your payment screenshot has been submitted successfully. Redirecting to your order status page...</p>
+            </div>
+            <div class="flex justify-center">
+              <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+
     <!-- Loading -->
     <div v-if="loading" class="flex flex-col items-center justify-center py-20 gap-4">
       <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
@@ -142,7 +164,7 @@
         </div>
       </template>
 
-      <!-- Declined -->
+      <!-- Declined / Re-upload (status reset to pending with admin message) -->
       <template v-if="order.status === 'declined'">
         <div class="card-surface p-8 text-center space-y-4">
           <div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
@@ -153,7 +175,10 @@
           <h3 class="text-lg font-bold text-red-500">Payment Declined</h3>
           <p class="text-sm text-text-muted" v-if="order.admin_message">{{ order.admin_message }}</p>
           <p class="text-sm text-text-muted" v-else>No reason provided. Please contact support.</p>
-          <router-link to="/store" class="btn-primary inline-block px-6 py-2 text-sm">Back to Store</router-link>
+          <div class="flex gap-3 justify-center pt-2">
+            <button @click="reuploadScreenshot" class="btn-primary px-6 py-2 text-sm">Re-upload Screenshot</button>
+            <router-link to="/store" class="btn-secondary px-6 py-2 text-sm">Back to Store</router-link>
+          </div>
         </div>
       </template>
     </template>
@@ -161,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import QRCode from 'qrcode'
 import client from '../api/client'
@@ -177,6 +202,7 @@ const selectedFile = ref(null)
 const previewUrl = ref('')
 const fileInput = ref(null)
 const qrCanvas = ref(null)
+const showSuccessPopup = ref(false)
 
 const paymentAddress = ref('payment@zyphron.cloud')
 
@@ -225,7 +251,6 @@ async function uploadScreenshot() {
   success.value = ''
 
   try {
-    // Convert file to base64 data URL for storage
     const reader = new FileReader()
     const dataUrl = await new Promise((resolve, reject) => {
       reader.onload = () => resolve(reader.result)
@@ -237,10 +262,18 @@ async function uploadScreenshot() {
       screenshot_url: dataUrl,
     })
 
+    // Show success popup
+    showSuccessPopup.value = true
+
     // Reload order to get updated status
     const { data } = await client.get(`/coin-orders/${order.value.id}`)
     order.value = data
-    success.value = 'Screenshot uploaded! Awaiting admin review.'
+
+    // Redirect to the order detail page after 2 seconds
+    setTimeout(() => {
+      showSuccessPopup.value = false
+      router.push(`/store/order/${order.value.id}`)
+    }, 2000)
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to upload screenshot'
   } finally {
@@ -248,12 +281,19 @@ async function uploadScreenshot() {
   }
 }
 
+function reuploadScreenshot() {
+  // Reset to pending state so user can upload new screenshot
+  selectedFile.value = null
+  previewUrl.value = ''
+  order.value.status = 'pending'
+  error.value = ''
+  success.value = ''
+}
+
 onMounted(async () => {
-  // Get order ID from route
   const orderId = route.params.orderId
 
   if (orderId) {
-    // Loading existing order
     try {
       const { data } = await client.get(`/coin-orders/${orderId}`)
       order.value = data
@@ -264,7 +304,6 @@ onMounted(async () => {
       loading.value = false
     }
   } else {
-    // Create new order from query params
     const pkgName = route.query.name || 'Coin Package'
     const coins = parseInt(route.query.coins || '100')
     const price = parseInt(route.query.price || '5')
@@ -279,7 +318,6 @@ onMounted(async () => {
         payment_address: paymentAddress.value,
       })
       order.value = data
-      // Update URL without reload
       router.replace({ params: { orderId: data.id } })
       await generateQR(paymentAddress.value)
     } catch (err) {
@@ -290,3 +328,14 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

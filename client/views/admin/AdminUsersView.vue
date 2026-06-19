@@ -15,242 +15,206 @@
       </div>
     </div>
 
-    <div class="card-surface overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-border bg-base/50 text-left">
-              <th class="px-5 py-3 text-label">ID</th>
-              <th class="px-5 py-3 text-label">Username</th>
-              <th class="px-5 py-3 text-label">Email</th>
-              <th class="px-5 py-3 text-label">Verified</th>
-              <th class="px-5 py-3 text-label">Discord</th>
-              <th class="px-5 py-3 text-label">Servers</th>
-              <th class="px-5 py-3 text-label">Coins</th>
-              <th class="px-5 py-3 text-label">Status</th>
-              <th class="px-5 py-3 text-label text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="user in filteredUsers"
-              :key="user.id"
-              class="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
+    <!-- User Cards Grid -->
+    <div v-if="filteredUsers.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div
+        v-for="user in filteredUsers"
+        :key="user.id"
+        class="card-surface p-5 space-y-4 hover:border-accent/20 transition-all group relative"
+      >
+        <!-- Top row: Avatar + Status -->
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <!-- Avatar / Initials -->
+            <div
+              :class="user.isBanned ? 'bg-red-500/20 text-red-400' : user.isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-accent/10 text-accent'"
+              class="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
             >
-              <td class="px-5 py-3 text-text-muted text-xs">{{ user.id }}</td>
-              <td class="px-5 py-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-text-primary font-bold text-sm">{{ user.username }}</span>
-                  <span v-if="user.isAdmin" class="px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-wider">Admin</span>
-                </div>
-              </td>
-              <td class="px-5 py-3 text-text-muted text-sm">{{ user.email }}</td>
-              <td class="px-5 py-3">
-                <span :class="user.emailVerified ? 'text-accent' : 'text-yellow-500'" class="text-xs font-bold">
-                  {{ user.emailVerified ? 'Yes' : 'No' }}
-                </span>
-              </td>
-              <td class="px-5 py-3">
-                <span :class="user.discordId ? 'text-indigo-400' : 'text-text-muted/40'" class="text-xs font-bold">
-                  {{ user.discordId ? 'Linked' : '—' }}
-                </span>
-              </td>
-              <td class="px-5 py-3 text-text-muted text-sm">{{ user.serverCount }}</td>
-              <td class="px-5 py-3 text-accent font-bold">{{ user.coins }}</td>
-              <td class="px-5 py-3">
-                <span :class="userStatusClass(user)" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  {{ userStatusText(user) }}
-                </span>
-              </td>
-              <td class="px-5 py-3 text-right">
-                <button
-                  @click="openDetail(user)"
-                  class="text-xs font-bold text-accent hover:text-white transition-colors"
-                >
-                  Manage
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              {{ getInitials(user.username) }}
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-bold text-text-primary truncate">{{ user.username }}</p>
+              <p class="text-[11px] text-text-muted truncate">{{ user.email || 'No email' }}</p>
+            </div>
+          </div>
+          <!-- Online/Offline indicator -->
+          <div class="flex-shrink-0" :title="isOnline(user) ? 'Online' : 'Offline'">
+            <div
+              :class="isOnline(user) ? 'bg-emerald-400' : 'bg-gray-500'"
+              class="w-2.5 h-2.5 rounded-full"
+            ></div>
+          </div>
+        </div>
 
-      <div v-if="filteredUsers.length === 0" class="py-16 text-center">
-        <p class="text-text-muted text-lg font-bold mb-1">No Users Found</p>
-        <p class="text-sm text-text-muted/60">No users match your search criteria.</p>
+        <!-- Role badges -->
+        <div class="flex flex-wrap gap-1.5">
+          <span
+            v-if="user.isAdmin"
+            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400"
+          >Admin</span>
+          <span
+            v-for="role in getUserRoles(user)"
+            :key="role.name"
+            :class="getRoleBadgeClass(role.name)"
+            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+          >{{ role.name }}</span>
+          <span
+            v-if="!user.isAdmin && (!userRolesMap[user.id] || userRolesMap[user.id].length === 0)"
+            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-500/15 text-gray-400"
+          >User</span>
+        </div>
+
+        <!-- Coins + Status row -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="text-accent font-bold text-sm">{{ user.coins }}</span>
+            <span class="text-[10px] text-text-muted uppercase tracking-widest">coins</span>
+          </div>
+          <span
+            :class="userStatusClass(user)"
+            class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+          >{{ userStatusText(user) }}</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-2 pt-2 border-t border-border/50">
+          <button
+            @click="openEditModal(user)"
+            class="flex-1 px-3 py-1.5 text-[11px] font-bold text-accent border border-accent/20 rounded-lg hover:bg-accent/10 transition-colors"
+          >Edit</button>
+          <button
+            @click="openRolesModal(user)"
+            class="flex-1 px-3 py-1.5 text-[11px] font-bold text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/10 transition-colors"
+          >Roles</button>
+          <button
+            @click="handleDelete(user)"
+            class="px-3 py-1.5 text-[11px] font-bold text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors"
+          >✕</button>
+        </div>
       </div>
     </div>
 
+    <!-- Empty state -->
+    <div v-if="filteredUsers.length === 0 && !store.loading" class="card-surface py-16 text-center">
+      <p class="text-text-muted text-lg font-bold mb-1">No Users Found</p>
+      <p class="text-sm text-text-muted/60">No users match your search criteria.</p>
+    </div>
+
+    <!-- Loading -->
+    <div v-if="store.loading" class="flex items-center justify-center py-16">
+      <div class="w-10 h-10 border-[3px] border-accent border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Edit User Modal -->
     <Teleport to="body">
-      <div v-if="showDetail && selectedUser" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] pt-[5vh] pb-[5vh] px-4 overflow-y-auto" @click.self="showDetail = false">
-      <div class="card-surface w-full max-w-2xl max-h-[90vh] overflow-y-auto my-auto shadow-2xl border border-border/50">
-        <div class="px-6 py-5 border-b border-border flex items-center justify-between">
-          <div>
-            <h3 class="text-xl font-bold text-text-primary">{{ selectedUser.username }}</h3>
-            <p class="text-xs text-text-muted mt-1">ID: {{ selectedUser.id }} • {{ selectedUser.email }}</p>
+      <div v-if="showEditModal && editUser" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] pt-[5vh] pb-[5vh] px-4 overflow-y-auto" @click.self="showEditModal = false">
+        <div class="card-surface w-full max-w-lg max-h-[90vh] overflow-y-auto my-auto shadow-2xl border border-border/50">
+          <div class="px-6 py-5 border-b border-border flex items-center justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-text-primary">Edit {{ editUser.username }}</h3>
+              <p class="text-xs text-text-muted mt-1">ID: {{ editUser.id }}</p>
+            </div>
+            <button @click="showEditModal = false" class="text-text-muted hover:text-text-primary transition-colors text-2xl">×</button>
           </div>
-          <button @click="showDetail = false" class="text-text-muted hover:text-text-primary transition-colors text-2xl">×</button>
-        </div>
+          <div class="p-6 space-y-5">
+            <div v-if="modalError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">⚠️ {{ modalError }}</div>
+            <div v-if="modalSuccess" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">✅ {{ modalSuccess }}</div>
 
-        <div class="p-6 space-y-6">
-          <div v-if="detailError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">
-            ⚠️ {{ detailError }}
-          </div>
-          <div v-if="detailSuccess" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">
-            ✅ {{ detailSuccess }}
-          </div>
+            <!-- Change Email -->
+            <div class="space-y-1">
+              <label class="text-label">Email</label>
+              <input v-model="editForm.email" type="email" class="input-field w-full" placeholder="user@example.com" />
+            </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-base/50 border border-border rounded-xl p-4">
-              <span class="text-label block mb-1">IP Address</span>
-              <span class="text-text-primary text-sm">{{ selectedUser.ipAddress || '—' }}</span>
+            <!-- Change Password -->
+            <div class="space-y-1">
+              <label class="text-label">New Password (leave blank to keep current)</label>
+              <input v-model="editForm.password" type="password" class="input-field w-full" placeholder="••••••••" />
             </div>
-            <div class="bg-base/50 border border-border rounded-xl p-4">
-              <span class="text-label block mb-1">Pterodactyl ID</span>
-              <span class="text-text-primary text-sm">{{ selectedUser.pterodactylUserId || '—' }}</span>
-            </div>
-            <div class="bg-base/50 border border-border rounded-xl p-4">
-              <span class="text-label block mb-1">Discord</span>
-              <span class="text-text-primary text-sm">{{ selectedUser.discordUsername || 'Not linked' }}</span>
-            </div>
-            <div class="bg-base/50 border border-border rounded-xl p-4">
-              <span class="text-label block mb-1">Created</span>
-              <span class="text-text-primary text-sm">{{ formatDate(selectedUser.createdAt) }}</span>
-            </div>
-          </div>
 
-          <div class="space-y-4 border-t border-border pt-6">
-            <div class="space-y-3">
-              <p class="text-label">Adjust Coins</p>
-              <div class="flex items-center gap-3">
-                <input v-model.number="editCoins" type="number" class="input-field flex-1" />
+            <!-- Coins -->
+            <div class="space-y-1">
+              <label class="text-label">Coins Balance</label>
+              <input v-model.number="editForm.coins" type="number" class="input-field w-full" />
+            </div>
+
+            <!-- Ban/Unban -->
+            <div class="space-y-2">
+              <label class="text-label">Account Status</label>
+              <div v-if="!editUser.isBanned" class="flex gap-3">
+                <input v-model="editForm.banReason" type="text" class="input-field flex-1" placeholder="Ban reason (optional)" />
                 <button
-                  @click="handleUpdateCoins"
-                  :disabled="updating"
-                  class="btn-primary px-6 py-2"
-                >
-                  Update
-                </button>
+                  @click="handleBanUser"
+                  :disabled="modalSaving"
+                  class="px-4 py-2 text-xs font-bold text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors"
+                >{{ modalSaving ? 'Banning...' : 'Ban' }}</button>
               </div>
-            </div>
-
-            <div class="space-y-3 pt-4 border-t border-border mt-4">
-              <p class="text-label">Administrative Access</p>
-              <div class="flex items-center justify-between bg-base/50 p-4 rounded-xl border border-border">
-                <div>
-                  <p class="text-sm font-bold text-text-primary">Admin Privileges</p>
-                  <p class="text-xs text-text-muted mt-0.5">Grants full access to the control panel.</p>
-                </div>
-                <button
-                  @click="handleToggleAdmin"
-                  :disabled="updatingAdmin"
-                  :class="selectedUser.isAdmin ? 'btn-secondary text-red-500 hover:border-red-500/50' : 'btn-primary'"
-                  class="px-6 py-2 text-xs"
-                >
-                  {{ updatingAdmin ? 'Processing...' : selectedUser.isAdmin ? 'Revoke Admin' : 'Grant Admin' }}
-                </button>
-              </div>
-            </div>
-
-            <div class="flex gap-3 pt-4 border-t border-border mt-4">
-              <button
-                v-if="!selectedUser.isBanned"
-                @click="handleBan"
-                :disabled="banning"
-                class="btn-secondary text-red-500 border-red-500/20 hover:bg-red-500/10 px-6 py-2"
-              >
-                {{ banning ? 'Banning...' : 'Ban User' }}
-              </button>
               <button
                 v-else
-                @click="handleUnban"
-                :disabled="unbanning"
-                class="btn-secondary px-6 py-2"
-              >
-                {{ unbanning ? 'Unbanning...' : 'Unban User' }}
-              </button>
+                @click="handleUnbanUser"
+                :disabled="modalSaving"
+                class="w-full px-4 py-2 text-xs font-bold text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/10 transition-colors"
+              >{{ modalSaving ? 'Unbanning...' : 'Unban User' }}</button>
             </div>
 
-            <div v-if="userServers.length > 0" class="space-y-3 pt-4 border-t border-border mt-4">
-              <p class="text-label">Servers ({{ userServers.length }})</p>
-              <div class="overflow-x-auto">
-                <table class="w-full text-xs">
-                  <thead>
-                    <tr class="border-b border-border text-left">
-                      <th class="pb-2 pr-3 text-label">Name</th>
-                      <th class="pb-2 pr-3 text-label">Type</th>
-                      <th class="pb-2 pr-3 text-label">RAM</th>
-                      <th class="pb-2 pr-3 text-label">CPU</th>
-                      <th class="pb-2 pr-3 text-label">Disk</th>
-                      <th class="pb-2 pr-3 text-label">Status</th>
-                      <th class="pb-2 pr-3 text-label">Inactive</th>
-                      <th class="pb-2 text-label">Expires</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="s in userServers" :key="s.id" class="border-b border-border/30">
-                      <td class="py-2 pr-3 text-text-primary font-medium">{{ s.serverName }}</td>
-                      <td class="py-2 pr-3">
-                        <span :class="s.isFree ? 'text-accent' : 'text-purple-400'" class="font-bold text-[10px] uppercase">{{ s.isFree ? 'Free' : 'Paid' }}</span>
-                      </td>
-                      <td class="py-2 pr-3 text-text-muted">{{ s.ramMb || '—' }} MB</td>
-                      <td class="py-2 pr-3 text-text-muted">{{ s.cpuPercent || '—' }}%</td>
-                      <td class="py-2 pr-3 text-text-muted">{{ s.diskMb || '—' }} MB</td>
-                      <td class="py-2 pr-3">
-                        <span :class="s.status === 'active' ? 'text-emerald-400' : s.status === 'suspended' ? 'text-yellow-400' : 'text-red-400'" class="font-bold">{{ s.status }}</span>
-                      </td>
-                      <td class="py-2 pr-3 text-text-muted" :class="{ 'text-red-400 font-bold': s.inactiveDays >= 7 }">
-                        {{ s.inactiveDays > 0 ? `${s.inactiveDays}d` : s.inactiveHours > 0 ? `${s.inactiveHours}h` : 'active' }}
-                      </td>
-                      <td class="py-2 text-text-muted">{{ formatDate(s.expiresAt) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+            <!-- Admin Toggle -->
+            <div class="flex items-center justify-between bg-base/50 p-4 rounded-xl border border-border">
+              <div>
+                <p class="text-sm font-bold text-text-primary">Admin Privileges</p>
+                <p class="text-xs text-text-muted mt-0.5">Grants full access to the control panel.</p>
               </div>
+              <button
+                @click="handleToggleAdmin"
+                :disabled="modalSaving"
+                :class="editUser.isAdmin ? 'btn-secondary text-red-500 hover:border-red-500/50' : 'btn-primary'"
+                class="px-4 py-2 text-xs"
+              >{{ editUser.isAdmin ? 'Revoke' : 'Grant' }}</button>
             </div>
 
-            <div class="space-y-3 pt-4 border-t border-border mt-4">
-              <p class="text-label">Roles</p>
-              <div v-if="rolesLoading" class="text-xs text-text-muted">Loading roles...</div>
-              <div v-else-if="roles.length === 0" class="text-xs text-text-muted">No roles defined. <router-link to="/admin/roles" class="text-accent">Create roles</router-link></div>
-              <div v-else class="flex flex-wrap gap-2">
-                <button
-                  v-for="role in roles"
-                  :key="role.id"
-                  @click="toggleRole(role)"
-                  :disabled="roleToggling"
-                  :class="userRoleIds.includes(role.id) ? 'bg-accent/20 text-accent border-accent/40' : 'bg-base text-text-muted border-border hover:border-border-bright'"
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold border transition-all"
-                >
-                  {{ role.name }}
-                  <span v-if="userRoleIds.includes(role.id)" class="ml-1">✓</span>
-                </button>
-              </div>
-            </div>
-
-            <div v-if="showBanReason" class="flex gap-3">
-              <input
-                v-model="banReason"
-                placeholder="Ban reason (optional)"
-                class="input-field flex-1"
-              />
-              <button
-                @click="confirmBan"
-                :disabled="banning"
-                class="btn-primary bg-red-500 hover:bg-red-600 px-6 py-2 shadow-none"
-              >
-                Confirm
+            <div class="flex gap-3 pt-4 border-t border-border">
+              <button @click="handleSaveEdit" :disabled="modalSaving" class="btn-primary px-6 py-2 text-xs">
+                {{ modalSaving ? 'Saving...' : 'Save Changes' }}
               </button>
-              <button
-                @click="showBanReason = false"
-                class="btn-secondary px-6 py-2"
-              >
-                Cancel
-              </button>
+              <button @click="showEditModal = false" class="btn-secondary px-6 py-2 text-xs">Cancel</button>
             </div>
           </div>
         </div>
       </div>
+    </Teleport>
+
+    <!-- Roles Modal -->
+    <Teleport to="body">
+      <div v-if="showRolesModal && rolesUser" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] pt-[5vh] pb-[5vh] px-4 overflow-y-auto" @click.self="showRolesModal = false">
+        <div class="card-surface w-full max-w-md max-h-[90vh] overflow-y-auto my-auto shadow-2xl border border-border/50">
+          <div class="px-6 py-5 border-b border-border flex items-center justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-text-primary">Roles — {{ rolesUser.username }}</h3>
+              <p class="text-xs text-text-muted mt-1">Assign or remove roles</p>
+            </div>
+            <button @click="showRolesModal = false" class="text-text-muted hover:text-text-primary transition-colors text-2xl">×</button>
+          </div>
+          <div class="p-6 space-y-4">
+            <div v-if="rolesModalError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">{{ rolesModalError }}</div>
+            <div v-if="rolesModalSuccess" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">{{ rolesModalSuccess }}</div>
+
+            <div v-if="rolesLoading" class="text-xs text-text-muted text-center py-4">Loading roles...</div>
+            <div v-else-if="allRoles.length === 0" class="text-xs text-text-muted text-center py-4">No roles defined. <router-link to="/admin/roles" class="text-accent">Create roles</router-link></div>
+            <div v-else class="space-y-2">
+              <button
+                v-for="role in allRoles"
+                :key="role.id"
+                @click="toggleRoleForUser(role)"
+                :disabled="roleToggling"
+                :class="currentUserRoleIds.includes(role.id) ? 'bg-accent/20 text-accent border-accent/40' : 'bg-base text-text-muted border-border hover:border-border-bright'"
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold border transition-all"
+              >
+                <span>{{ role.name }}</span>
+                <span v-if="currentUserRoleIds.includes(role.id)" class="text-accent">✓ Assigned</span>
+                <span v-else class="text-text-muted/50">Click to assign</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </Teleport>
   </div>
@@ -259,44 +223,79 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '../../stores/admin'
+import client from '../../api/client'
 
 const store = useAdminStore()
-const showDetail = ref(false)
-const selectedUser = ref(null)
-const userServers = ref([])
-const editCoins = ref(0)
-const updating = ref(false)
-const updatingAdmin = ref(false)
-const banning = ref(false)
-const unbanning = ref(false)
-const detailError = ref('')
-const detailSuccess = ref('')
-const showBanReason = ref(false)
-const banReason = ref('')
 const searchQuery = ref('')
-const roles = ref([])
-const userRoles = ref([])
+
+// Edit modal
+const showEditModal = ref(false)
+const editUser = ref(null)
+const editForm = ref({ email: '', password: '', coins: 0, banReason: '' })
+const modalError = ref('')
+const modalSuccess = ref('')
+const modalSaving = ref(false)
+
+// Roles modal
+const showRolesModal = ref(false)
+const rolesUser = ref(null)
+const allRoles = ref([])
+const currentUserRoles = ref([])
 const rolesLoading = ref(false)
 const roleToggling = ref(false)
+const rolesModalError = ref('')
+const rolesModalSuccess = ref('')
 
-const userRoleIds = computed(() => userRoles.value.map(r => r.id))
+// Store all user roles mapped by user id
+const userRolesMap = ref({})
+
+const currentUserRoleIds = computed(() => currentUserRoles.value.map(r => r.id))
 
 const filteredUsers = computed(() => {
   if (!searchQuery.value) return store.users
   const q = searchQuery.value.toLowerCase()
   return store.users.filter(u =>
     u.username.toLowerCase().includes(q) ||
-    u.email.toLowerCase().includes(q) ||
+    (u.email && u.email.toLowerCase().includes(q)) ||
     String(u.id).includes(q)
   )
 })
 
-onMounted(() => {
-  store.fetchUsers()
-  store.fetchRoles().then(() => {
-    roles.value = store.roles
-  })
+onMounted(async () => {
+  await store.fetchUsers()
+  await store.fetchRoles()
+  allRoles.value = store.roles
+  // Load roles for all users
+  await loadAllUserRoles()
 })
+
+async function loadAllUserRoles() {
+  for (const user of store.users) {
+    try {
+      const roles = await store.getUserRoles(user.id)
+      userRolesMap.value[user.id] = roles
+    } catch {
+      userRolesMap.value[user.id] = []
+    }
+  }
+}
+
+function getUserRoles(user) {
+  return userRolesMap.value[user.id] || []
+}
+
+function getInitials(name) {
+  if (!name) return '?'
+  return name.slice(0, 2).toUpperCase()
+}
+
+function isOnline(user) {
+  if (user.last_active) {
+    const diff = Date.now() - new Date(user.last_active).getTime()
+    return diff < 5 * 60 * 1000 // within 5 minutes
+  }
+  return false
+}
 
 function userStatusClass(user) {
   if (user.isBanned) return 'text-red-500 bg-red-500/10'
@@ -310,121 +309,142 @@ function userStatusText(user) {
   return 'Active'
 }
 
-async function openDetail(user) {
-  selectedUser.value = user
-  editCoins.value = user.coins
-  showDetail.value = true
-  detailError.value = ''
-  detailSuccess.value = ''
-  showBanReason.value = false
-  banReason.value = ''
-  userServers.value = []
-  userRoles.value = []
-  try {
-    const detail = await store.fetchUserDetail(user.id)
-    userServers.value = (detail.servers || []).map(s => ({ ...s, isFree: true }))
-  } catch {
-    detailError.value = 'Failed to load user servers'
-  }
-  try {
-    userRoles.value = await store.getUserRoles(user.id)
-  } catch {
-    // roles unavailable
-  }
+function getRoleBadgeClass(roleName) {
+  const name = roleName.toLowerCase()
+  if (name === 'admin') return 'bg-red-500/15 text-red-400'
+  if (name === 'moderator' || name === 'mod') return 'bg-blue-500/15 text-blue-400'
+  if (name === 'support') return 'bg-green-500/15 text-green-400'
+  if (name === 'user') return 'bg-gray-500/15 text-gray-400'
+  // Default colors for other roles
+  const colors = [
+    'bg-purple-500/15 text-purple-400',
+    'bg-indigo-500/15 text-indigo-400',
+    'bg-cyan-500/15 text-cyan-400',
+    'bg-amber-500/15 text-amber-400',
+  ]
+  const hash = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return colors[hash % colors.length]
 }
 
-function formatDate(d) {
-  return d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'
+function openEditModal(user) {
+  editUser.value = { ...user }
+  editForm.value = {
+    email: user.email || '',
+    password: '',
+    coins: user.coins,
+    banReason: '',
+  }
+  modalError.value = ''
+  modalSuccess.value = ''
+  showEditModal.value = true
 }
 
-async function handleUpdateCoins() {
-  updating.value = true
-  detailError.value = ''
-  detailSuccess.value = ''
+async function handleSaveEdit() {
+  modalSaving.value = true
+  modalError.value = ''
+  modalSuccess.value = ''
   try {
-    await store.updateUser(selectedUser.value.id, { coins: parseInt(editCoins.value) })
-    detailSuccess.value = 'Coins updated'
-    selectedUser.value.coins = parseInt(editCoins.value)
+    const payload = {}
+    if (editForm.value.email) payload.email = editForm.value.email
+    if (editForm.value.password) payload.password = editForm.value.password
+    payload.coins = editForm.value.coins
+
+    await store.updateUser(editUser.value.id, payload)
+    modalSuccess.value = 'User updated successfully'
     await store.fetchUsers()
   } catch (err) {
-    detailError.value = err.response?.data?.message || 'Failed to update'
+    modalError.value = err.response?.data?.message || 'Failed to update user'
   } finally {
-    updating.value = false
+    modalSaving.value = false
+  }
+}
+
+async function handleBanUser() {
+  modalSaving.value = true
+  modalError.value = ''
+  modalSuccess.value = ''
+  try {
+    await store.banUser(editUser.value.id, editForm.value.banReason)
+    modalSuccess.value = 'User banned'
+    editUser.value.isBanned = true
+    await store.fetchUsers()
+  } catch (err) {
+    modalError.value = err.response?.data?.message || 'Failed to ban user'
+  } finally {
+    modalSaving.value = false
+  }
+}
+
+async function handleUnbanUser() {
+  modalSaving.value = true
+  modalError.value = ''
+  modalSuccess.value = ''
+  try {
+    await store.unbanUser(editUser.value.id)
+    modalSuccess.value = 'User unbanned'
+    editUser.value.isBanned = false
+    await store.fetchUsers()
+  } catch (err) {
+    modalError.value = err.response?.data?.message || 'Failed to unban user'
+  } finally {
+    modalSaving.value = false
   }
 }
 
 async function handleToggleAdmin() {
-  updatingAdmin.value = true
-  detailError.value = ''
-  detailSuccess.value = ''
+  modalSaving.value = true
+  modalError.value = ''
+  modalSuccess.value = ''
   try {
-    const newStatus = !selectedUser.value.isAdmin
-    await store.updateUser(selectedUser.value.id, { isAdmin: newStatus })
-    detailSuccess.value = newStatus ? 'Admin privileges granted' : 'Admin privileges revoked'
-    selectedUser.value.isAdmin = newStatus
+    const newStatus = !editUser.value.isAdmin
+    await store.updateUser(editUser.value.id, { isAdmin: newStatus })
+    modalSuccess.value = newStatus ? 'Admin privileges granted' : 'Admin privileges revoked'
+    editUser.value.isAdmin = newStatus
     await store.fetchUsers()
   } catch (err) {
-    detailError.value = err.response?.data?.message || 'Failed to update admin status'
+    modalError.value = err.response?.data?.message || 'Failed to update admin status'
   } finally {
-    updatingAdmin.value = false
+    modalSaving.value = false
   }
 }
 
-function handleBan() {
-  showBanReason.value = true
-}
-
-async function confirmBan() {
-  banning.value = true
-  detailError.value = ''
-  detailSuccess.value = ''
+async function handleDelete(user) {
+  if (!confirm(`DELETE user "${user.username}"? This will permanently remove them from the database.`)) return
   try {
-    const result = await store.banUser(selectedUser.value.id, banReason.value)
-    detailSuccess.value = result.message
-    selectedUser.value.isBanned = true
+    await client.delete(`/admin/users/${user.id}`)
     await store.fetchUsers()
   } catch (err) {
-    detailError.value = err.response?.data?.message || 'Failed to ban'
-  } finally {
-    banning.value = false
-    showBanReason.value = false
-    banReason.value = ''
+    alert(err.response?.data?.message || 'Failed to delete user')
   }
 }
 
-async function handleUnban() {
-  unbanning.value = true
-  detailError.value = ''
-  detailSuccess.value = ''
-  try {
-    const result = await store.unbanUser(selectedUser.value.id)
-    detailSuccess.value = result.message
-    selectedUser.value.isBanned = false
-    await store.fetchUsers()
-  } catch (err) {
-    detailError.value = err.response?.data?.message || 'Failed to unban'
-  } finally {
-    unbanning.value = false
-  }
+function openRolesModal(user) {
+  rolesUser.value = user
+  currentUserRoles.value = userRolesMap.value[user.id] || []
+  rolesModalError.value = ''
+  rolesModalSuccess.value = ''
+  showRolesModal.value = true
 }
 
-async function toggleRole(role) {
+async function toggleRoleForUser(role) {
   roleToggling.value = true
-  detailError.value = ''
-  detailSuccess.value = ''
+  rolesModalError.value = ''
+  rolesModalSuccess.value = ''
   try {
-    const hasRole = userRoleIds.value.includes(role.id)
+    const hasRole = currentUserRoleIds.value.includes(role.id)
     if (hasRole) {
-      await store.unassignRole(selectedUser.value.id, role.id)
-      userRoles.value = userRoles.value.filter(r => r.id !== role.id)
-      detailSuccess.value = `Role "${role.name}" removed`
+      await store.unassignRole(rolesUser.value.id, role.id)
+      currentUserRoles.value = currentUserRoles.value.filter(r => r.id !== role.id)
+      rolesModalSuccess.value = `Role "${role.name}" removed`
     } else {
-      await store.assignRole(selectedUser.value.id, role.id)
-      userRoles.value.push(role)
-      detailSuccess.value = `Role "${role.name}" assigned`
+      await store.assignRole(rolesUser.value.id, role.id)
+      currentUserRoles.value.push(role)
+      rolesModalSuccess.value = `Role "${role.name}" assigned`
     }
+    // Update the map
+    userRolesMap.value[rolesUser.value.id] = [...currentUserRoles.value]
   } catch (err) {
-    detailError.value = err.response?.data?.message || 'Failed to update role'
+    rolesModalError.value = err.response?.data?.message || 'Failed to update role'
   } finally {
     roleToggling.value = false
   }
