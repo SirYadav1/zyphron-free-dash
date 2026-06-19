@@ -37,6 +37,7 @@ export class ProductsUserController {
       nest_name: p.nest_name,
       nest_id: p.nest_id,
       egg_id: p.egg_id,
+      category_id: p.category_id,
     }));
   }
 

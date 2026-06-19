@@ -51,7 +51,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="cat in filteredCategories"
-          :key="cat.name"
+          :key="cat.id"
           @click="selectCategory(cat)"
           class="card-surface p-8 flex flex-col cursor-pointer transition-all hover:border-accent/30 hover:bg-accent/[0.02] group relative overflow-hidden"
         >
@@ -59,35 +59,31 @@
           <div class="absolute -top-20 -right-20 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all"></div>
           
           <div class="relative flex-1 space-y-6">
-            <!-- Icon -->
-            <div class="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 group-hover:scale-110 transition-all">
-              <span class="text-2xl">{{ cat.icon }}</span>
+            <!-- Image / Icon -->
+            <div class="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center group-hover:scale-110 transition-all">
+              <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-full h-full object-cover" />
+              <div v-else class="w-full h-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-all">
+                <span class="text-2xl">📦</span>
+              </div>
             </div>
 
             <!-- Info -->
             <div class="space-y-2">
               <h3 class="text-lg font-bold text-text-primary group-hover:text-accent transition-colors">{{ cat.name }}</h3>
-              <p class="text-sm text-text-muted leading-relaxed">{{ cat.description }}</p>
+              <p class="text-sm text-text-muted leading-relaxed">{{ cat.description || 'Browse available plans' }}</p>
             </div>
 
             <!-- Stats -->
             <div class="flex items-center gap-4 pt-2">
               <div class="flex items-center gap-1.5">
                 <div class="w-1.5 h-1.5 rounded-full bg-accent/60"></div>
-                <span class="text-xs font-medium text-text-muted">{{ cat.products.length }} plan{{ cat.products.length !== 1 ? 's' : '' }}</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <div class="w-1.5 h-1.5 rounded-full bg-green-500/60"></div>
-                <span class="text-xs font-medium text-text-muted">Starting {{ cat.lowestPrice }} coins</span>
+                <span class="text-xs font-medium text-text-muted">{{ cat.product_count || cat.productCount || 0 }} plan{{ (cat.product_count || cat.productCount || 0) !== 1 ? 's' : '' }}</span>
               </div>
             </div>
           </div>
 
           <!-- Arrow -->
-          <div class="relative mt-6 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span v-for="tag in cat.tags" :key="tag" class="px-2 py-0.5 bg-white/5 rounded text-[10px] font-medium text-text-muted">{{ tag }}</span>
-            </div>
+          <div class="relative mt-6 flex items-center justify-end">
             <svg class="w-5 h-5 text-text-muted group-hover:text-accent group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
@@ -113,23 +109,31 @@
     <div v-else-if="selectedCategory && !selectedPlan" class="space-y-6">
       <!-- Category Header -->
       <div class="card-surface p-6 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-          <span class="text-2xl">{{ selectedCategory.icon }}</span>
+        <div class="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center">
+          <img v-if="selectedCategory.image_url" :src="selectedCategory.image_url" :alt="selectedCategory.name" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full bg-accent/10 flex items-center justify-center">
+            <span class="text-2xl">📦</span>
+          </div>
         </div>
         <div class="flex-1">
           <h3 class="text-lg font-bold text-text-primary">{{ selectedCategory.name }}</h3>
-          <p class="text-sm text-text-muted">{{ selectedCategory.description }}</p>
+          <p class="text-sm text-text-muted">{{ selectedCategory.description || 'Browse available plans' }}</p>
         </div>
         <div class="text-right">
           <p class="text-xs text-text-muted">Available Plans</p>
-          <p class="text-lg font-bold text-accent">{{ selectedCategory.products.length }}</p>
+          <p class="text-lg font-bold text-accent">{{ categoryProducts.length }}</p>
         </div>
       </div>
 
+      <!-- Loading Products -->
+      <div v-if="loadingProducts" class="flex items-center justify-center py-12">
+        <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+      </div>
+
       <!-- Plans Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
-          v-for="plan in selectedCategory.products"
+          v-for="plan in categoryProducts"
           :key="plan.id"
           @click="selectPlan(plan)"
           class="card-surface p-6 flex flex-col transition-all hover:border-accent/30 cursor-pointer group"
@@ -139,7 +143,6 @@
             <div>
               <div class="flex items-center gap-2">
                 <h4 class="font-bold text-text-primary text-lg group-hover:text-accent transition-colors">{{ plan.name }}</h4>
-                <span v-if="plan.isPopular" class="px-2 py-0.5 bg-accent/20 text-accent text-[10px] font-bold rounded-full uppercase">Popular</span>
               </div>
               <p v-if="plan.description" class="text-sm text-text-muted mt-1 line-clamp-2">{{ plan.description }}</p>
             </div>
@@ -195,6 +198,11 @@
             </div>
           </div>
         </div>
+
+        <!-- Empty Products -->
+        <div v-if="categoryProducts.length === 0 && !loadingProducts" class="col-span-full card-surface p-12 text-center">
+          <p class="text-text-muted">No plans available in this category yet.</p>
+        </div>
       </div>
     </div>
 
@@ -204,7 +212,9 @@
       <div class="card-surface p-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-            <span class="text-xl">{{ selectedCategory.icon }}</span>
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
           </div>
           <div>
             <p class="text-xs font-bold text-text-muted uppercase tracking-widest">Selected Plan</p>
@@ -362,9 +372,11 @@ const authStore = useAuthStore()
 
 const loading = ref(true)
 const loadingEggs = ref(false)
+const loadingProducts = ref(false)
 const error = ref('')
 const success = ref('')
-const products = ref([])
+const categories = ref([])
+const categoryProducts = ref([])
 const eggs = ref([])
 const selectedCategory = ref(null)
 const selectedPlan = ref(null)
@@ -374,90 +386,22 @@ const deploying = ref(false)
 const serverCreated = ref(false)
 const searchQuery = ref('')
 
-// Category metadata (icons, descriptions, tags)
-const categoryMeta = {
-  'Minecraft': {
-    icon: '⛏️',
-    description: 'Host your own Minecraft server with full control. Choose from Java, Bedrock, or modded versions.',
-    tags: ['Java', 'Bedrock', 'Modded', 'Paper']
-  },
-  'Bot Hosting': {
-    icon: '🤖',
-    description: 'Deploy Discord bots, Telegram bots, or any Node.js/Python bot 24/7.',
-    tags: ['Discord', 'Telegram', 'Node.js', 'Python']
-  },
-  'Game Servers': {
-    icon: '🎮',
-    description: 'Host game servers like Palworld, Valheim, Garry\'s Mod, and more.',
-    tags: ['Valheim', 'Palworld', 'Garry\'s Mod']
-  },
-  'Web Hosting': {
-    icon: '🌐',
-    description: 'Host websites, APIs, and web applications with your own domain.',
-    tags: ['PHP', 'Node.js', 'MySQL', 'cPanel']
-  },
-  'VPS': {
-    icon: '🖥️',
-    description: 'Get a virtual private server with root access for any project.',
-    tags: ['Linux', 'Root Access', 'Full Control']
-  },
-  'Database': {
-    icon: '🗄️',
-    description: 'Managed database hosting for MySQL, PostgreSQL, MongoDB, and Redis.',
-    tags: ['MySQL', 'PostgreSQL', 'MongoDB', 'Redis']
-  }
-}
-
-const categories = computed(() => {
-  const catMap = {}
-  for (const p of products.value) {
-    const catName = p.nest_name || 'Other'
-    if (!catMap[catName]) {
-      const meta = categoryMeta[catName] || {
-        icon: '📦',
-        description: 'Browse available hosting plans.',
-        tags: []
-      }
-      catMap[catName] = { 
-        name: catName, 
-        products: [],
-        icon: meta.icon,
-        description: meta.description,
-        tags: meta.tags,
-        lowestPrice: Infinity
-      }
-    }
-    catMap[catName].products.push(p)
-    if (p.coin_price < catMap[catName].lowestPrice) {
-      catMap[catName].lowestPrice = p.coin_price
-    }
-  }
-  return Object.values(catMap)
-})
-
 const filteredCategories = computed(() => {
   if (!searchQuery.value) return categories.value
   const q = searchQuery.value.toLowerCase()
-  return categories.value.filter(cat => 
+  return categories.value.filter(cat =>
     cat.name.toLowerCase().includes(q) ||
-    cat.description.toLowerCase().includes(q) ||
-    cat.tags.some(t => t.toLowerCase().includes(q)) ||
-    cat.products.some(p => p.name.toLowerCase().includes(q))
+    (cat.description && cat.description.toLowerCase().includes(q))
   )
-})
-
-const filteredProducts = computed(() => {
-  if (!selectedCategory.value) return []
-  return selectedCategory.value.products
 })
 
 onMounted(async () => {
   try {
-    const [prodRes] = await Promise.all([
-      client.get('/products'),
+    const [catRes] = await Promise.all([
+      client.get('/categories'),
       authStore.fetchProfile().catch(() => {})
     ])
-    products.value = prodRes.data
+    categories.value = Array.isArray(catRes.data) ? catRes.data : []
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to load services'
   } finally {
@@ -465,10 +409,21 @@ onMounted(async () => {
   }
 })
 
-function selectCategory(cat) {
+async function selectCategory(cat) {
   selectedCategory.value = cat
   selectedPlan.value = null
   selectedEgg.value = null
+  loadingProducts.value = true
+  categoryProducts.value = []
+
+  try {
+    const { data } = await client.get(`/categories/${cat.id}/products`)
+    categoryProducts.value = Array.isArray(data) ? data : []
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to load plans'
+  } finally {
+    loadingProducts.value = false
+  }
 }
 
 function selectPlan(plan) {
@@ -498,9 +453,9 @@ function goBack() {
   if (selectedPlan.value) {
     selectedPlan.value = null
     selectedEgg.value = null
-    eggs.value = []
   } else {
     selectedCategory.value = null
+    categoryProducts.value = []
   }
 }
 

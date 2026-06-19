@@ -22,6 +22,15 @@
           <textarea v-model="form.description" class="input-field w-full" rows="3" placeholder="Server description for users"></textarea>
         </div>
 
+        <!-- Category -->
+        <div class="space-y-1 col-span-2">
+          <label class="text-label">Category</label>
+          <select v-model="form.category_id" class="input-field w-full">
+            <option :value="null">No Category</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+
         <!-- Pterodactyl Selection -->
         <div class="col-span-2 space-y-4 p-4 bg-base/50 border border-border rounded-xl">
           <h3 class="text-sm font-bold text-text-primary">🎮 Pterodactyl Configuration</h3>
@@ -131,6 +140,7 @@ const error = ref('')
 const success = ref('')
 const nests = ref([])
 const eggs = ref([])
+const categories = ref([])
 const loadingNests = ref(false)
 const selectedNestId = ref('')
 const selectedEggId = ref('')
@@ -151,7 +161,8 @@ const form = ref({
   duration_days: 7,
   egg_name: '',
   nest_name: '',
-  coin_price: 1000
+  coin_price: 1000,
+  category_id: null
 })
 
 // Helper functions for Pterodactyl API response format
@@ -171,8 +182,12 @@ function getEggName(egg) {
 onMounted(async () => {
   loadingNests.value = true
   try {
-    const { data } = await client.get('/admin/pterodactyl/nests')
-    nests.value = Array.isArray(data) ? data : []
+    const [nestRes, catRes] = await Promise.all([
+      client.get('/admin/pterodactyl/nests'),
+      client.get('/admin/categories').catch(() => ({ data: [] }))
+    ])
+    nests.value = Array.isArray(nestRes.data) ? nestRes.data : []
+    categories.value = Array.isArray(catRes.data) ? catRes.data : []
   } catch (err) {
     console.error('Failed to load nests:', err)
   } finally {

@@ -68,6 +68,9 @@ const routes = [
       { path: 'services', name: 'AdminServices', component: () => import('../views/admin/AdminProductsView.vue') },
       { path: 'services/create', name: 'AdminServiceCreate', component: () => import('../views/admin/AdminProductCreateView.vue') },
       { path: 'services/:id/edit', name: 'AdminServiceEdit', component: () => import('../views/admin/AdminProductEditView.vue') },
+      { path: 'categories', name: 'AdminCategories', component: () => import('../views/admin/AdminCategoriesView.vue') },
+      { path: 'categories/create', name: 'AdminCategoryCreate', component: () => import('../views/admin/AdminCategoryCreateView.vue') },
+      { path: 'categories/:id/edit', name: 'AdminCategoryEdit', component: () => import('../views/admin/AdminCategoryEditView.vue') },
       { path: 'store', name: 'AdminStore', component: () => import('../views/admin/AdminStoreView.vue') },
       { path: 'store/create', name: 'AdminStoreCreate', component: () => import('../views/admin/AdminStoreCreateView.vue') },
       { path: 'store/:id/edit', name: 'AdminStoreEdit', component: () => import('../views/admin/AdminStoreEditView.vue') },
@@ -112,7 +115,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const token = localStorage.getItem('access_token')
+  const token = sessionStorage.getItem('access_token')
 
   if (to.meta.requiresAuth && !token) {
     return next('/login')
@@ -128,7 +131,7 @@ router.beforeEach(async (to, from, next) => {
       try {
         await authStore.fetchProfile()
       } catch {
-        localStorage.removeItem('access_token')
+        sessionStorage.removeItem('access_token')
         return next('/login')
       }
     }

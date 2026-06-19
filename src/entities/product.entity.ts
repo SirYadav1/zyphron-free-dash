@@ -62,6 +62,9 @@ export class Product {
   @Column({ type: 'integer', nullable: true })
   egg_id: number | null;
 
+  @Column({ type: 'integer', nullable: true })
+  category_id: number | null;
+
   @Column({ type: 'integer', default: 7 })
   duration_days: number;
 

@@ -29,6 +29,7 @@ import { PreferencesModule } from './preferences/preferences.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { EmailTemplatesModule } from './email-templates/email-templates.module';
 import { CreditsModule } from './credits/credits.module';
+import { ServiceCategoriesModule } from './service-categories/service-categories.module';
 import { Setting } from './entities/setting.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -93,6 +94,7 @@ import { AppService } from './app.service';
     InvoicesModule,
     EmailTemplatesModule,
     CreditsModule,
+    ServiceCategoriesModule,
     TypeOrmModule.forFeature([Setting]),
   ],
   controllers: [AppController],
