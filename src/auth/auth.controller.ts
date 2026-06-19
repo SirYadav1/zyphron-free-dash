@@ -28,13 +28,13 @@ export class AuthController {
     return this.authService.register(dto, ip);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('login-2fa')
   async loginWith2FA(@Body() body: { email: string; code: string }) {
     return this.authService.loginWith2FA(body.email, body.code);
