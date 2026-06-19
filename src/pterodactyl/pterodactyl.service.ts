@@ -129,7 +129,7 @@ export class PterodactylService {
     return {
       Authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
-      Accept: 'application/json',
+      Accept: 'application/vnd.pterodactyl.v1+json',
     };
   }
 
@@ -249,9 +249,7 @@ export class PterodactylService {
     nestId: number,
     eggId: number,
   ): Promise<{ startup: string; environment: Record<string, string> }> {
-    const res = await this.request<any>(
-      `/nests/${nestId}/eggs/${eggId}?include=variables`,
-    );
+    const res = await this.request<any>(`/nests/${nestId}/eggs/${eggId}?include=variables`);
     const egg = res?.attributes;
     if (!egg) {
       throw new HttpException(
@@ -404,11 +402,19 @@ export class PterodactylService {
 
   async getEggsByNest(nestId: number): Promise<any[]> {
     try {
-      const res = await this.request<any>(`/nests/${nestId}?include=eggs`);
-      return res.data?.attributes?.eggs?.data || [];
+      // Use the dedicated eggs endpoint for more reliable results
+      const res = await this.request<any>(`/nests/${nestId}/eggs`);
+      return res.data || [];
     } catch (error) {
-      this.logger.error(`Failed to fetch eggs for nest ${nestId}`, error);
-      return [];
+      this.logger.warn(`Failed to fetch eggs for nest ${nestId} via dedicated endpoint, trying include=eggs`);
+      try {
+        // Fallback: try with include=eggs on the nest endpoint
+        const res = await this.request<any>(`/nests/${nestId}?include=eggs`);
+        return res.data?.attributes?.eggs?.data || [];
+      } catch (fallbackError) {
+        this.logger.error(`Failed to fetch eggs for nest ${nestId}`, fallbackError);
+        return [];
+      }
     }
   }
 
