@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panel API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        .test-result { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; }
+        input, select { padding: 10px; margin: 5px 0; width: 100%; max-width: 400px; }
+        button { padding: 15px 30px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Panel API Connection Test</h1>
+    
+    <div class="test-result">
+        <h3>Test Configuration:</h3>
+        <label>Panel URL:</label>
+        <input type="text" id="panelUrl" value="https://panel.zyphron.cloud">
+        <label>API Key:</label>
+        <input type="password" id="apiKey" value="rtla_zAcjCLX4UbAkoiLX17R2sBmyIoy7g8e6lWmi276Ucpo">
+        <button onclick="testConnection()">Test Connection</button>
+    </div>
+
+    <div id="result" class="test-result" style="display: none;"></div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            const panelUrl = document.getElementById('panelUrl').value;
+            const apiKey = document.getElementById('apiKey').value;
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p class="info">Testing connection to ' + panelUrl + '...</p>';
+
+            console.log('Testing connection...');
+            console.log('Panel URL:', panelUrl);
+            console.log('API Key:', apiKey.substring(0, 10) + '...');
+
+            try {
+                console.log('Making request to:', `${panelUrl}/api/application/nodes`);
+                
+                const response = await fetch(`${panelUrl}/api/application/nodes`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response status text:', response.statusText);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                const responseText = await response.text();
+                console.log('Response body:', responseText);
+
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Connection successful!</p>
+                        <p>Nodes found: ${data.data?.length || 0}</p>
+                        <p>Status: ${response.status} ${response.statusText}</p>
+                        <pre>Response: ${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Connection failed</p>
+                        <p>Status: ${response.status} ${response.statusText}</p>
+                        <p>Response: ${responseText}</p>
+                        <div style="margin-top: 20px;">
+                            <h4>🔍 ERROR ANALYSIS:</h4>
+                            ${response.status === 401 ? `
+                                <p class="error">Status 401 = Unauthorized/Invalid Token</p>
+                                <p><strong>Common Causes:</strong></p>
+                                <ul>
+                                    <li>API key is invalid or expired</li>
+                                    <li>API key doesn't have required permissions</li>
+                                    <li>API key was generated for wrong application</li>
+                                </ul>
+                                <p><strong>Solution:</strong></p>
+                                <ul>
+                                    <li>Generate a FRESH Application API Key in your panel</li>
+                                    <li>Ensure permissions: read-servers, write-servers, read-nodes, read-eggs, read-nests</li>
+                                    <li>Copy the key exactly (no extra spaces)</li>
+                                </ul>
+                            ` : response.status === 403 ? `
+                                <p class="error">Status 403 = Forbidden</p>
+                                <p>API key exists but lacks required permissions</p>
+                                <p><strong>Solution:</strong> Generate a new key with more permissions</p>
+                            ` : response.status === 404 ? `
+                                <p class="error">Status 404 = Not Found</p>
+                                <p>Panel URL is incorrect or panel is not accessible</p>
+                                <p><strong>Solution:</strong> Verify the panel URL is correct</p>
+                            ` : response.status === 500 ? `
+                                <p class="error">Status 500 = Server Error</p>
+                                <p>Panel is experiencing internal errors</p>
+                                <p><strong>Solution:</strong> Check panel logs and status</p>
+                            ` : `
+                                <p class="error">Unexpected error: ${response.status}</p>
+                            `}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Network or CORS error: ${error.message}</p>
+                    <p><strong>Possible causes:</strong></p>
+                    <ul>
+                        <li>Panel URL is incorrect</li>
+                        <li>Panel is not accessible from this network</li>
+                        <li>CORS policy blocking the request</li>
+                        <li>DNS resolution failed</li>
+                        <li>Panel doesn't allow external API access</li>
+                        <li>SSL/TLS certificate issues</li>
+                    </ul>
+                    <p><strong>Try this first:</strong></p>
+                    <ul>
+                        <li>Open ${panelUrl} in your browser - does it load?</li>
+                        <li>Can you login to the panel in browser?</li>
+                        <li>Check if the panel is online and accessible</li>
+                    </ul>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

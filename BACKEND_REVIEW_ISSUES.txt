@@ -1,0 +1,283 @@
+# Zyphron Backend Review - Issues Found
+
+Date: May 19, 2026
+Framework: NestJS v11 + TypeScript
+Database: SQLite via TypeORM
+
+---
+
+## CRITICAL ISSUES
+
+### 1. Exposed Secrets in .env File
+File: backend/.env
+Severity: CRITICAL
+Description: The .env file contains real API keys committed to the repository:
+  - PTERODACTYL_API_KEY=ptla_UfC2xTz6KJaZdXN2GOTqEJ7SF39C9OtiUBKwsZIV0kK
+  - DISCORD_CLIENT_SECRET=REDACTED
+  - DISCORD_BOT_TOKEN=REDACTED
+  - JWT_SECRET=super-secret-key-change-in-production
+  - ADMIN_KEY=admin-setup-key-change-this
+
+Recommendation:
+  - Immediately rotate ALL exposed secrets
+  - Replace .env with .env.example containing placeholder values
+  - Add .env to .gitignore (verify it exists)
+  - Never commit real credentials to version control
+
+### 2. TypeORM synchronize: true in Production
+File: backend/src/app.module.ts (line 36)
+Severity: CRITICAL
+Description: TypeORM's synchronize: true will auto-modify the database schema on every startup.
+  This can cause data loss, dropped columns, or corrupted data in production.
+
+Current code:
+  TypeOrmModule.forRoot({
+    type: 'sqlite',
+    database: 'zyphron.db',
+    entities: [...],
+    synchronize: true,  // DANGEROUS
+  })
+
+Recommendation:
+  - Set synchronize: false in production
+  - Use TypeORM migrations for schema changes
+  - Use environment-based config: synchronize: process.env.NODE_ENV !== 'production'
+
+### 3. Hardcoded Fallback JWT Secret
+Files:
+  - backend/src/auth/jwt.strategy.ts (line 16)
+  - backend/src/auth/auth.module.ts (line 21)
+  - backend/src/discord/discord.controller.ts (line 18, 29)
+Severity: CRITICAL
+Description: Multiple places use 'fallback-secret' as default JWT secret.
+  If JWT_SECRET env var is missing, tokens would be signed with a known value,
+  allowing anyone to forge authentication tokens.
+
+Affected locations:
+  - jwt.strategy.ts: secretOrKey: configService.get('JWT_SECRET') || 'fallback-secret'
+  - auth.module.ts: secret: configService.get('JWT_SECRET') || 'fallback-secret'
+  - discord.controller.ts: jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
+
+Recommendation:
+  - Throw an error if JWT_SECRET is not set in production
+  - Remove all fallback secrets
+  - Use: const secret = configService.get<string>('JWT_SECRET'); if (!secret) throw new Error('JWT_SECRET is required');
+
+### 4. Default Admin Setup Key
+File: backend/src/auth/auth.service.ts (line 151)
+Severity: CRITICAL
+Description: The default ADMIN_KEY is 'admin-setup-key-change-this'.
+  If not changed, anyone can create admin accounts using the /api/auth/setup-admin endpoint.
+
+Current code:
+  const adminKey = process.env.ADMIN_KEY || 'admin-setup-key-change-this';
+
+Recommendation:
+  - Remove the default fallback
+  - Require ADMIN_KEY to be set
+  - Consider disabling setup-admin endpoint after first admin is created
+  - Add rate limiting to this endpoint
+
+### 5. No Rate Limiting on Auth Endpoints
+Files:
+  - backend/src/auth/auth.controller.ts
+  - backend/main.ts
+Severity: HIGH
+Description: Login, register, and password-related endpoints have no rate limiting.
+  This makes the application vulnerable to:
+  - Brute force attacks on login
+  - Account enumeration via register
+  - Email spam via resend-verification
+
+Recommendation:
+  - Install @nestjs/throttler
+  - Apply ThrottlerGuard globally or per-endpoint
+  - Example: 10 requests per minute for login, 3 per hour for register per IP
+
+---
+
+## HIGH PRIORITY ISSUES
+
+### 6. console.error Instead of NestJS Logger
+Files:
+  - backend/src/auth/auth.service.ts (lines 36, 52, 122, 180)
+  - backend/src/servers/servers.service.ts (lines 154, 179, 192, 205)
+  - backend/src/store/store.service.ts (lines 135, 197)
+Severity: HIGH
+Description: Multiple services use console.error() for error logging instead of the
+  NestJS Logger. This means:
+  - No structured logging
+  - No log levels
+  - Harder to filter/monitor in production
+  - Inconsistent with the rest of the codebase (which uses Logger in some places)
+
+Recommendation:
+  - Add private readonly logger = new Logger(ServiceName.name); to each service
+  - Replace all console.error with this.logger.error()
+
+### 7. Pterodactyl Server Creation Without Transaction Rollback
+File: backend/src/servers/servers.service.ts (lines 136-170)
+Severity: HIGH
+Description: If the Pterodactyl API succeeds but the database save fails afterward,
+  an orphaned server is created on the Pterodactyl panel with no record in the database.
+  The user cannot manage or delete this server.
+
+Current flow:
+  1. Create Pterodactyl server (success)
+  2. Create database record (could fail)
+  3. If step 2 fails, orphaned Pterodactyl server exists
+
+Recommendation:
+  - Wrap in a try/catch that cleans up the Pterodactyl server on DB failure
+  - Or use a queue/job system for server provisioning
+  - Add a cleanup cron job to detect orphaned servers
+
+---
+
+## MEDIUM PRIORITY ISSUES
+
+### 8. N+1 Query in AdminService.getUsers()
+File: backend/src/admin/admin.service.ts (lines 33-59)
+Severity: MEDIUM
+Description: Fetches server count for each user in a separate query.
+  For N users, this results in N+1 database queries.
+
+Current code:
+  for (const user of users) {
+    const serverCount = await this.serversRepository.count({ where: { userId: user.id } });
+    ...
+  }
+
+Recommendation:
+  - Use a single query with GROUP BY or a subquery
+  - Example: Use QueryBuilder with LEFT JOIN and COUNT
+
+### 9. Missing DTO Validation on AFK and Store Controllers
+Files:
+  - backend/src/afk/afk.controller.ts (lines 6-19)
+  - backend/src/store/store.controller.ts (lines 6-9)
+Severity: MEDIUM
+Description: DTOs in these controllers are plain classes without class-validator
+  decorators. The ValidationPipe in main.ts won't validate these inputs.
+
+Affected DTOs:
+  - StartSessionDto (no fields, but should still be validated)
+  - HeartbeatDto: sessionId, tabId, visible - no validation
+  - EndSessionDto: sessionId, tabId - no validation
+  - UpgradeDto: type, amount - no validation
+
+Recommendation:
+  - Add @IsNumber(), @IsString(), @IsBoolean(), @IsIn(['ram','cpu','disk']) decorators
+  - Add @IsPositive() for amount
+  - Add @Min(1) for sessionId
+
+### 10. `as any` Casts Bypassing TypeScript
+Files:
+  - backend/src/store/store.service.ts (lines 138, 204)
+  - backend/src/afk/afk.service.ts (line 115)
+Severity: MEDIUM
+Description: Transaction entities are saved with `as any` casts, bypassing
+  TypeScript type checking. This can hide type errors and lead to runtime bugs.
+
+Example:
+  await this.transactionsRepository.save({
+    userId,
+    type: 'spend',
+    amount: totalCost,
+    description: `Upgraded...`,
+  } as any);
+
+Recommendation:
+  - Define proper types for transaction creation
+  - Use the entity constructor or a proper DTO
+  - Remove `as any` casts
+
+### 11. No Email Verification Enforcement on Login
+File: backend/src/auth/auth.service.ts (lines 61-90)
+Severity: MEDIUM
+Description: Users can log in without verifying their email. Email verification
+  is only checked when creating a server. This means:
+  - Unverified users can access the dashboard
+  - Unverified users can use AFK earning
+  - Unverified users can access the store
+
+Recommendation:
+  - Add email verification check in login() or in JwtStrategy.validate()
+  - Or add a middleware that redirects unverified users to verification page
+  - At minimum, show a warning in the frontend
+
+### 12. DiscordService Missing ScheduleModule Import
+File: backend/src/discord/discord.module.ts
+Severity: LOW (cosmetic)
+Description: The DiscordModule doesn't import ScheduleModule, but the DiscordService
+  uses @Cron() decorators. This works because ScheduleModule.forRoot() is called
+  globally in AppModule, but it's not explicit.
+
+Recommendation:
+  - This is actually fine since ScheduleModule is global, but consider adding
+    a comment explaining why it's not imported here for clarity.
+
+---
+
+## LOW PRIORITY / CLEANUP
+
+### 13. Unused AppController and AppService
+Files:
+  - backend/src/app.controller.ts
+  - backend/src/app.service.ts
+Severity: LOW
+Description: The default NestJS scaffold files return "Hello World!" on the root
+  endpoint. Since ServeStaticModule serves the frontend on / and API is on /api,
+  this endpoint is likely never used.
+
+Recommendation:
+  - Remove if not needed, or replace with a health check endpoint
+
+### 14. No Health Check Endpoint
+Severity: LOW
+Description: No /health or /api/health endpoint for monitoring and load balancer checks.
+
+Recommendation:
+  - Add a simple health check endpoint
+  - Check database connectivity
+  - Check external service availability
+
+### 15. No Logging Middleware
+File: backend/src/main.ts
+Severity: LOW
+Description: No request/response logging middleware. Hard to debug issues in production
+  without request IDs, response times, etc.
+
+Recommendation:
+  - Add a logging middleware or use nestjs-pino / nestjs-logger
+  - Include request ID, method, path, status code, duration
+
+### 16. SQLite Not Ideal for Production
+File: backend/src/app.module.ts
+Severity: LOW (architectural)
+Description: SQLite is a file-based database. It works for development and small
+  deployments but doesn't scale well for concurrent writes.
+
+Recommendation:
+  - Consider PostgreSQL or MySQL for production
+  - Use environment-based database config
+
+### 17. No API Versioning
+Severity: LOW
+Description: No API versioning (e.g., /api/v1/). Breaking changes to the API
+  will affect all clients immediately.
+
+Recommendation:
+  - Add API versioning via @nestjs/versioning or URL prefix
+  - Example: /api/v1/auth/login
+
+### 18. Password Sent to Pterodactyl in Plaintext During Registration
+File: backend/src/auth/auth.service.ts (line 29)
+Severity: MEDIUM
+Description: The user's plaintext password is sent to the Pterodactyl API during
+  registration. While this is necessary for Pterodactyl panel login, it means
+  the password exists in two systems. If either is compromised, both are at risk.
+
+Recommendation:
+  - Consider generating a random password for Pterodactyl instead of using the same one
+  - Or use a separate authentication method if Pterodactyl supports it
