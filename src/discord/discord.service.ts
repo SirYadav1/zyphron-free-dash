@@ -271,6 +271,7 @@ export class DiscordService {
             user.email,
             server.server_name,
             reason,
+            user.first_name || user.username,
           );
         }
       } catch (error) {

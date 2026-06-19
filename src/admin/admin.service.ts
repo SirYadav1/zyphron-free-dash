@@ -195,7 +195,7 @@ export class AdminService {
 
     try {
       if (user.email) {
-        await this.mailService.sendBanNotification(user.email, reason);
+        await this.mailService.sendBanNotification(user.email, reason, user.first_name || user.username);
       }
     } catch (error) {
       this.logger.warn('Failed to send ban notification email:', error);
