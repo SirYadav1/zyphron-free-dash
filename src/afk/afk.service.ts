@@ -279,9 +279,16 @@ export class AfkService {
       where: { user_id: userId, is_active: 1 },
     });
 
-    const sessionMinutes = activeSession
-      ? Math.floor(activeSession.total_visible_seconds / 60)
-      : 0;
+    // Sum lifetime visible seconds across ALL sessions (active + completed)
+    const allSessions = await this.afkSessionRepo.find({
+      where: { user_id: userId },
+      select: { total_visible_seconds: true },
+    });
+    const lifetimeVisibleSeconds = allSessions.reduce(
+      (sum, s) => sum + (s.total_visible_seconds || 0),
+      0,
+    );
+    const sessionMinutes = Math.floor(lifetimeVisibleSeconds / 60);
 
     const rates = await this.getAfkRates();
 

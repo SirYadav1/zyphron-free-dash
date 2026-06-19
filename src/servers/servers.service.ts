@@ -257,7 +257,6 @@ export class ServersService {
 
     // Create Pterodactyl server
     let pterodactylServerId: string | null = null;
-
     try {
       const pteroServer = await this.pterodactylService.createServer({
         name: finalServerName,
@@ -277,9 +276,13 @@ export class ServersService {
 
       pterodactylServerId = pteroServer.attributes?.id?.toString() || null;
     } catch (error) {
-      this.logger.error('Failed to create Pterodactyl server:', error);
+      const errorMsg = error?.response?.data || error?.message || error;
+      this.logger.error(
+        `Failed to create Pterodactyl server for user ${userId}: ${JSON.stringify(errorMsg)}`,
+        error?.stack,
+      );
       throw new InternalServerErrorException(
-        'Failed to provision server. Please try again later.',
+        `Failed to provision server: ${error?.message || 'Unknown panel error'}`,
       );
     }
 

@@ -3,6 +3,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -11,6 +12,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.disable('x-powered-by');
+
+  // Increase body size limit to handle large uploads
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ limit: '50mb', extended: true }));
 
   const frontendUrls = process.env.FRONTEND_URL || 'http://localhost:5173';
   const allowedOrigins = frontendUrls.split(',').map(url => url.trim());
