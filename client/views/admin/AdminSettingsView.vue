@@ -896,13 +896,13 @@ async function saveSmtpSettings() {
   savingSmtp.value = true; smtpError.value = ''; smtpSuccess.value = ''
   try {
     await Promise.all([
-      store.updateSetting('smtp_host', smtpForm.value.host),
-      store.updateSetting('smtp_port', smtpForm.value.port),
-      store.updateSetting('smtp_user', smtpForm.value.user),
-      store.updateSetting('smtp_pass', smtpForm.value.pass),
-      store.updateSetting('smtp_from', smtpForm.value.from),
-      store.updateSetting('smtp_from_name', smtpForm.value.fromName),
-      store.updateSetting('smtp_encryption', smtpForm.value.encryption),
+      store.updateSetting('smtp_host', String(smtpForm.value.host || '')),
+      store.updateSetting('smtp_port', String(smtpForm.value.port || '587')),
+      store.updateSetting('smtp_user', String(smtpForm.value.user || '')),
+      store.updateSetting('smtp_pass', String(smtpForm.value.pass || '')),
+      store.updateSetting('smtp_from', String(smtpForm.value.from || '')),
+      store.updateSetting('smtp_from_name', String(smtpForm.value.fromName || '')),
+      store.updateSetting('smtp_encryption', String(smtpForm.value.encryption || 'tls')),
     ])
     smtpSuccess.value = 'SMTP settings saved successfully!'
   } catch (err) {
