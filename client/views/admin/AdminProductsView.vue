@@ -53,7 +53,7 @@
               <td class="px-5 py-3 text-text-muted text-sm">{{ p.databases }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ p.backups }}</td>
               <td class="px-5 py-3 text-right">
-                <router-link :to="`/admin/products/${p.id}/edit`" class="text-xs font-bold text-accent hover:text-white transition-colors">Edit</router-link>
+                <router-link :to="`/admin/services/${p.id}/edit`" class="text-xs font-bold text-accent hover:text-white transition-colors">Edit</router-link>
               </td>
             </tr>
           </tbody>

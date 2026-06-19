@@ -12,4 +12,12 @@ export class CreateServerDto {
   @IsOptional()
   @IsNumber()
   productId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  nestId?: number;
+
+  @IsOptional()
+  @IsNumber()
+  eggId?: number;
 }

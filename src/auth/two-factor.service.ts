@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as OTPAuth from 'otpauth';
 import { User } from '../entities/user.entity';
+import { PterodactylService } from '../pterodactyl/pterodactyl.service';
 
 @Injectable()
 export class TwoFactorService {
@@ -10,6 +11,7 @@ export class TwoFactorService {
 
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
+    private pterodactylService: PterodactylService,
   ) {}
 
   /**
@@ -92,6 +94,19 @@ export class TwoFactorService {
 
     await this.userRepo.update(userId, { two_factor_enabled: 1 });
     this.logger.log(`2FA enabled for user ${userId}`);
+
+    // Sync 2FA status with Pterodactyl panel
+    try {
+      if (user.pterodactyl_user_id) {
+        await this.pterodactylService.updatePterodactylUser(user.pterodactyl_user_id, {
+          first_name: user.first_name || user.username,
+          last_name: '2FA-Enabled',
+        });
+        this.logger.log(`Synced 2FA enabled status with Pterodactyl for user ${userId}`);
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to sync 2FA status with Pterodactyl: ${err.message}`);
+    }
   }
 
   /**
@@ -122,6 +137,20 @@ export class TwoFactorService {
       two_factor_secret: null,
     });
     this.logger.log(`2FA disabled for user ${userId}`);
+
+    // Sync 2FA disabled status with Pterodactyl panel
+    try {
+      const freshUser = await this.userRepo.findOne({ where: { id: userId } });
+      if (freshUser && freshUser.pterodactyl_user_id) {
+        await this.pterodactylService.updatePterodactylUser(freshUser.pterodactyl_user_id, {
+          first_name: freshUser.first_name || freshUser.username,
+          last_name: 'User',
+        });
+        this.logger.log(`Synced 2FA disabled status with Pterodactyl for user ${userId}`);
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to sync 2FA status with Pterodactyl: ${err.message}`);
+    }
   }
 
   /**

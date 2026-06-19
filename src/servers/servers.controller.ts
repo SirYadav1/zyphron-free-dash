@@ -34,6 +34,16 @@ export class ServersController {
     const servers = await this.serversService.getUserServers(user.id);
     return servers;
   }
+  @Get('nests')
+  async getNests() {
+    return this.serversService.getNests();
+  }
+
+  @Get('nests/:id/eggs')
+  async getEggs(@Param('id', ParseIntPipe) id: number) {
+    return this.serversService.getEggsByNest(id);
+  }
+
 
   @Get('stats')
   async getStats(@CurrentUser() user: any) {
@@ -42,7 +52,7 @@ export class ServersController {
 
   @Post()
   async createServer(@Body() dto: CreateServerDto, @CurrentUser() user: any) {
-    return this.serversService.createServer(user.id, dto.serverName, dto.productId);
+    return this.serversService.createServer(user.id, dto.serverName, dto.productId, dto.nestId, dto.eggId);
   }
 
   @Get(':id')

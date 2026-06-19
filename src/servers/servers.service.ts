@@ -77,6 +77,25 @@ export class ServersService {
     }));
   }
 
+  async getNests(): Promise<any[]> {
+    try {
+      return await this.pterodactylService.getNests();
+    } catch (error) {
+      this.logger.warn('Failed to fetch nests:', error.message);
+      return [];
+    }
+  }
+
+  async getEggsByNest(nestId: number): Promise<any[]> {
+    try {
+      return await this.pterodactylService.getEggsByNest(nestId);
+    } catch (error) {
+      this.logger.warn(`Failed to fetch eggs for nest ${nestId}:`, error.message);
+      return [];
+    }
+  }
+
+
   async getUserServers(userId: string): Promise<any[]> {
     const data = await this.serverRepo.find({
       where: { user_id: userId },
@@ -146,7 +165,7 @@ export class ServersService {
     return servers;
   }
 
-  async createServer(userId: string, serverName: string, productId?: number): Promise<any> {
+  async createServer(userId: string, serverName: string, productId?: number, overrideNestId?: number, overrideEggId?: number): Promise<any> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
     if (user.is_banned) throw new ForbiddenException('Your account is banned');
@@ -178,7 +197,9 @@ export class ServersService {
       const product = await this.productRepo.findOne({ where: { id: productId } });
       if (!product) throw new NotFoundException('Product not found');
       if (product.disabled) throw new BadRequestException('This product is currently unavailable');
-      if (!product.nest_id || !product.egg_id) {
+      const productNestId = product.nest_id;
+      const productEggId = product.egg_id;
+      if (!productNestId || !productEggId) {
         throw new BadRequestException('Product is not properly configured. Please contact support.');
       }
 
@@ -188,8 +209,8 @@ export class ServersService {
       costCoins = product.coin_price || 100;
       durationDays = product.duration_days || 7;
       productDisplay = product.name || `Product #${product.id}`;
-      nestId = product.nest_id;
-      eggId = product.egg_id;
+      nestId = overrideNestId || productNestId;
+      eggId = overrideEggId || productEggId;
     } else {
       // Fallback to blueprint from settings (backward compatibility)
       const blueprint = await this.getBlueprint();

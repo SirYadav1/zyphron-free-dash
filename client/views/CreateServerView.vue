@@ -85,6 +85,48 @@
         </div>
       </div>
 
+      <!-- Server Type Selection -->
+      <div class="card-surface p-8 space-y-6">
+        <div class="space-y-1">
+          <h3 class="text-label">Server Type</h3>
+          <p class="text-sm text-text-muted">Select the nest and egg type for your server deployment.</p>
+        </div>
+
+        <!-- Nest Selection -->
+        <div class="space-y-1">
+          <label class="text-label">Nest</label>
+          <div v-if="loadingNests" class="flex items-center gap-2 py-2">
+            <div class="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-xs text-text-muted">Loading nests...</span>
+          </div>
+          <select v-else v-model="selectedNestId" class="input-field w-full" @change="onNestChange">
+            <option :value="null">Select a nest...</option>
+            <option v-for="nest in nests" :key="nest.attributes?.id || nest.id" :value="nest.attributes?.id || nest.id">
+              {{ nest.attributes?.name || nest.name || 'Nest #' + (nest.attributes?.id || nest.id) }}
+            </option>
+          </select>
+          <p v-if="nests.length === 0 && !loadingNests" class="text-xs text-text-muted">No nests available. Using default configuration.</p>
+        </div>
+
+        <!-- Egg Selection -->
+        <div class="space-y-1">
+          <label class="text-label">Egg</label>
+          <div v-if="loadingEggs" class="flex items-center gap-2 py-2">
+            <div class="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-xs text-text-muted">Loading eggs...</span>
+          </div>
+          <select v-else v-model="selectedEggId" class="input-field w-full" :disabled="!selectedNestId">
+            <option :value="null">{{ selectedNestId ? 'Select an egg...' : 'Select a nest first' }}</option>
+            <option v-for="egg in eggs" :key="egg.attributes?.id || egg.id" :value="egg.attributes?.id || egg.id">
+              {{ egg.attributes?.name || egg.name || 'Egg #' + (egg.attributes?.id || egg.id) }}
+            </option>
+          </select>
+          <p v-if="selectedPlan && !selectedNestId" class="text-[11px] text-accent/70">
+            Using plan default: {{ selectedPlan.nest_name || 'Default Nest' }} / {{ selectedPlan.egg_name || 'Default Egg' }}
+          </p>
+        </div>
+      </div>
+
       <!-- Name Section -->
       <div class="card-surface p-8 space-y-6">
         <div class="space-y-1.5">
@@ -147,6 +189,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useServersStore } from '../stores/servers'
 import { useAuthStore } from '../stores/auth'
+import client from '../api/client'
 
 const router = useRouter()
 const store = useServersStore()
@@ -156,6 +199,14 @@ const serverName = ref('')
 const selectedPlanId = ref(null)
 const success = ref('')
 
+// Nest/Egg selection
+const nests = ref([])
+const eggs = ref([])
+const selectedNestId = ref(null)
+const selectedEggId = ref(null)
+const loadingNests = ref(false)
+const loadingEggs = ref(false)
+
 const selectedPlan = computed(() => {
   if (!selectedPlanId.value) return null
   return store.plans.find(p => p.id === selectedPlanId.value) || null
@@ -163,6 +214,7 @@ const selectedPlan = computed(() => {
 
 onMounted(async () => {
   await store.fetchPlans()
+  await loadNests()
   try {
     await authStore.fetchProfile()
   } catch {
@@ -170,10 +222,48 @@ onMounted(async () => {
   }
 })
 
+async function loadNests() {
+  loadingNests.value = true
+  try {
+    const { data } = await client.get('/servers/nests')
+    nests.value = Array.isArray(data) ? data : []
+  } catch (err) {
+    console.warn('Failed to load nests:', err)
+    nests.value = []
+  } finally {
+    loadingNests.value = false
+  }
+}
+
+async function onNestChange() {
+  selectedEggId.value = null
+  eggs.value = []
+  if (!selectedNestId.value) return
+  
+  loadingEggs.value = true
+  try {
+    const { data } = await client.get(`/servers/nests/${selectedNestId.value}/eggs`)
+    eggs.value = Array.isArray(data) ? data : []
+  } catch (err) {
+    console.warn('Failed to load eggs:', err)
+    eggs.value = []
+  } finally {
+    loadingEggs.value = false
+  }
+}
+
 async function handleCreate() {
   if (!serverName.value || !selectedPlanId.value) return
   try {
-    await store.createServer(serverName.value, selectedPlanId.value)
+    const payload = {
+      serverName: serverName.value,
+      productId: selectedPlanId.value,
+    }
+    // Include selected nest/egg overrides if user explicitly chose them
+    if (selectedNestId.value) payload.nestId = selectedNestId.value
+    if (selectedEggId.value) payload.eggId = selectedEggId.value
+    
+    await store.createServer(serverName.value, selectedPlanId.value, payload)
     await authStore.fetchProfile()
     success.value = 'Server created successfully! Your server name: ' + serverName.value + '-free-dash'
     setTimeout(() => router.push('/home'), 2000)

@@ -13,6 +13,7 @@ import { IsString, IsOptional, IsNumber } from 'class-validator';
 import { VouchersService } from './vouchers.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 class CreateVoucherDto {
   @IsString()
@@ -83,6 +84,17 @@ export class VouchersController {
 
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
-    return this.vouchersService.remove(id);
+    await this.vouchersService.remove(id);
+  }
+}
+
+@Controller('vouchers')
+@UseGuards(JwtAuthGuard)
+export class UserVouchersController {
+  constructor(private readonly vouchersService: VouchersService) {}
+
+  @Post('redeem')
+  async redeem(@CurrentUser() user: any, @Body('code') code: string) {
+    return this.vouchersService.redeem(user.id, code);
   }
 }
