@@ -8,8 +8,8 @@
       <button @click="showCreateModal = true" class="btn-primary px-4 py-2 text-xs">Create Template</button>
     </div>
 
-    <div v-if="error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">⚠️ {{ error }}</div>
-    <div v-if="success" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">✅ {{ success }}</div>
+    <div v-if="error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2"><AlertTriangle :size="14" :stroke-width="2.5" /> {{ error }}</div>
+    <div v-if="success" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent flex items-center gap-2"><CheckCircle :size="14" :stroke-width="2.5" /> {{ success }}</div>
 
     <div class="card-surface overflow-hidden">
       <div class="overflow-x-auto">
@@ -113,6 +113,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import client from '../../api/client'
+import { AlertTriangle, CheckCircle } from 'lucide-vue-next'
 
 const templates = ref([])
 const loading = ref(true)

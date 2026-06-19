@@ -23,11 +23,11 @@
       </div>
 
       <!-- Notifications -->
-      <div v-if="store.error" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-xs font-bold animate-pulse">
-        ⚠️ {{ store.error }}
+      <div v-if="store.error" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-xs font-bold animate-pulse flex items-center gap-2">
+        <AlertTriangle :size="14" :stroke-width="2.5" /> {{ store.error }}
       </div>
-      <div v-if="store.success" class="card-surface p-4 border-accent/20 bg-accent/5 text-accent text-xs font-bold">
-        ✅ {{ store.success }}
+      <div v-if="store.success" class="card-surface p-4 border-accent/20 bg-accent/5 text-accent text-xs font-bold flex items-center gap-2">
+        <CheckCircle :size="14" :stroke-width="2.5" /> {{ store.success }}
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8">
@@ -41,10 +41,10 @@
                 class="bg-base/50 border border-border p-6 rounded-xl hover:border-border-bright transition-all group">
                 <div class="flex items-center justify-between mb-6">
                   <div class="flex items-center gap-4">
-                    <div :class="item.iconBg" class="w-10 h-10 rounded-lg border flex items-center justify-center text-xl">
-                      <span v-if="item.key === 'ram'">🧠</span>
-                      <span v-else-if="item.key === 'cpu'">⚡</span>
-                      <span v-else-if="item.key === 'disk'">💿</span>
+                    <div :class="item.iconBg" class="w-10 h-10 rounded-lg border flex items-center justify-center">
+                      <Brain v-if="item.key === 'ram'" :size="18" :stroke-width="2" class="text-blue-400" />
+                      <Zap v-else-if="item.key === 'cpu'" :size="18" :stroke-width="2" class="text-amber-400" />
+                      <HardDrive v-else-if="item.key === 'disk'" :size="18" :stroke-width="2" class="text-purple-400" />
                     </div>
                     <div>
                       <h4 class="text-sm font-bold text-text-primary">{{ item.label }}</h4>
@@ -168,6 +168,7 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStoreStore } from '../stores/store'
+import { AlertTriangle, CheckCircle, Brain, Zap, HardDrive } from 'lucide-vue-next'
 
 const route = useRoute()
 const store = useStoreStore()

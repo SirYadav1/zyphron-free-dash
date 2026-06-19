@@ -14,12 +14,12 @@
               v-for="item in group.items"
               :key="item.path"
               :to="item.path"
-              class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+              class="nav-item flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium"
               :class="isActive(item.path)
-                ? 'bg-accent/10 text-accent border border-accent/20'
-                : 'text-text-muted hover:text-text-primary hover:bg-white/5'"
+                ? 'active text-accent border border-accent/20'
+                : 'text-text-muted hover:text-text-primary hover:bg-white/5 border border-transparent'"
             >
-              <span class="w-5 h-5 flex items-center justify-center shrink-0" v-html="item.icon"></span>
+              <component :is="item.icon" :size="18" :stroke-width="2" class="shrink-0" />
               <span class="flex-1">{{ item.label }}</span>
               <span v-if="item.badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent/20 text-accent">{{ item.badge }}</span>
             </router-link>
@@ -27,34 +27,55 @@
         </div>
       </nav>
 
-      <div class="p-4 border-t border-border space-y-4">
-        <div class="px-2">
-          <span class="text-[10px] font-bold text-accent uppercase tracking-widest">Administrator</span>
-          <p class="text-sm font-semibold text-text-primary mt-0.5">{{ authStore.user?.username }}</p>
+      <!-- User submenu at bottom -->
+      <div class="p-4 border-t border-border">
+        <div class="relative">
+          <button
+            @click="showUserMenu = !showUserMenu"
+            class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition-all duration-200 group"
+          >
+            <div class="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center">
+              <User :size="14" :stroke-width="2.5" class="text-accent" />
+            </div>
+            <div class="flex-1 text-left min-w-0">
+              <p class="text-xs font-bold text-text-primary truncate">{{ authStore.user?.username }}</p>
+              <p class="text-[10px] text-accent/60 font-semibold uppercase tracking-wider">Administrator</p>
+            </div>
+            <ChevronUp v-if="showUserMenu" :size="14" class="text-text-muted transition-transform duration-200" />
+            <ChevronDown v-else :size="14" class="text-text-muted transition-transform duration-200" />
+          </button>
+
+          <!-- Dropdown menu -->
+          <div
+            v-show="showUserMenu"
+            class="absolute bottom-full left-0 right-0 mb-2 bg-surface border border-border rounded-xl overflow-hidden shadow-2xl z-50"
+            style="animation: scaleIn 0.2s ease-out; transform-origin: bottom;"
+          >
+            <router-link
+              to="/home"
+              class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+            >
+              <LayoutDashboard :size="15" :stroke-width="2" />
+              Back to Dashboard
+            </router-link>
+            <a
+              :href="panelUrl"
+              target="_blank"
+              class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-accent hover:bg-accent/5 transition-colors"
+            >
+              <Terminal :size="15" :stroke-width="2" />
+              Open Panel
+            </a>
+            <div class="border-t border-border"></div>
+            <button
+              @click="handleLogout"
+              class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/5 transition-colors"
+            >
+              <LogOut :size="15" :stroke-width="2" />
+              Sign Out
+            </button>
+          </div>
         </div>
-        <router-link
-          to="/home"
-          class="block w-full px-4 py-2.5 text-sm font-medium text-text-muted border border-border hover:border-accent/40 hover:text-accent transition-all text-center rounded-lg"
-        >
-          <div class="flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Dashboard
-          </div>
-        </router-link>
-        <a
-          :href="panelUrl"
-          target="_blank"
-          class="block w-full px-4 py-2.5 text-sm font-medium text-accent border border-accent/20 hover:border-accent/60 hover:bg-accent/5 transition-all text-center rounded-lg"
-        >
-          <div class="flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Open Panel
-          </div>
-        </a>
       </div>
     </aside>
 
@@ -67,13 +88,43 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import ZyphronLogo from '../../components/ZyphronLogo.vue'
+import {
+  Home,
+  Settings,
+  Ticket,
+  ShieldBan,
+  ShieldCheck,
+  Code,
+  Users,
+  Server,
+  LayoutGrid,
+  Package,
+  ShoppingCart,
+  Tag,
+  UsersRound,
+  BadgePercent,
+  Coins,
+  Link,
+  Mail,
+  CreditCard,
+  FileText,
+  ScrollText,
+  ChevronDown,
+  ChevronUp,
+  User,
+  Terminal,
+  LogOut,
+  LayoutDashboard,
+} from 'lucide-vue-next'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
+const showUserMenu = ref(false)
 
 const panelUrl = computed(() => {
   return import.meta.env.VITE_PTERODACTYL_PANEL_URL || 'https://console.zyphron.cloud'
@@ -83,127 +134,52 @@ const navGroups = [
   {
     title: 'General',
     items: [
-      {
-        path: '/admin/overview',
-        label: 'Overview',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>'
-      },
-      {
-        path: '/admin/settings',
-        label: 'Settings',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>'
-      },
-      {
-        path: '/admin/ticket',
-        label: 'Ticket List',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>'
-      },
-      {
-        path: '/admin/ticket/blacklist',
-        label: 'Ticket Blacklist',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>'
-      },
-      {
-        path: '/admin/roles',
-        label: 'Role Management',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>'
-      },
-      {
-        path: '/admin/api',
-        label: 'Application API',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'
-      },
+      { path: '/admin/overview', label: 'Overview', icon: Home },
+      { path: '/admin/settings', label: 'Settings', icon: Settings },
+      { path: '/admin/ticket', label: 'Ticket List', icon: Ticket },
+      { path: '/admin/ticket/blacklist', label: 'Ticket Blacklist', icon: ShieldBan },
+      { path: '/admin/roles', label: 'Role Management', icon: ShieldCheck },
+      { path: '/admin/api', label: 'Application API', icon: Code },
     ]
   },
   {
     title: 'Management',
     items: [
-      {
-        path: '/admin/users',
-        label: 'Users',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>'
-      },
-      {
-        path: '/admin/servers',
-        label: 'Servers',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>'
-      },
-      {
-        path: '/admin/categories',
-        label: 'Categories',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>'
-      },
-      {
-        path: '/admin/services',
-        label: 'Services',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>'
-      },
-      {
-        path: '/admin/store',
-        label: 'Store',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>'
-      },
-      {
-        path: '/admin/vouchers',
-        label: 'Vouchers',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>'
-      },
-      {
-        path: '/admin/partners',
-        label: 'Partners',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>'
-      },
-      {
-        path: '/admin/coupons',
-        label: 'Coupons',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>',
-      },
-      {
-        path: '/admin/coin-orders',
-        label: 'Coin Orders',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-      },
+      { path: '/admin/users', label: 'Users', icon: Users },
+      { path: '/admin/servers', label: 'Servers', icon: Server },
+      { path: '/admin/categories', label: 'Categories', icon: LayoutGrid },
+      { path: '/admin/services', label: 'Services', icon: Package },
+      { path: '/admin/store', label: 'Store', icon: ShoppingCart },
+      { path: '/admin/vouchers', label: 'Vouchers', icon: Tag },
+      { path: '/admin/partners', label: 'Partners', icon: UsersRound },
+      { path: '/admin/coupons', label: 'Coupons', icon: BadgePercent },
+      { path: '/admin/coin-orders', label: 'Coin Orders', icon: Coins },
     ]
   },
   {
     title: 'Other',
     items: [
-      {
-        path: '/admin/usefullinks',
-        label: 'Useful Links',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>'
-      },
-      {
-        path: '/admin/email-templates',
-        label: 'Email Templates',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>'
-      },
+      { path: '/admin/usefullinks', label: 'Useful Links', icon: Link },
+      { path: '/admin/email-templates', label: 'Email Templates', icon: Mail },
     ]
   },
   {
     title: 'Logs',
     items: [
-      {
-        path: '/admin/payments',
-        label: 'Payments',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
-        badge: '0'
-      },
-      {
-        path: '/admin/invoices',
-        label: 'Invoices',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'
-      },
-      {
-        path: '/admin/activitylogs',
-        label: 'Activity Logs',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>'
-      },
+      { path: '/admin/payments', label: 'Payments', icon: CreditCard, badge: '0' },
+      { path: '/admin/invoices', label: 'Invoices', icon: FileText },
+      { path: '/admin/activitylogs', label: 'Activity Logs', icon: ScrollText },
     ]
   },
 ]
 
 function isActive(path) {
   return route.path === path || route.path.startsWith(path + '/')
+}
+
+function handleLogout() {
+  authStore.logout()
+  showUserMenu.value = false
+  router.push('/login')
 }
 </script>

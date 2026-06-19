@@ -6,11 +6,11 @@
     </div>
 
     <!-- Status Messages -->
-    <div v-if="discordError" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-sm font-bold animate-pulse">
-      ⚠️ {{ discordError }}
+    <div v-if="discordError" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-sm font-bold animate-pulse flex items-center gap-2">
+      <AlertTriangle :size="14" :stroke-width="2.5" /> {{ discordError }}
     </div>
-    <div v-if="discordSuccess" class="card-surface p-4 border-accent/20 bg-accent/5 text-accent text-sm font-bold">
-      ✅ {{ discordSuccess }}
+    <div v-if="discordSuccess" class="card-surface p-4 border-accent/20 bg-accent/5 text-accent text-sm font-bold flex items-center gap-2">
+      <CheckCircle :size="14" :stroke-width="2.5" /> {{ discordSuccess }}
     </div>
 
     <div class="space-y-8">
@@ -34,8 +34,8 @@
 
         <div v-else-if="discordLinked" class="space-y-6">
           <div class="flex items-center gap-4 p-4 bg-base/50 rounded-xl border border-border">
-            <div class="w-12 h-12 rounded-full bg-[#5865F2]/10 border border-[#5865F2]/20 flex items-center justify-center text-2xl">
-              👤
+            <div class="w-12 h-12 rounded-full bg-[#5865F2]/10 border border-[#5865F2]/20 flex items-center justify-center">
+              <User :size="22" :stroke-width="2" class="text-[#5865F2]" />
             </div>
             <div>
               <p class="text-base font-bold text-text-primary">{{ discordUsername }}</p>
@@ -142,6 +142,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
+import { AlertTriangle, CheckCircle, User } from 'lucide-vue-next'
 
 const route = useRoute()
 const authStore = useAuthStore()

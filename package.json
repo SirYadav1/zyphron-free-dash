@@ -43,6 +43,7 @@
     "better-sqlite3": "^12.10.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "lucide-vue-next": "^1.0.0",
     "multer": "^2.2.0",
     "mysql2": "^3.22.5",
     "nodemailer": "^8.0.7",
