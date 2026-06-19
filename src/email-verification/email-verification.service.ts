@@ -86,7 +86,7 @@ export class EmailVerificationService {
     });
 
     // send email
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://108.181.193.242:8080'}/verify-email?token=${token}`;
+    const verificationUrl = `${process.env.FRONTEND_URL || 'https://dashboard.zyphron.cloud'}/verify-email?token=${token}`;
     const htmlBody = `
       <!DOCTYPE html>
       <html>
