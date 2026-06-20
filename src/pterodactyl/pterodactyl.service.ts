@@ -225,6 +225,16 @@ export class PterodactylService {
     return null;
   }
 
+  async getUserByUsername(username: string): Promise<any> {
+    const data = await this.request<any>(
+      `/users?filter[username]=${encodeURIComponent(username)}`,
+    );
+    if (data && data.data && data.data.length > 0) {
+      return data.data[0];
+    }
+    return null;
+  }
+
   async deleteUser(userId: number): Promise<void> {
     await this.request(`/users/${userId}`, 'DELETE');
   }

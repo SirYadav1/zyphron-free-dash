@@ -7,6 +7,7 @@ import { Setting } from '../entities/setting.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { Product } from '../entities/product.entity';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ServersService {
@@ -174,6 +175,50 @@ export class ServersService {
       throw new ForbiddenException(
         'You must link your Discord account and join our server to deploy nodes.',
       );
+    }
+
+    if (!user.pterodactyl_user_id) {
+      // Try to auto-link or create Pterodactyl account before failing
+      this.logger.log(`User ${user.id} has no Pterodactyl link — attempting auto-sync...`);
+      try {
+        // Step 1: Find existing Pterodactyl user by email
+        let existingPteroUser: any = null;
+        if (user.email) {
+          existingPteroUser = await this.pterodactylService.getUserByEmail(user.email);
+        }
+        // Step 1b: If not found by email, try by username
+        if (!existingPteroUser && user.username) {
+          existingPteroUser = await this.pterodactylService.getUserByUsername(user.username);
+        }
+
+        if (existingPteroUser) {
+          const pteroId = existingPteroUser.attributes?.id || existingPteroUser.id;
+          await this.userRepo.update(user.id, {
+            pterodactyl_user_id: pteroId,
+            pterodactyl_username: existingPteroUser.attributes?.username || user.username,
+          });
+          user.pterodactyl_user_id = pteroId;
+          this.logger.log(`Auto-linked Pterodactyl user ${pteroId} to dashboard user ${user.id}`);
+        } else {
+          // Step 2: Not found — create new Pterodactyl account
+          const pteroUser = await this.pterodactylService.createUser({
+            username: (user.username || 'user') as string,
+            email: (user.email || '') as string,
+            password: crypto.randomBytes(16).toString('hex'),
+          });
+          const pteroId = pteroUser?.attributes?.id || pteroUser?.id;
+          if (pteroId) {
+            await this.userRepo.update(user.id, {
+              pterodactyl_user_id: pteroId,
+              pterodactyl_username: user.username,
+            });
+            user.pterodactyl_user_id = pteroId;
+            this.logger.log(`Created new Pterodactyl user ${pteroId} for dashboard user ${user.id}`);
+          }
+        }
+      } catch (syncErr) {
+        this.logger.warn(`Auto-sync Pterodactyl failed: ${syncErr.message}`);
+      }
     }
 
     if (!user.pterodactyl_user_id) {
