@@ -7,6 +7,114 @@
 
 ---
 
+## [1.2.0] — 2026-06-20 (Late Night Update)
+
+### 🚀 New Features
+
+#### 📧 Email Verification System
+- **Mandatory email verification** for all new registrations
+- Verification email with spam-friendly HTML template (dark theme, Zyphron branding)
+- Resend verification link with 60s cooldown timer
+- `EmailVerifiedGuard` — unverified users blocked from protected routes
+- Login flow blocks unverified users with redirect to verification page
+- `VerifyEmailView` — success/error states with SVG icons
+- `VerifyPendingView` — email pre-fill, spam folder tips, resend button
+
+#### 🎫 Ticket System Improvements
+- **Ticket Numbers**: Format `ZYPHC-0001`, `ZYPHC-0002` (sequential, zero-padded)
+- **HTML Export**: Closed tickets saved as styled HTML snapshot in `closed_html` column
+- **Admin Ticket Search**: `GET /api/admin/tickets/search?email=xxx&user_id=xxx`
+- Search by user email or user_id to find all tickets
+
+#### 🖥️ Server Management
+- **Suspend Reason**: Required field when suspending a server (`suspend_reason` column)
+- **Ownership Transfer**: Expired/suspended servers transfer to admin account
+  - Configurable via `server_owner_transfer_email` setting (default: admin@zyphron.cloud)
+  - Original owner receives email notification
+- **Deploy Popup**: "Your server is being installed..." modal with loading animation
+  - Shows "Server ready! You will receive an email." on completion
+
+#### 📧 Email Notifications (6 Types)
+- ✅ **Deploy Complete**: "Your server X is ready! Manage from dashboard."
+- ✅ **Auto-Suspend Warning**: "Your server X is expiring in 24 hours. Renew now."
+- ✅ **Server Suspended**: "Your server X has been suspended." (with reason)
+- ✅ **Server Restored**: "Your server X has been restored."
+- ✅ **Server Deleted**: "Your server X has been deleted."
+- ✅ **Ownership Transferred**: "Your server X ownership has been transferred."
+
+#### 🔐 Role Permissions
+- **Ticket Permissions**: `ticket_accept`, `ticket_reject`, `ticket_chat`
+- **Coin Permission**: `coin_approve`
+- Added to role entity, controller, and default permission seeds
+
+#### 🔗 Useful Links
+- **Default Links**: Zyphron Console + Discord Server (auto-seeded if none exist)
+- **Admin CRUD**: Add/Edit/Delete with title, URL, description, position
+
+### 🎨 UI/UX Changes
+
+#### Services Page
+- **Bigger Cards**: p-7 padding, text-xl titles, text-lg specs, text-2xl prices
+- **Selected Highlight**: Accent border + ring glow + check icon on selected service
+- **Deploy Popup**: Professional loading modal with animation
+
+#### Admin Servers
+- **Icons**: MemoryStick (RAM), Cpu, HardDrive, Calendar, Clock
+- **Values**: Proper format (e.g. "1.5 GB RAM", "10240 MB Disk")
+- **Dates**: "Created on" and "Expires on" with date icons
+- **Bigger Buttons**: Delete/Suspend/Unban with text + icons
+- **Suspend Reason**: Input field when suspending
+
+#### Admin Settings
+- **5 Category Tabs**: General, Pterodactyl, Email/SMTP, Server Defaults, Security
+- **Node Names Fixed**: Shows actual node names (not "undefined mb")
+- **Pterodactyl Key**: Shows masked key after add (e.g. `ptla_****Ki`)
+- **Update Key Button**: Change API key without re-entering panel URL
+
+### 🐛 Bug Fixes
+- **Email Verification Routes**: Removed conflicting routes from old AuthController
+- **emailVerified Response**: Now uses actual `user.email_verified` (was hardcoded `true`)
+- **Login Flow**: Unverified users redirected to verification page (not dashboard)
+- **Registration Flow**: Redirects to `/verify?email=...` after signup
+
+### 📁 Files Changed (32 files, 1898 insertions, 620 deletions)
+
+**Backend (14 files):**
+- `src/auth/auth.controller.ts` — Removed old verify/resend routes
+- `src/auth/auth.module.ts` — Added EmailVerificationModule import
+- `src/auth/auth.service.ts` — Email verification in login/register, inject EmailVerificationService
+- `src/common/guards/email-verified.guard.ts` — NEW: Guard for unverified users
+- `src/email-verification/email-verification.controller.ts` — Updated with resend endpoint
+- `src/entities/role.entity.ts` — Added ticket/coin permission columns
+- `src/entities/server.entity.ts` — Added suspend_reason column
+- `src/entities/ticket.entity.ts` — Added ticket_number, closed_html columns
+- `src/roles/roles.controller.ts` — Added new permission fields
+- `src/roles/roles.service.ts` — Added default permission seeds
+- `src/servers/admin-servers.controller.ts` — Suspend reason in body
+- `src/servers/server-lifecycle.service.ts` — Ownership transfer + email notifications
+- `src/servers/servers.service.ts` — Email notifications, suspend reason
+- `src/tickets/admin-tickets.controller.ts` — Ticket search endpoint
+
+**Frontend (18 files):**
+- `client/layouts/MainLayout.vue` — Useful links in sidebar
+- `client/stores/auth.js` — Email verification store methods
+- `client/views/DashboardView.vue` — Updated dashboard
+- `client/views/LoginView.vue` — Email verification redirect
+- `client/views/ProfileView.vue` — Updated profile
+- `client/views/RegisterView.vue` — Redirect to verify after signup
+- `client/views/ServersView.vue` — Updated server list
+- `client/views/ServicesView.vue` — Bigger cards, deploy popup
+- `client/views/TicketCreateView.vue` — Updated ticket creation
+- `client/views/TicketShowView.vue` — Updated ticket view
+- `client/views/TicketsView.vue` — Updated ticket list
+- `client/views/VerifyEmailView.vue` — NEW: Email verification page
+- `client/views/VerifyPendingView.vue` — NEW: Verification pending page
+- `client/views/admin/AdminServersView.vue` — Icons, dates, bigger buttons
+- `client/views/admin/AdminSettingsView.vue` — 5 category tabs, fixed nodes
+- `client/views/admin/AdminUsefulLinksView.vue` — NEW: Useful links CRUD
+
+---
+
 ## [1.1.0] — 2026-06-20
 
 ### 🚀 New Features
