@@ -67,7 +67,7 @@
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-sm text-text-muted">Created</span>
-              <span class="text-sm font-bold text-text-primary">{{ formatDate(user.createdAt) }}</span>
+              <span class="text-sm font-bold text-text-primary">{{ formatDate(user.created_at || user.createdAt) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-sm text-text-muted">Updated</span>
@@ -98,7 +98,7 @@
                 <td class="px-5 py-3">
                   <span :class="s.status === 'active' ? 'text-accent bg-accent/10' : s.status === 'suspended' ? 'text-yellow-500 bg-yellow-500/10' : 'text-red-500 bg-red-500/10'" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">{{ s.status }}</span>
                 </td>
-                <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(s.createdAt) }}</td>
+                <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(s.created_at || s.createdAt) }}</td>
               </tr>
             </tbody>
           </table>

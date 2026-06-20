@@ -35,7 +35,7 @@
               <td class="px-5 py-3">
                 <span :class="statusClass(t.status)" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">{{ t.status }}</span>
               </td>
-              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(t.createdAt) }}</td>
+              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(t.created_at || t.createdAt) }}</td>
               <td class="px-5 py-3 text-right">
                 <router-link :to="`/admin/ticket/${t.id}`" class="text-xs font-bold text-accent hover:text-white transition-colors">View</router-link>
               </td>

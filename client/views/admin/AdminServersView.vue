@@ -122,7 +122,7 @@
             </div>
             <div>
               <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Created on</p>
-              <p class="text-text-primary font-bold">{{ formatDate(server.createdAt) }}</p>
+              <p class="text-text-primary font-bold">{{ formatDate(server.created_at || server.createdAt) }}</p>
             </div>
             <div>
               <p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Expires on</p>

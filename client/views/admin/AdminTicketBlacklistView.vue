@@ -45,7 +45,7 @@
               </td>
               <td class="px-5 py-3 text-text-primary font-mono text-sm">{{ b.value }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ b.addedBy?.username || '---' }}</td>
-              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(b.createdAt) }}</td>
+              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(b.created_at || b.createdAt) }}</td>
               <td class="px-5 py-3 text-right">
                 <button @click="handleRemove(b)" class="text-xs font-bold text-red-500 hover:text-red-400 transition-colors">Remove</button>
               </td>

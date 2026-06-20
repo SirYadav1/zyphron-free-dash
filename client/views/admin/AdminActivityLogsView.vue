@@ -25,7 +25,7 @@
               <td class="px-5 py-3 text-text-primary text-sm max-w-[300px] truncate">{{ log.description }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ log.subject || '---' }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ log.causer || 'System' }}</td>
-              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(log.createdAt) }}</td>
+              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(log.created_at) }}</td>
             </tr>
           </tbody>
         </table>
