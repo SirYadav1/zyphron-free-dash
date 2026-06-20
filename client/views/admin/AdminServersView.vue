@@ -20,7 +20,7 @@
       <div
         v-for="server in filteredServers"
         :key="server.id"
-        class="bg-base-secondary border border-border rounded-xl border-l-4 transition-all hover:border-l-accent group overflow-hidden"
+        class="bg-[#1e293b] border border-border rounded-xl border-l-4 transition-all hover:border-l-accent group overflow-hidden"
         :class="statusBorderColor(server)"
       >
         <div class="p-5">
@@ -73,8 +73,20 @@
                 {{ getStatusLabel(server) }}
               </span>
               <div class="flex items-center gap-1.5">
+                <!-- Open Console Button -->
+                <a
+                  v-if="server.pterodactylServerId && server.identifier && pteroUrl"
+                  :href="`${pteroUrl}/server/${server.identifier}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="p-2 rounded-lg text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+                  title="Open Console"
+                >
+                  <ExternalLink :size="16" :stroke-width="2" />
+                </a>
+                <!-- Panel Admin Link -->
                 <a v-if="server.pterodactylServerId && pteroUrl" :href="`${pteroUrl}/admin/servers/view/${server.pterodactylServerId}`" target="_blank"
-                  class="p-2 rounded-lg text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all" title="Panel">
+                  class="p-2 rounded-lg text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all" title="Panel Admin">
                   <ExternalLink :size="16" :stroke-width="2" />
                 </a>
                 <!-- Suspend/Unsuspend - BIGGER buttons -->
@@ -137,7 +149,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else class="bg-base-secondary border border-border rounded-xl py-16 text-center">
+    <div v-else class="bg-[#1e293b] border border-border rounded-xl py-16 text-center">
       <p class="text-text-muted text-lg font-bold mb-1">No Servers Found</p>
       <p class="text-sm text-text-muted/60">{{ searchQuery ? 'No servers match your search.' : 'No servers deployed yet.' }}</p>
     </div>

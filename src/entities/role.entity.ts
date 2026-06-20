@@ -28,6 +28,8 @@ export class Role {
 
   @Column({ type: 'integer', default: 0 })
   coin_approve: number;
+  @Column({ type: 'integer', default: 0 })
+  level: number;
 
   @CreateDateColumn({ type: 'text' })
   created_at: string;

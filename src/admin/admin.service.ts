@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, In, LessThan, IsNull } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User } from '../entities/user.entity';
 import { Server } from '../entities/server.entity';
 import { Setting } from '../entities/setting.entity';
@@ -153,9 +154,8 @@ export class AdminService {
           updateData[field] = coins;
         }
         else if (field === 'password') {
-          // Hash password before saving
-          const bcrypt = require('bcrypt');
-          updateData[field] = await bcrypt.hash(data[field], 10);
+          // Hash password before saving — entity column is password_hash
+          updateData['password_hash'] = await bcrypt.hash(data[field], 10);
         }
         else updateData[field] = data[field];
       }
@@ -574,9 +574,11 @@ export class AdminService {
     user: string;
     pass: string;
     from: string;
+    from_name?: string;
+    encryption?: string;
   }): Promise<any> {
-    const smtpKeys = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from'];
-    const smtpValues = [dto.host, dto.port, dto.user, dto.pass, dto.from];
+    const smtpKeys = ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from', 'smtp_from_name', 'smtp_encryption'];
+    const smtpValues = [dto.host, dto.port, dto.user, dto.pass, dto.from, dto.from_name || '', dto.encryption || ''];
 
     for (let i = 0; i < smtpKeys.length; i++) {
       const key = smtpKeys[i];

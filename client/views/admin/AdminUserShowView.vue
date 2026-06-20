@@ -18,14 +18,14 @@
     </div>
 
     <template v-else-if="error">
-      <div class="card-surface p-6 text-center">
+      <div class="bg-[#1e293b] border border-border rounded-xl p-6 text-center">
         <p class="text-red-500 font-bold">{{ error }}</p>
       </div>
     </template>
 
     <template v-else>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="card-surface p-6 space-y-4">
+        <div class="bg-[#1e293b] border border-border rounded-xl p-6 space-y-4">
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center text-2xl font-bold text-accent">
               {{ user.username ? user.username[0].toUpperCase() : '?' }}
@@ -40,8 +40,8 @@
           </div>
         </div>
 
-        <div class="card-surface p-6 space-y-4">
-          <p class="text-label text-xs uppercase tracking-widest">Account Details</p>
+        <div class="bg-[#1e293b] border border-border rounded-xl p-6 space-y-4">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Account Details</p>
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-sm text-text-muted">Coins</span>
@@ -55,11 +55,15 @@
               <span class="text-sm text-text-muted">Email Verified</span>
               <span class="text-sm font-bold" :class="user.emailVerified ? 'text-accent' : 'text-yellow-500'">{{ user.emailVerified ? 'Yes' : 'No' }}</span>
             </div>
+            <div v-if="user.first_name || user.last_name" class="flex justify-between">
+              <span class="text-sm text-text-muted">Client Name</span>
+              <span class="text-sm font-bold text-text-primary">{{ user.last_name }}{{ user.first_name ? ', ' + user.first_name : '' }}</span>
+            </div>
           </div>
         </div>
 
-        <div class="card-surface p-6 space-y-4">
-          <p class="text-label text-xs uppercase tracking-widest">Dates</p>
+        <div class="bg-[#1e293b] border border-border rounded-xl p-6 space-y-4">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Dates</p>
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-sm text-text-muted">Created</span>
@@ -73,23 +77,23 @@
         </div>
       </div>
 
-      <div class="card-surface overflow-hidden">
-        <div class="px-6 py-4 border-b border-border">
-          <h3 class="text-label text-xs uppercase tracking-widest">Servers ({{ servers.length }})</h3>
+      <div class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-border bg-[#0f172a]/50">
+          <h3 class="text-[11px] font-semibold uppercase tracking-wider text-text-muted">Servers ({{ servers.length }})</h3>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-b border-border bg-base/50 text-left">
-                <th class="px-5 py-3 text-label">ID</th>
-                <th class="px-5 py-3 text-label">Name</th>
-                <th class="px-5 py-3 text-label">Status</th>
-                <th class="px-5 py-3 text-label">Created</th>
+              <tr class="border-b border-border bg-[#0f172a]/30 text-left">
+                <th class="px-5 py-3 text-[10px] font-bold text-text-muted uppercase tracking-wider">ID</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-text-muted uppercase tracking-wider">Name</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-text-muted uppercase tracking-wider">Status</th>
+                <th class="px-5 py-3 text-[10px] font-bold text-text-muted uppercase tracking-wider">Created</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="s in servers" :key="s.id" class="border-b border-border/50 hover:bg-white/[0.02] transition-colors">
-                <td class="px-5 py-3 text-text-muted text-xs">{{ s.id }}</td>
+                <td class="px-5 py-3 text-text-muted text-xs font-mono">{{ s.id }}</td>
                 <td class="px-5 py-3 text-text-primary font-bold text-sm">{{ s.serverName }}</td>
                 <td class="px-5 py-3">
                   <span :class="s.status === 'active' ? 'text-accent bg-accent/10' : s.status === 'suspended' ? 'text-yellow-500 bg-yellow-500/10' : 'text-red-500 bg-red-500/10'" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">{{ s.status }}</span>

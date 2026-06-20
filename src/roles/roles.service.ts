@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role } from '../entities/role.entity';
@@ -7,13 +7,104 @@ import { RolePermission } from '../entities/role-permission.entity';
 import { UserRole } from '../entities/user-role.entity';
 
 @Injectable()
-export class RolesService {
+export class RolesService implements OnModuleInit {
+  private readonly logger = new Logger(RolesService.name);
+
   constructor(
     @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
     @InjectRepository(Permission) private readonly permissionRepo: Repository<Permission>,
     @InjectRepository(RolePermission) private readonly rolePermRepo: Repository<RolePermission>,
     @InjectRepository(UserRole) private readonly userRoleRepo: Repository<UserRole>,
   ) {}
+
+  async onModuleInit() {
+    await this.seedRoles();
+  }
+
+  /**
+   * Seed default roles with predefined permissions and hierarchy levels.
+   * Runs automatically on module init. Skips roles that already exist.
+   */
+  async seedRoles() {
+    const roles = [
+      {
+        name: 'Owner',
+        level: 1,
+        ticket_accept: 1,
+        ticket_reject: 1,
+        ticket_chat: 1,
+        coin_approve: 1,
+        permissions: [
+          'users.view', 'users.create', 'users.edit', 'users.delete',
+          'servers.view', 'servers.create', 'servers.edit', 'servers.delete',
+          'products.view', 'products.create', 'products.edit', 'products.delete',
+          'payments.view', 'settings.view', 'settings.edit',
+          'roles.view', 'roles.edit',
+          'tickets.view', 'tickets.edit', 'tickets.accept', 'tickets.reject', 'tickets.chat',
+          'coins.approve',
+          'vouchers.view', 'vouchers.edit',
+        ],
+      },
+      {
+        name: 'Co-Founder',
+        level: 2,
+        ticket_accept: 1,
+        ticket_reject: 1,
+        ticket_chat: 1,
+        coin_approve: 1,
+        permissions: [
+          'users.view', 'users.create', 'users.edit',
+          'servers.view', 'servers.create', 'servers.edit',
+          'products.view', 'products.create', 'products.edit',
+          'payments.view', 'settings.view', 'settings.edit',
+          'roles.view', 'roles.edit',
+          'tickets.view', 'tickets.edit', 'tickets.accept', 'tickets.reject', 'tickets.chat',
+          'coins.approve',
+          'vouchers.view', 'vouchers.edit',
+        ],
+      },
+      {
+        name: 'CEO',
+        level: 3,
+        ticket_accept: 1,
+        ticket_reject: 1,
+        ticket_chat: 1,
+        coin_approve: 1,
+        permissions: [
+          'tickets.view', 'tickets.edit', 'tickets.accept', 'tickets.reject', 'tickets.chat',
+          'coins.approve',
+        ],
+      },
+      {
+        name: 'Staff',
+        level: 4,
+        ticket_accept: 1,
+        ticket_reject: 0,
+        ticket_chat: 1,
+        coin_approve: 0,
+        permissions: [
+          'tickets.view', 'tickets.accept', 'tickets.chat',
+        ],
+      },
+    ];
+
+    for (const roleData of roles) {
+      const exists = await this.roleRepo.findOne({ where: { name: roleData.name } });
+      if (!exists) {
+        const created = await this.roleRepo.save(this.roleRepo.create({
+          name: roleData.name,
+          level: roleData.level,
+          ticket_accept: roleData.ticket_accept,
+          ticket_reject: roleData.ticket_reject,
+          ticket_chat: roleData.ticket_chat,
+          coin_approve: roleData.coin_approve,
+        }));
+        await this.syncPermissions(created.id, roleData.permissions);
+        this.logger.log(`Seeded role: ${roleData.name} (id=${created.id})`);
+      }
+    }
+  }
+
 
   async findAll() {
     const roles = await this.roleRepo.find({ order: { name: 'ASC' } });

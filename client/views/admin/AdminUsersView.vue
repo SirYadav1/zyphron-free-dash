@@ -3,109 +3,142 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-text-primary">Manage Users</h2>
+        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Manage Users</h2>
         <p class="text-sm text-text-muted mt-1">{{ filteredUsers.length }} of {{ store.users.length }} users</p>
       </div>
       <div class="flex items-center gap-3">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search by name, email, ID..."
-          class="input-field w-64"
-        />
-        <select v-model="perPage" class="input-field w-28">
+        <div class="relative">
+          <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by name, email, ID..."
+            class="input-field pl-9 pr-4 py-2 w-64"
+          />
+        </div>
+        <select v-model="perPage" class="input-field w-28 py-2">
           <option :value="10">10 / page</option>
           <option :value="25">25 / page</option>
           <option :value="50">50 / page</option>
           <option :value="100">100 / page</option>
         </select>
+        <router-link to="/admin/users/create" class="btn-primary inline-flex items-center gap-2 py-2 px-4">
+          <Plus :size="16" :stroke-width="2" /> Create New
+        </router-link>
       </div>
     </div>
 
     <!-- Users Table -->
-    <div v-if="paginatedUsers.length > 0" class="bg-base-secondary border border-border rounded-xl overflow-hidden">
+    <div v-if="paginatedUsers.length > 0" class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
       <table class="w-full text-sm border-collapse">
         <thead>
-          <tr class="border-b border-border bg-base/80">
-            <th class="px-5 py-3 text-left text-[11px] font-bold text-text-muted uppercase tracking-wider">User</th>
-            <th class="px-5 py-3 text-left text-[11px] font-bold text-text-muted uppercase tracking-wider">Email</th>
-            <th class="px-5 py-3 text-left text-[11px] font-bold text-text-muted uppercase tracking-wider">Roles</th>
-            <th class="px-5 py-3 text-center text-[11px] font-bold text-text-muted uppercase tracking-wider">Coins</th>
-            <th class="px-5 py-3 text-center text-[11px] font-bold text-text-muted uppercase tracking-wider">Status</th>
-            <th class="px-5 py-3 text-right text-[11px] font-bold text-text-muted uppercase tracking-wider w-36">Actions</th>
+          <tr class="border-b border-border bg-[#0f172a]">
+            <th class="px-5 py-3 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider">ID</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider">Email</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider">Client Name</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider">Username</th>
+            <th class="px-5 py-3 text-center text-[10px] font-bold text-text-muted uppercase tracking-wider">2FA</th>
+            <th class="px-5 py-3 text-center text-[10px] font-bold text-text-muted uppercase tracking-wider">Servers</th>
+            <th class="px-5 py-3 text-center text-[10px] font-bold text-text-muted uppercase tracking-wider">Can Access</th>
+            <th class="px-5 py-3 text-right text-[10px] font-bold text-text-muted uppercase tracking-wider w-28">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="user in paginatedUsers"
+            v-for="(user, idx) in paginatedUsers"
             :key="user.id"
-            class="border-b border-border/40 last:border-b-0 hover:bg-white/[0.03] transition-colors"
+            class="border-b border-border/30 last:border-b-0 transition-colors"
+            :class="idx % 2 === 0 ? 'bg-[#1e293b]' : 'bg-[#1a2537]'"
           >
-            <!-- User -->
+            <!-- ID -->
             <td class="px-5 py-3">
-              <div class="flex items-center gap-3">
+              <span class="text-xs text-text-muted font-mono">{{ (currentPage - 1) * perPage + idx + 1 }}</span>
+            </td>
+            <!-- Email with star for admin -->
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-2">
+                <Star
+                  v-if="user.isAdmin"
+                  :size="14"
+                  class="text-yellow-400 flex-shrink-0"
+                  fill="currentColor"
+                />
+                <span class="text-xs text-text-muted truncate max-w-[200px] block">{{ user.email || '—' }}</span>
+              </div>
+            </td>
+            <!-- Client Name -->
+            <td class="px-5 py-3">
+              <span class="text-xs text-text-primary">
+                {{ getClientName(user) }}
+              </span>
+            </td>
+            <!-- Username -->
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-2">
                 <div
                   :class="user.isBanned ? 'bg-red-500/20 text-red-400' : user.isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-accent/10 text-accent'"
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                  class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                 >
                   {{ getInitials(user.username) }}
                 </div>
                 <div class="min-w-0">
-                  <p class="text-sm font-semibold text-text-primary truncate">{{ user.username }}</p>
-                  <p class="text-[10px] text-text-muted">ID: {{ user.id }}</p>
+                  <span class="text-xs text-text-primary font-semibold block truncate">{{ user.username }}</span>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span v-if="user.isAdmin" class="px-1.5 py-0.5 rounded text-[8px] font-bold bg-red-500/15 text-red-400">Admin</span>
+                    <span v-for="role in getUserRoles(user)" :key="role.name"
+                      :class="getRoleBadgeClass(role.name)"
+                      class="px-1.5 py-0.5 rounded text-[8px] font-bold"
+                    >{{ role.name }}</span>
+                  </div>
                 </div>
-                <div class="w-2 h-2 rounded-full flex-shrink-0" :class="isOnline(user) ? 'bg-emerald-400' : 'bg-gray-500'" :title="isOnline(user) ? 'Online' : 'Offline'"></div>
               </div>
             </td>
-            <!-- Email -->
-            <td class="px-5 py-3">
-              <span class="text-xs text-text-muted">{{ user.email || '—' }}</span>
-            </td>
-            <!-- Roles -->
-            <td class="px-5 py-3">
-              <div class="flex flex-wrap gap-1">
-                <span
-                  v-if="user.isAdmin"
-                  class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/15 text-red-400"
-                >Admin</span>
-                <span
-                  v-for="role in getUserRoles(user)"
-                  :key="role.name"
-                  :class="getRoleBadgeClass(role.name)"
-                  class="px-2 py-0.5 rounded text-[10px] font-bold"
-                >{{ role.name }}</span>
-                <span
-                  v-if="!user.isAdmin && (!userRolesMap[user.id] || userRolesMap[user.id].length === 0)"
-                  class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-500/15 text-gray-400"
-                >User</span>
+            <!-- 2FA -->
+            <td class="px-5 py-3 text-center">
+              <div class="flex items-center justify-center gap-1">
+                <ShieldCheck v-if="user.twoFactorEnabled" :size="14" class="text-emerald-400" />
+                <ShieldOff v-else :size="14" class="text-red-400/60" />
+                <span class="text-[10px] font-bold" :class="user.twoFactorEnabled ? 'text-emerald-400' : 'text-red-400/60'">
+                  {{ user.twoFactorEnabled ? 'On' : 'Off' }}
+                </span>
               </div>
             </td>
-            <!-- Coins -->
+            <!-- Servers Owned -->
             <td class="px-5 py-3 text-center">
-              <span class="text-sm font-bold text-accent">{{ user.coins }}</span>
+              <span class="text-xs font-bold text-text-primary">{{ user.serverCount || 0 }}</span>
             </td>
-            <!-- Status -->
+            <!-- Can Access -->
             <td class="px-5 py-3 text-center">
-              <span
-                :class="userStatusClass(user)"
-                class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"
-              >{{ userStatusText(user) }}</span>
+              <button
+                @click="openEditModal(user)"
+                class="p-1.5 rounded-lg text-text-muted hover:text-accent hover:bg-accent/10 transition-all"
+                title="Toggle Panel Access"
+              >
+                <Power :size="14" :stroke-width="2" />
+              </button>
             </td>
             <!-- Actions -->
             <td class="px-5 py-3 text-right">
               <div class="flex gap-1.5 justify-end">
-                <button
-                  @click="openEditModal(user)"
-                  class="px-2.5 py-1 text-[10px] font-bold text-accent border border-accent/20 rounded hover:bg-accent/10 transition-colors"
-                >Edit</button>
-                <button
-                  @click="openRolesModal(user)"
-                  class="px-2.5 py-1 text-[10px] font-bold text-blue-400 border border-blue-500/20 rounded hover:bg-blue-500/10 transition-colors"
-                >Roles</button>
+                <router-link
+                  :to="`/admin/users/${user.id}`"
+                  class="px-2.5 py-1 text-[10px] font-bold text-accent border border-accent/20 rounded hover:bg-accent/10 transition-colors inline-flex items-center gap-1"
+                >
+                  <Eye :size="12" /> View
+                </router-link>
+                <router-link
+                  :to="`/admin/users/${user.id}/edit`"
+                  class="px-2.5 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20 rounded hover:bg-emerald-500/10 transition-colors inline-flex items-center gap-1"
+                >
+                  <Edit3 :size="12" /> Edit
+                </router-link>
                 <button
                   @click="handleDelete(user)"
                   class="px-2.5 py-1 text-[10px] font-bold text-red-400 border border-red-500/20 rounded hover:bg-red-500/10 transition-colors"
-                >✕</button>
+                  title="Delete User"
+                >
+                  <Trash2 :size="12" />
+                </button>
               </div>
             </td>
           </tr>
@@ -113,7 +146,7 @@
       </table>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex items-center justify-between px-5 py-3 border-t border-border bg-base/50">
+      <div v-if="totalPages > 1" class="flex items-center justify-between px-5 py-3 border-t border-border bg-[#0f172a]">
         <p class="text-[11px] text-text-muted">
           Showing {{ (currentPage - 1) * perPage + 1 }}–{{ Math.min(currentPage * perPage, filteredUsers.length) }} of {{ filteredUsers.length }}
         </p>
@@ -152,7 +185,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-if="filteredUsers.length === 0 && !store.loading" class="bg-base-secondary border border-border rounded-xl py-16 text-center">
+    <div v-if="filteredUsers.length === 0 && !store.loading" class="bg-[#1e293b] border border-border rounded-xl py-16 text-center">
       <p class="text-text-muted text-lg font-bold mb-1">No Users Found</p>
       <p class="text-sm text-text-muted/60">No users match your search.</p>
     </div>
@@ -165,7 +198,7 @@
     <!-- Edit User Modal -->
     <Teleport to="body">
       <div v-if="showEditModal && editUser" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] pt-[8vh] px-4" @click.self="showEditModal = false">
-        <div class="bg-base-secondary border border-border rounded-xl w-full max-w-md shadow-2xl">
+        <div class="bg-[#1e293b] border border-border rounded-xl w-full max-w-md shadow-2xl">
           <div class="px-5 py-4 border-b border-border flex items-center justify-between">
             <div>
               <h3 class="text-lg font-bold text-text-primary">Edit {{ editUser.username }}</h3>
@@ -205,7 +238,7 @@
             </div>
 
             <!-- Admin Toggle -->
-            <div class="flex items-center justify-between p-3 bg-base/50 rounded-lg border border-border">
+            <div class="flex items-center justify-between p-3 bg-[#0f172a]/50 rounded-lg border border-border">
               <div>
                 <p class="text-xs font-bold text-text-primary">Admin Privileges</p>
                 <p class="text-[10px] text-text-muted">Full panel access</p>
@@ -231,7 +264,7 @@
     <!-- Roles Modal -->
     <Teleport to="body">
       <div v-if="showRolesModal && rolesUser" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] pt-[8vh] px-4" @click.self="showRolesModal = false">
-        <div class="bg-base-secondary border border-border rounded-xl w-full max-w-md shadow-2xl">
+        <div class="bg-[#1e293b] border border-border rounded-xl w-full max-w-md shadow-2xl">
           <div class="px-5 py-4 border-b border-border flex items-center justify-between">
             <div>
               <h3 class="text-lg font-bold text-text-primary">Roles — {{ rolesUser.username }}</h3>
@@ -251,7 +284,7 @@
                 :key="role.id"
                 @click="toggleRoleForUser(role)"
                 :disabled="roleToggling"
-                :class="currentUserRoleIds.includes(role.id) ? 'bg-accent/20 text-accent border-accent/40' : 'bg-base text-text-muted border-border hover:border-border-bright'"
+                :class="currentUserRoleIds.includes(role.id) ? 'bg-accent/20 text-accent border-accent/40' : 'bg-[#0f172a] text-text-muted border-border hover:border-border-bright'"
                 class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-xs font-bold border transition-all disabled:opacity-50"
               >
                 <span>{{ role.name }}</span>
@@ -270,6 +303,17 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
+import {
+  Search,
+  Plus,
+  Star,
+  ShieldCheck,
+  ShieldOff,
+  Power,
+  Eye,
+  Edit3,
+  Trash2,
+} from 'lucide-vue-next'
 
 const store = useAdminStore()
 const searchQuery = ref('')
@@ -306,7 +350,9 @@ const filteredUsers = computed(() => {
   return store.users.filter(u =>
     u.username.toLowerCase().includes(q) ||
     (u.email && u.email.toLowerCase().includes(q)) ||
-    String(u.id).includes(q)
+    String(u.id).includes(q) ||
+    (u.first_name && u.first_name.toLowerCase().includes(q)) ||
+    (u.last_name && u.last_name.toLowerCase().includes(q))
   )
 })
 
@@ -354,17 +400,12 @@ async function loadAllUserRoles() {
 
 function getUserRoles(user) { return userRolesMap.value[user.id] || [] }
 function getInitials(name) { return name ? name.slice(0, 2).toUpperCase() : '?' }
-function isOnline(user) { return user.last_active ? (Date.now() - new Date(user.last_active).getTime() < 5 * 60 * 1000) : false }
-
-function userStatusClass(user) {
-  if (user.isBanned) return 'text-red-400 bg-red-500/10'
-  if (user.isAdmin) return 'text-purple-400 bg-purple-500/10'
-  return 'text-emerald-400 bg-emerald-500/10'
-}
-function userStatusText(user) {
-  if (user.isBanned) return 'Banned'
-  if (user.isAdmin) return 'Admin'
-  return 'Active'
+function getClientName(user) {
+  const parts = []
+  if (user.last_name) parts.push(user.last_name)
+  if (user.first_name) parts.push(user.first_name)
+  if (parts.length === 0) return '—'
+  return parts.join(', ')
 }
 
 function getRoleBadgeClass(roleName) {

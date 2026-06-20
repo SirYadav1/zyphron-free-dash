@@ -97,9 +97,7 @@
             <!-- CPU -->
             <div class="bg-base/50 rounded-lg p-3 border border-border">
               <div class="flex items-center gap-1.5 mb-1.5">
-                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
-                </svg>
+                <Cpu :size="14" class="text-blue-400" />
                 <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">CPU</span>
               </div>
               <p class="text-sm font-bold text-text-primary tabular-nums">{{ server.cpuPercent }}%</p>
@@ -151,6 +149,17 @@
               <span class="font-medium">{{ getStatusLabel(server) }}</span>
             </div>
             <div class="flex items-center gap-2">
+              <!-- Open Console Button -->
+              <a
+                v-if="server.pterodactylServerId && server.identifier && pteroUrl"
+                :href="`${pteroUrl}/server/${server.identifier}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="p-2 rounded-lg text-text-muted hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+                title="Open Console"
+              >
+                <ExternalLink :size="14" :stroke-width="2" />
+              </a>
               <router-link
                 :to="`/servers/${server.id}/renew`"
                 class="p-2 rounded-lg text-text-muted hover:text-amber-400 hover:bg-amber-500/10 transition-all"
@@ -181,8 +190,9 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useServersStore } from '../stores/servers'
+import client from '../api/client'
 import {
   Server,
   Settings,
@@ -193,9 +203,12 @@ import {
   Calendar,
   Clock,
   RefreshCw,
+  Cpu,
+  ExternalLink,
 } from 'lucide-vue-next'
 
 const store = useServersStore()
+const pteroUrl = ref('')
 
 const activeCount = computed(() => store.servers.filter(s => s.status === 'active').length)
 const suspendedCount = computed(() => store.servers.filter(s => s.status === 'suspended').length)
@@ -204,6 +217,17 @@ onMounted(async () => {
   try {
     await store.fetchServers()
   } catch {}
+  // Load Pterodactyl panel URL from settings
+  try {
+    const { data } = await client.get('/servers/stats')
+    if (data.panelUrl) pteroUrl.value = data.panelUrl
+  } catch {
+    // Fallback: try admin settings endpoint
+    try {
+      const { data } = await client.get('/admin/settings')
+      if (data.pterodactyl_panel_url) pteroUrl.value = data.pterodactyl_panel_url
+    } catch {}
+  }
 })
 
 function getNodeHost(server) {

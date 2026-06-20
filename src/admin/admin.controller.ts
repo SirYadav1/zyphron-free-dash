@@ -154,6 +154,14 @@ class SmtpConfigDto {
   @IsString()
   @IsOptional()
   from: string;
+
+  @IsString()
+  @IsOptional()
+  from_name: string;
+
+  @IsString()
+  @IsOptional()
+  encryption: string;
 }
 
 class SendTestEmailDto {
