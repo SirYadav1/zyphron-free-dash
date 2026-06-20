@@ -198,7 +198,47 @@ export class ServersService {
       relations: { user: true },
       order: { created_at: 'DESC' },
     });
-    return servers;
+
+    // Enrich with Pterodactyl data
+    const enriched: any[] = [];
+    for (const server of servers) {
+      let pteroData: any = null;
+      if (server.pterodactyl_server_id) {
+        try {
+          const user = server.user;
+          if (user && user.pterodactyl_user_id) {
+            const pteroServers = await this.pterodactylService.getUserServers(user.pterodactyl_user_id);
+            pteroData = pteroServers.find((s: any) => s.attributes.id.toString() === server.pterodactyl_server_id)?.attributes || null;
+          }
+        } catch {}
+      }
+
+      enriched.push({
+        id: server.id,
+        serverName: server.server_name,
+        pterodactylServerId: server.pterodactyl_server_id,
+        identifier: pteroData?.identifier || null,
+        node: pteroData?.node || null,
+        status: server.status,
+        ramMb: server.ram_mb,
+        cpuPercent: server.cpu_percent,
+        diskMb: server.disk_mb,
+        expiresAt: server.expires_at,
+        renewalPrice: server.renewal_price,
+        isSuspended: !!server.is_suspended,
+        suspendedAt: server.suspended_at,
+        suspendReason: server.suspend_reason,
+        autoRenew: !!server.auto_renew,
+        createdAt: server.created_at,
+        allocation: pteroData?.allocation || null,
+        user: server.user ? {
+          id: server.user.id,
+          username: server.user.username,
+          email: server.user.email,
+        } : null,
+      });
+    }
+    return enriched;
   }
 
   async createServer(userId: string, serverName: string, productId?: number, overrideNestId?: number, overrideEggId?: number): Promise<any> {
