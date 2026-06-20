@@ -378,35 +378,19 @@ body.light-bg {
   transform: translateX(2px);
 }
 
-.nav-item.active {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0.04));
+/* Sidebar scrollbar styling */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
 }
-
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 60%;
-  background: var(--color-accent);
-  border-radius: 0 2px 2px 0;
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
 }
-
-/* Submenu section (Earning) - nested nav items */
-.submenu-section .nav-item:hover {
-  transform: translateX(2px);
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
-
-.submenu-section .nav-item.active {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(37, 99, 235, 0.06));
-}
-
-.submenu-section .nav-item.active::before {
-  height: 50%;
-  left: -4px;
-  width: 3px;
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Dropdown menu animation */

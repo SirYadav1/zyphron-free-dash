@@ -11,25 +11,32 @@
       <div class="h-16 flex items-center px-6 border-b border-border shrink-0">
         <ZyphronLogo size="sm" />
       </div>
+      <div class="h-px bg-gradient-to-r from-accent/20 via-accent/5 to-transparent"></div>
 
       <!-- Sidebar Content -->
-      <nav class="flex-1 overflow-y-auto p-4 space-y-6 mt-2">
+      <nav class="flex-1 overflow-y-auto p-4 space-y-5 mt-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         <div 
           v-for="section in navSections" 
           :key="section.title"
           :class="[
+            'py-2 px-1 rounded-xl transition-all',
             section.title === 'Earning' 
-              ? 'submenu-section relative bg-accent/[0.03] border-l-2 border-accent/25 rounded-r-lg py-2.5 pl-1 pr-1.5' 
+              ? 'bg-gradient-to-b from-accent/[0.04] to-transparent border border-accent/10'
               : ''
           ]"
         >
-          <h3 
-            class="px-2 mb-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"
-            :class="section.title === 'Earning' ? 'text-accent/50 pl-2' : 'text-text-muted/50'"
-          >
-            <span v-if="section.title === 'Earning'" class="inline-block w-1.5 h-1.5 rounded-full bg-accent/40 shrink-0"></span>
-            {{ section.title }}
-          </h3>
+          <!-- Section Header with Gradient Divider -->
+          <div class="flex items-center gap-3 px-2 mb-3">
+            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+            <span 
+              :class="[
+                'text-[9px] font-bold uppercase tracking-[0.2em]',
+                section.title === 'Earning' ? 'text-accent/40' : 'text-text-muted/40'
+              ]"
+            >{{ section.title }}</span>
+            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+          </div>
+
           <div class="space-y-0.5">
             <router-link
               v-for="item in section.items"
@@ -37,22 +44,33 @@
               :to="item.path"
               @click="sidebarOpen = false"
               :class="[
-                'nav-item flex items-center gap-3 rounded-md text-sm font-medium transition-all duration-200',
-                section.title === 'Earning' ? 'px-3 pl-5 py-1.5 text-[13px]' : 'px-3 py-2',
+                'nav-item group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative',
                 isActive(item.path)
-                  ? 'bg-accent/15 text-accent'
-                  : 'text-text-muted hover:text-text-primary hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-accent/15 to-accent/5 text-accent'
+                  : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04]'
               ]"
             >
+              <!-- Active indicator bar -->
+              <div 
+                v-if="isActive(item.path)" 
+                class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-accent rounded-r-full shadow-[0_0_8px_rgba(37,99,235,0.5)]"
+              ></div>
+              
+              <!-- Icon with subtle background -->
               <span 
                 :class="[
-                  'flex items-center justify-center shrink-0 opacity-70',
-                  section.title === 'Earning' ? 'w-4 h-4' : 'w-5 h-5'
+                  'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 [&>svg]:w-4 [&>svg]:h-4',
+                  isActive(item.path) ? 'bg-accent/15' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
                 ]" 
                 v-html="item.icon"
               ></span>
+              
               <span class="flex-1">{{ item.label }}</span>
-              <span v-if="item.badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent/20 text-accent">{{ item.badge }}</span>
+              
+              <span 
+                v-if="item.badge" 
+                class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent/20 text-accent"
+              >{{ item.badge }}</span>
             </router-link>
           </div>
         </div>
@@ -60,12 +78,16 @@
 
       <!-- Sidebar Footer -->
       <div class="p-4 border-t border-border">
-        <div class="bg-base/50 rounded-lg p-3 border border-border">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Plan</span>
-            <span class="text-[10px] font-bold text-accent uppercase tracking-wider">Free</span>
+        <div class="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-4 border border-accent/15">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+              <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-accent/60 uppercase tracking-widest">Balance</p>
+              <p class="text-lg font-bold text-accent tabular-nums">{{ authStore.user?.coins || 0 }}</p>
+            </div>
           </div>
-          <p class="text-xs font-medium text-text-primary">{{ authStore.user?.coins || 0 }} Credits</p>
         </div>
       </div>
     </aside>
