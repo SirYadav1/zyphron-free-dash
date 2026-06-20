@@ -1,43 +1,46 @@
 <template>
-  <div class="space-y-10 max-w-2xl">
-    <div class="space-y-1">
-      <div class="flex items-center gap-3">
-        <router-link to="/admin/usefullinks" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to Links</router-link>
-      </div>
-      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Create Link</h2>
-      <p class="text-sm text-text-muted">Add a new useful link</p>
+  <div class="space-y-6 max-w-lg">
+    <div>
+      <router-link to="/admin/usefullinks" class="text-xs text-accent hover:text-white transition-colors">← Back to Links</router-link>
+      <h2 class="text-2xl font-bold text-text-primary mt-2">Create Link</h2>
     </div>
 
-    <div v-if="error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">{{ error }}</div>
-    <div v-if="success" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">{{ success }}</div>
+    <div v-if="error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-bold text-red-400">{{ error }}</div>
+    <div v-if="success" class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs font-bold text-emerald-400">{{ success }}</div>
 
-    <div class="card-surface p-6 space-y-6">
+    <div class="bg-base-secondary border border-border rounded-xl p-5 space-y-4">
       <div class="space-y-1">
-        <label class="text-label">Title</label>
+        <label class="text-[10px] font-bold text-text-muted uppercase">Title</label>
         <input v-model="form.title" type="text" class="input-field w-full" placeholder="e.g. Documentation" />
       </div>
       <div class="space-y-1">
-        <label class="text-label">URL</label>
+        <label class="text-[10px] font-bold text-text-muted uppercase">URL</label>
         <input v-model="form.link" type="text" class="input-field w-full" placeholder="https://..." />
       </div>
       <div class="space-y-1">
-        <label class="text-label">Description</label>
+        <label class="text-[10px] font-bold text-text-muted uppercase">Description</label>
         <input v-model="form.description" type="text" class="input-field w-full" placeholder="Brief description" />
       </div>
       <div class="space-y-1">
-        <label class="text-label">Icon (optional)</label>
+        <label class="text-[10px] font-bold text-text-muted uppercase">Icon</label>
         <input v-model="form.icon" type="text" class="input-field w-full" placeholder="e.g. book-open" />
       </div>
       <div class="space-y-1">
-        <label class="text-label">Position</label>
-        <input v-model="form.position" type="text" class="input-field w-full" placeholder="e.g. sidebar, footer" />
+        <label class="text-[10px] font-bold text-text-muted uppercase">Position</label>
+        <select v-model="form.position" class="input-field w-full">
+          <option value="sidebar">Sidebar</option>
+          <option value="footer">Footer</option>
+          <option value="dashboard">Dashboard</option>
+        </select>
       </div>
 
-      <div class="flex gap-3 pt-4 border-t border-border">
-        <button @click="handleSubmit" :disabled="saving" class="btn-primary px-6 py-2">
+      <div class="flex gap-2 pt-3 border-t border-border">
+        <button @click="handleSubmit" :disabled="saving" class="px-5 py-2 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
           {{ saving ? 'Creating...' : 'Create Link' }}
         </button>
-        <router-link to="/admin/usefullinks" class="btn-secondary px-6 py-2 text-center">Cancel</router-link>
+        <router-link to="/admin/usefullinks" class="px-5 py-2 text-[11px] font-bold text-text-muted border border-border rounded-lg hover:bg-white/[0.05] transition-colors">
+          Cancel
+        </router-link>
       </div>
     </div>
   </div>
@@ -52,26 +55,15 @@ const router = useRouter()
 const saving = ref(false)
 const error = ref('')
 const success = ref('')
-const form = ref({
-  title: '',
-  link: '',
-  description: '',
-  icon: '',
-  position: 'sidebar'
-})
+const form = ref({ title: '', link: '', description: '', icon: '', position: 'sidebar' })
 
 async function handleSubmit() {
-  saving.value = true
-  error.value = ''
-  success.value = ''
+  saving.value = true; error.value = ''; success.value = ''
   try {
     await client.post('/admin/useful-links', form.value)
-    success.value = 'Link created successfully'
-    setTimeout(() => router.push('/admin/usefullinks'), 1000)
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to create link'
-  } finally {
-    saving.value = false
-  }
+    success.value = 'Link created!'
+    setTimeout(() => router.push('/admin/usefullinks'), 800)
+  } catch (err) { error.value = err.response?.data?.message || 'Failed' }
+  finally { saving.value = false }
 }
 </script>
