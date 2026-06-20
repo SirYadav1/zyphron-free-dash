@@ -54,14 +54,17 @@
               <label class="text-label">Egg (Server Type)</label>
               <select v-model="selectedEggId" @change="onEggChange" class="input-field w-full">
                 <option value="">Select Egg...</option>
+                <option value="neutral">Neutral — Let User Choose</option>
                 <option v-for="egg in eggs" :key="getEggId(egg)" :value="String(getEggId(egg))">
                   {{ getEggName(egg) }}
                 </option>
               </select>
             </div>
 
-            <div v-if="form.egg_name" class="text-xs text-text-muted">
-              Selected: <span class="text-accent">{{ form.nest_name }}</span> → <span class="text-accent">{{ form.egg_name }}</span>
+            <div v-if="form.nest_name" class="text-xs text-text-muted">
+              Selected: <span class="text-accent">{{ form.nest_name }}</span>
+              <template v-if="form.egg_name"> → <span class="text-accent">{{ form.egg_name }}</span></template>
+              <template v-else> → <span class="text-yellow-500">Neutral — User will choose egg</span></template>
             </div>
           </div>
 
@@ -213,6 +216,8 @@ onMounted(async () => {
       eggs.value = Array.isArray(eggData) ? eggData : []
       if (form.value.egg_id) {
         selectedEggId.value = String(form.value.egg_id)
+      } else {
+        selectedEggId.value = 'neutral'
       }
     }
   } catch (err) {
@@ -242,6 +247,11 @@ async function onNestChange() {
 }
 
 function onEggChange() {
+  if (selectedEggId.value === 'neutral') {
+    form.value.egg_id = null
+    form.value.egg_name = ''
+    return
+  }
   const egg = eggs.value.find(e => String(getEggId(e)) === selectedEggId.value)
   form.value.egg_id = parseInt(selectedEggId.value)
   form.value.egg_name = getEggName(egg)
