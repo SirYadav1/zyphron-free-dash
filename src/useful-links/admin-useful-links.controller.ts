@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
   Delete,
   Body,
@@ -76,8 +77,16 @@ export class AdminUsefulLinksController {
     return this.usefulLinksService.create(dto);
   }
 
-  @Patch(':id')
+  @Put(':id')
   async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUsefulLinkDto,
+  ) {
+    return this.usefulLinksService.update(id, dto);
+  }
+
+  @Patch(':id')
+  async patch(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUsefulLinkDto,
   ) {
