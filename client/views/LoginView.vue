@@ -5,8 +5,8 @@
         <img src="/login-logo.png" alt="Zyphron Cloud" class="max-h-32 max-w-full rounded-lg object-contain animate-float" />
       </div>
       <div class="text-center space-y-3" style="animation: slideUp 0.5s ease-out 0.1s both;">
-        <h1 class="text-2xl font-bold text-text-primary tracking-tight">Welcome back</h1>
-        <p class="text-sm text-text-muted">Sign in to manage your servers on Zyphron Cloud.</p>
+        <h1 class="text-2xl font-bold text-text-primary tracking-tight">{{ t('auth.signIn') }}</h1>
+        <p class="text-sm text-text-muted">{{ t('auth.signInSubtitle') }}</p>
       </div>
 
       <div class="auth-card" style="animation: slideUp 0.5s ease-out 0.2s both;">
@@ -17,8 +17,8 @@
               <Wrench :size="20" class="text-red-400" />
             </div>
             <div>
-              <h3 class="text-sm font-bold text-red-400">System Under Maintenance</h3>
-              <p class="text-[11px] text-red-300/80 mt-0.5">We're currently performing scheduled maintenance. Please try again later. Admin accounts are not affected.</p>
+              <h3 class="text-sm font-bold text-red-400">{{ t('auth.maintenanceTitle') }}</h3>
+              <p class="text-[11px] text-red-300/80 mt-0.5">{{ t('auth.maintenanceDesc') }}</p>
             </div>
           </div>
         </div>
@@ -30,7 +30,7 @@
           </div>
 
           <div class="space-y-1.5" style="animation: slideUp 0.4s ease-out 0.3s both;">
-            <label for="email" class="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-0.5">Email or Username</label>
+            <label for="email" class="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-0.5">{{ t('auth.email') }}</label>
             <input
               id="email"
               v-model="email"
@@ -43,8 +43,8 @@
 
           <div class="space-y-1.5" style="animation: slideUp 0.4s ease-out 0.35s both;">
             <div class="flex items-center justify-between px-0.5">
-              <label for="password" class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Password</label>
-              <router-link to="/forgot-password" class="text-[11px] font-bold text-accent hover:underline">Forgot?</router-link>
+              <label for="password" class="text-[11px] font-bold text-text-muted uppercase tracking-wider">{{ t('auth.password') }}</label>
+              <router-link to="/forgot-password" class="text-[11px] font-bold text-accent hover:underline">{{ t('auth.forgotPassword') }}</router-link>
             </div>
             <input
               id="password"
@@ -62,7 +62,7 @@
             class="btn-primary w-full py-2.5 flex items-center justify-center gap-2"
             style="animation: slideUp 0.4s ease-out 0.4s both;"
           >
-            {{ store.loading ? 'Authenticating...' : 'Sign In' }}
+            {{ store.loading ? t('auth.authenticating') : t('auth.signIn') }}
             <ArrowRight v-if="!store.loading" :size="16" :stroke-width="2.5" />
             <Loader2 v-else :size="16" :stroke-width="2.5" class="animate-spin" />
           </button>
@@ -80,12 +80,12 @@
                 <ShieldCheck :size="30" :stroke-width="2" class="text-accent" />
               </div>
             </div>
-            <h2 class="text-lg font-bold text-text-primary">Two-Factor Authentication</h2>
-            <p class="text-sm text-text-muted">Enter the 6-digit code from your authenticator app.</p>
+            <h2 class="text-lg font-bold text-text-primary">{{ t('auth.twoFactorTitle') }}</h2>
+            <p class="text-sm text-text-muted">{{ t('auth.twoFactorEnterCode') }}</p>
           </div>
 
           <div class="space-y-1.5" style="animation: slideUp 0.4s ease-out 0.2s both;">
-            <label for="totp-code" class="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-0.5">Verification Code</label>
+            <label for="totp-code" class="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-0.5">{{ t('auth.verificationCode') }}</label>
             <input
               id="totp-code"
               v-model="twoFACode"
@@ -106,14 +106,14 @@
               @click="cancel2FA"
               class="flex-1 py-2.5 px-4 border border-border rounded-md text-sm font-bold text-text-muted hover:bg-surface transition-colors"
             >
-              Back
+              {{ t('common.back') }}
             </button>
             <button
               type="submit"
               :disabled="twoFACode.length !== 6 || twoFALoading"
               class="flex-1 btn-primary py-2.5 flex items-center justify-center gap-2"
             >
-              {{ twoFALoading ? 'Verifying...' : 'Verify' }}
+              {{ twoFALoading ? t('auth.authenticating') : t('auth.verification') }}
               <Check v-if="!twoFALoading" :size="16" :stroke-width="2.5" />
               <Loader2 v-else :size="16" :stroke-width="2.5" class="animate-spin" />
             </button>
@@ -122,8 +122,8 @@
 
         <div class="mt-8 pt-6 border-t border-border text-center">
           <p class="text-sm text-text-muted font-medium">
-            Don't have an account?
-            <router-link to="/register" class="text-accent font-bold hover:underline">Create an account</router-link>
+            {{ t('auth.noAccount') }}
+            <router-link to="/register" class="text-accent font-bold hover:underline">{{ t('auth.createAccount') }}</router-link>
           </p>
         </div>
       </div>
@@ -138,6 +138,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
 import {
@@ -149,6 +150,7 @@ import {
   Wrench,
 } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const router = useRouter()
 const store = useAuthStore()
 

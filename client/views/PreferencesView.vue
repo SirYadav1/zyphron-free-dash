@@ -30,15 +30,8 @@
             <option value="en">English</option>
             <option value="hi">हिन्दी (Hindi)</option>
             <option value="es">Español (Spanish)</option>
-            <option value="fr">Français (French)</option>
-            <option value="de">Deutsch (German)</option>
-            <option value="pt">Português (Portuguese)</option>
-            <option value="ja">日本語 (Japanese)</option>
             <option value="ar">العربية (Arabic)</option>
             <option value="zh">中文 (Chinese)</option>
-            <option value="ru">Русский (Russian)</option>
-            <option value="tr">Türkçe (Turkish)</option>
-            <option value="id">Bahasa Indonesia</option>
           </select>
           <p class="text-[11px] text-text-muted mt-2">{{ t('preferences.languageDesc') }}</p>
         </div>
