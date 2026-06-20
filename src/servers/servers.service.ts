@@ -308,7 +308,7 @@ export class ServersService {
     }
 
     // Read Pterodactyl node ID from settings
-    const nodeId = parseInt(await this.getSetting('default_node_id', '6'));
+    const nodeId = parseInt(await this.getSetting('default_node_id', '1'));
 
     // Read additional blueprint settings for Pterodactyl
     const databasesLimit = parseInt(await this.getSetting('default_databases_limit', '0'));
@@ -317,8 +317,9 @@ export class ServersService {
     const dedicatedIp = (await this.getSetting('default_dedicated_ip', 'false')) === 'true';
     const dockerImage = await this.getSetting(
       'default_docker_image',
-      'ghcr.io/pterodactyl/yolks:minecraft',
+      'ghcr.io/pterodactyl/yolks:java_25',
     );
+    const swapMb = parseInt(await this.getSetting('default_swap_mb', '0'));
 
     // Calculate validity using product's duration_days
     const expiryDate = new Date();
@@ -339,6 +340,7 @@ export class ServersService {
         ram: ramMb,
         cpu: cpuPercent,
         disk: diskMb,
+        swap: swapMb,
         databasesLimit,
         allocationsLimit,
         backupLimit,
