@@ -22,7 +22,7 @@ export class ApiKeysService {
   }
 
   async create(dto: Partial<ApplicationApi>): Promise<{ api: ApplicationApi; token: string }> {
-    const token = dto.token || this.generateToken();
+    const token = this.generateToken(); // Always auto-generate
     
     const api = await this.apiRepo.save(
       this.apiRepo.create({

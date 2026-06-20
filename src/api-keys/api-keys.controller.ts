@@ -9,7 +9,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { IsString, IsOptional, MinLength, IsArray, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsArray, IsNumber } from 'class-validator';
 import { ApiKeysService } from './api-keys.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
@@ -18,11 +18,6 @@ class CreateApiKeyDto {
   @IsOptional()
   @IsString()
   memo?: string;
-
-  @IsOptional()
-  @IsString()
-  @MinLength(1)
-  token?: string;
 
   @IsOptional()
   @IsArray()
