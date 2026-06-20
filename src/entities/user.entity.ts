@@ -41,6 +41,9 @@ export class User {
   @Column({ type: 'text', nullable: true })
   profile_photo: string | null;
 
+  @Column({ type: 'text', nullable: true, default: 'en' })
+  language: string | null;
+
   @Column({ type: 'integer', default: 0 })
   is_banned: number;
 

@@ -568,10 +568,10 @@ const success = ref('')
 
 const activeTab = ref('general')
 const tabs = [
-  { id: 'general', label: '⚙️ General' },
-  { id: 'pterodactyl', label: '🖥️ Pterodactyl' },
-  { id: 'email', label: '📧 Email / SMTP' },
-  { id: 'server', label: '📦 Server Defaults' },
+  { id: 'general', label: 'General', icon: 'Settings' },
+  { id: 'pterodactyl', label: 'Pterodactyl', icon: 'Monitor' },
+  { id: 'email', label: 'Email / SMTP', icon: 'Mail' },
+  { id: 'server', label: 'Server Defaults', icon: 'Server' },
   { id: 'security', label: '🔒 Security' },
 ]
 

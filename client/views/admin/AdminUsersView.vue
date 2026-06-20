@@ -39,7 +39,6 @@
             <th class="px-5 py-3 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider">Username</th>
             <th class="px-5 py-3 text-center text-[10px] font-bold text-text-muted uppercase tracking-wider">2FA</th>
             <th class="px-5 py-3 text-center text-[10px] font-bold text-text-muted uppercase tracking-wider">Servers</th>
-            <th class="px-5 py-3 text-center text-[10px] font-bold text-text-muted uppercase tracking-wider">Can Access</th>
             <th class="px-5 py-3 text-right text-[10px] font-bold text-text-muted uppercase tracking-wider w-28">Actions</th>
           </tr>
         </thead>
@@ -107,25 +106,9 @@
             <td class="px-5 py-3 text-center">
               <span class="text-xs font-bold text-text-primary">{{ user.serverCount || 0 }}</span>
             </td>
-            <!-- Can Access -->
-            <td class="px-5 py-3 text-center">
-              <button
-                @click="openEditModal(user)"
-                class="p-1.5 rounded-lg text-text-muted hover:text-accent hover:bg-accent/10 transition-all"
-                title="Toggle Panel Access"
-              >
-                <Power :size="14" :stroke-width="2" />
-              </button>
-            </td>
             <!-- Actions -->
             <td class="px-5 py-3 text-right">
               <div class="flex gap-1.5 justify-end">
-                <router-link
-                  :to="`/admin/users/${user.id}`"
-                  class="px-2.5 py-1 text-[10px] font-bold text-accent border border-accent/20 rounded hover:bg-accent/10 transition-colors inline-flex items-center gap-1"
-                >
-                  <Eye :size="12" /> View
-                </router-link>
                 <router-link
                   :to="`/admin/users/${user.id}/edit`"
                   class="px-2.5 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20 rounded hover:bg-emerald-500/10 transition-colors inline-flex items-center gap-1"
