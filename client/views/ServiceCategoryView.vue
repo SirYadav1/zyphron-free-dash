@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-[#0a0a0f] relative overflow-hidden">
+  <div class="min-h-screen bg-[#0a0f1a] relative overflow-hidden">
     <!-- Background Decorations -->
-    <div class="absolute top-0 right-0 w-96 h-96 bg-accent/[0.02] rounded-full blur-3xl"></div>
-    <div class="absolute bottom-0 left-0 w-80 h-80 bg-accent/[0.02] rounded-full blur-3xl"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/[0.03] rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/[0.03] rounded-full blur-3xl"></div>
 
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       <!-- Back Button -->
@@ -30,13 +30,13 @@
 
       <template v-else-if="category">
         <!-- ==================== Category Banner ==================== -->
-        <div class="relative bg-[#12121a] border border-white/5 rounded-2xl overflow-hidden">
+        <div class="relative bg-[#0f1729] border border-blue-500/10 rounded-2xl overflow-hidden">
           <div class="relative h-48 sm:h-64 overflow-hidden">
             <img v-if="category.image_url" :src="category.image_url" :alt="category.name" class="w-full h-full object-cover" />
-            <div v-else class="w-full h-full bg-gradient-to-br from-accent/20 to-[#12121a] flex items-center justify-center">
-              <Package :size="56" class="text-accent/40" />
+            <div v-else class="w-full h-full bg-gradient-to-br from-blue-500/20 to-[#0f1729] flex items-center justify-center">
+              <Package :size="56" class="text-blue-400/40" />
             </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-[#12121a] via-[#12121a]/40 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0f1729] via-[#0f1729]/40 to-transparent"></div>
             <!-- Overlay Content -->
             <div class="absolute inset-0 flex items-end p-6 sm:p-8">
               <div class="flex-1">
@@ -45,7 +45,7 @@
               </div>
               <div class="hidden sm:block text-right">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Available Plans</p>
-                <p class="text-4xl font-bold text-accent">[ {{ plans.length }} ]</p>
+                <p class="text-4xl font-bold text-blue-400">[ {{ plans.length }} ]</p>
               </div>
             </div>
           </div>
@@ -61,11 +61,11 @@
             v-for="plan in plans"
             :key="plan.id"
             @click="selectPlan(plan)"
-            class="group bg-[#12121a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-accent/30 hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 cursor-pointer"
+            class="group bg-[#0f1729] border border-blue-500/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 cursor-pointer"
           >
             <!-- Plan Header -->
             <div class="p-6 pb-4 text-center border-b border-white/5">
-              <h4 class="text-2xl font-bold text-white group-hover:text-accent transition-colors">{{ plan.name }}</h4>
+              <h4 class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">{{ plan.name }}</h4>
               <p v-if="plan.description" class="text-sm text-gray-400 mt-1">{{ plan.description }}</p>
             </div>
 
@@ -73,23 +73,23 @@
             <div class="p-6 space-y-5">
               <!-- RAM / CPU / Disk -->
               <div class="grid grid-cols-3 gap-3">
-                <div class="bg-[#0a0a0f] rounded-xl p-4 text-center border border-white/5">
+                <div class="bg-[#0a0f1a] rounded-xl p-4 text-center border border-blue-500/10">
                   <div class="flex items-center justify-center gap-1.5 mb-2">
-                    <MemoryStick :size="14" class="text-accent" />
+                    <MemoryStick :size="14" class="text-blue-400" />
                     <span class="text-[10px] font-bold text-gray-500 uppercase">RAM</span>
                   </div>
                   <p class="text-xl font-bold text-white">{{ formatRam(plan.ram) }}</p>
                 </div>
-                <div class="bg-[#0a0a0f] rounded-xl p-4 text-center border border-white/5">
+                <div class="bg-[#0a0f1a] rounded-xl p-4 text-center border border-blue-500/10">
                   <div class="flex items-center justify-center gap-1.5 mb-2">
-                    <Cpu :size="14" class="text-accent" />
+                    <Cpu :size="14" class="text-blue-400" />
                     <span class="text-[10px] font-bold text-gray-500 uppercase">CPU</span>
                   </div>
                   <p class="text-xl font-bold text-white">{{ plan.cpu }}%</p>
                 </div>
-                <div class="bg-[#0a0a0f] rounded-xl p-4 text-center border border-white/5">
+                <div class="bg-[#0a0f1a] rounded-xl p-4 text-center border border-blue-500/10">
                   <div class="flex items-center justify-center gap-1.5 mb-2">
-                    <HardDrive :size="14" class="text-accent" />
+                    <HardDrive :size="14" class="text-blue-400" />
                     <span class="text-[10px] font-bold text-gray-500 uppercase">DISK</span>
                   </div>
                   <p class="text-xl font-bold text-white">{{ formatDisk(plan.disk) }}</p>
@@ -119,7 +119,7 @@
                   <span class="text-3xl font-bold text-white">{{ plan.coin_price }}</span>
                   <span class="text-sm text-gray-400">coins</span>
                 </div>
-                <button class="px-6 py-2.5 bg-accent hover:bg-accent/90 text-white font-bold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-accent/20 flex items-center gap-2">
+                <button class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-blue-500/20 flex items-center gap-2">
                   Select Plan
                   <CheckCircle :size="14" />
                 </button>
@@ -136,11 +136,11 @@
         <!-- ==================== Configure + Deploy ==================== -->
         <div v-if="selectedPlan && !serverCreated" class="space-y-6 max-w-3xl mx-auto">
           <!-- Selected Plan Card -->
-          <div class="bg-[#12121a] border border-accent/20 rounded-2xl p-6">
+          <div class="bg-[#0f1729] border border-blue-500/20 rounded-2xl p-6">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Package :size="24" class="text-accent" />
+                <div class="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <Package :size="24" class="text-blue-400" />
                 </div>
                 <div>
                   <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Selected Plan</p>
@@ -149,10 +149,10 @@
               </div>
               <div class="flex items-center gap-6">
                 <div class="text-right">
-                  <p class="text-2xl font-bold text-accent">{{ selectedPlan.coin_price }} <span class="text-sm text-gray-400">coins</span></p>
+                  <p class="text-2xl font-bold text-blue-400">{{ selectedPlan.coin_price }} <span class="text-sm text-gray-400">coins</span></p>
                   <p class="text-xs text-gray-500">{{ selectedPlan.duration_days }} days</p>
                 </div>
-                <button @click="selectedPlan = null; selectedEgg = null" class="text-sm font-bold text-accent hover:text-white transition-colors">Change</button>
+                <button @click="selectedPlan = null; selectedEgg = null" class="text-sm font-bold text-blue-400 hover:text-white transition-colors">Change</button>
               </div>
             </div>
           </div>
@@ -174,7 +174,7 @@
                 :class="[
                   'p-5 rounded-xl border text-left transition-all duration-200',
                   selectedEgg?.attributes?.id === egg.attributes?.id
-                    ? 'bg-accent/10 border-accent/40 ring-1 ring-accent/20'
+                    ? 'bg-blue-500/10 border-blue-500/40 ring-1 ring-blue-500/20'
                     : 'bg-[#12121a] border-white/5 hover:border-accent/20'
                 ]"
               >
@@ -183,17 +183,17 @@
                     <p class="text-sm font-bold text-white">{{ egg.attributes?.name }}</p>
                     <p v-if="egg.attributes?.description" class="text-xs text-gray-400 mt-1 line-clamp-1">{{ egg.attributes.description }}</p>
                   </div>
-                  <Check v-if="selectedEgg?.attributes?.id === egg.attributes?.id" :size="18" class="text-accent" />
+                  <Check v-if="selectedEgg?.attributes?.id === egg.attributes?.id" :size="18" class="text-blue-400" />
                 </div>
               </button>
             </div>
           </div>
 
           <!-- Auto egg -->
-          <div v-else class="bg-accent/5 border border-accent/20 rounded-xl p-4 flex items-center gap-3">
-            <Check :size="16" class="text-accent" />
+          <div v-else class="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex items-center gap-3">
+            <Check :size="16" class="text-blue-400" />
             <div>
-              <p class="text-sm font-bold text-white">Software: <span class="text-accent">{{ selectedEgg?.attributes?.name || selectedPlan.egg_name }}</span></p>
+              <p class="text-sm font-bold text-white">Software: <span class="text-blue-400">{{ selectedEgg?.attributes?.name || selectedPlan.egg_name }}</span></p>
               <p class="text-xs text-gray-500">Pre-configured by admin</p>
             </div>
           </div>
@@ -201,7 +201,7 @@
           <!-- Server Name -->
           <div class="space-y-3">
             <h3 class="text-lg font-bold text-white">Server Name</h3>
-            <div class="bg-[#12121a] border border-white/5 rounded-xl p-5">
+            <div class="bg-[#0f1729] border border-blue-500/10 rounded-xl p-5">
               <div class="relative">
                 <input
                   v-model="serverName"
@@ -220,7 +220,7 @@
           </div>
 
           <!-- Balance + Deploy -->
-          <div class="bg-[#12121a] border border-white/5 rounded-2xl p-6">
+          <div class="bg-[#0f1729] border border-blue-500/10 rounded-2xl p-6">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-5">
               <div class="flex items-center gap-4">
                 <div class="w-14 h-14 rounded-xl bg-yellow-500/10 flex items-center justify-center">
@@ -238,7 +238,7 @@
                 <button
                   @click="deployServer"
                   :disabled="deploying || !serverName || !selectedEgg || (selectedPlan.coin_price > (authStore.user?.coins || 0))"
-                  class="px-8 py-3 bg-accent hover:bg-accent/90 disabled:bg-accent/30 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-accent/20 flex items-center gap-2"
+                  class="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/30 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-blue-500/20 flex items-center gap-2"
                 >
                   <Loader2 v-if="deploying" :size="16" class="animate-spin" />
                   <Rocket v-else :size="16" />
@@ -258,7 +258,7 @@
             <h2 class="text-3xl font-bold text-white">Server Created!</h2>
             <p class="text-gray-400">Your server is being installed. You'll receive an email when it's ready.</p>
           </div>
-          <router-link to="/servers" class="inline-flex items-center gap-2 px-8 py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl transition-all">
+          <router-link to="/servers" class="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all">
             <Server :size="16" />
             Go to Servers
           </router-link>
@@ -268,8 +268,8 @@
 
     <!-- Deploy Popup -->
     <div v-if="deploying" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div class="bg-[#12121a] border border-white/10 rounded-2xl p-10 max-w-sm w-full mx-4 text-center space-y-6 shadow-2xl">
-        <div class="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <div class="bg-[#0f1729] border border-blue-500/20 rounded-2xl p-10 max-w-sm w-full mx-4 text-center space-y-6 shadow-2xl">
+        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
         <div class="space-y-2">
           <h3 class="text-xl font-bold text-white">Installing Server</h3>
           <p class="text-sm text-gray-400">This may take a few minutes...</p>
