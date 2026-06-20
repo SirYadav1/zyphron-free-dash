@@ -63,6 +63,9 @@ export class Server {
   suspended_at: string | null;
 
   @Column({ type: 'text', nullable: true })
+  suspend_reason: string | null;
+
+  @Column({ type: 'text', nullable: true })
   last_active_at: string | null;
 
   @CreateDateColumn({ type: 'text' })

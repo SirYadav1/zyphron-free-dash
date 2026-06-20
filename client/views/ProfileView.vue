@@ -6,7 +6,7 @@
     </div>
 
     <div v-if="authStore.loading" class="flex flex-col items-center justify-center py-20 gap-4">
-      <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+      <div class="loading-spinner"></div>
       <p class="text-xs font-semibold text-text-muted tracking-widest uppercase">Loading Profile...</p>
     </div>
 
@@ -67,16 +67,83 @@
           </button>
         </div>
 
-        <div class="flex-1 text-center sm:text-left space-y-1">
+        <div class="flex-1 text-center sm:text-left space-y-3">
           <h3 class="text-xl font-bold text-text-primary">{{ authStore.user.username }}</h3>
           <p class="text-sm text-text-muted">{{ authStore.user.email }}</p>
-          <div class="flex items-center justify-center sm:justify-start gap-4 mt-4">
-            <div class="flex items-center gap-2">
-              <div :class="authStore.user.emailVerified ? 'bg-accent' : 'bg-yellow-500'" class="w-1.5 h-1.5 rounded-full"></div>
-              <span class="text-xs font-bold">{{ authStore.user.emailVerified ? 'Verified' : 'Pending' }}</span>
+          <div class="flex items-center justify-center sm:justify-start gap-3 flex-wrap">
+            <!-- Email Verified Badge -->
+            <div
+              :class="authStore.user.emailVerified ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' : 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20'"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+            >
+              <span
+                :class="authStore.user.emailVerified ? 'bg-emerald-400' : 'bg-yellow-400'"
+                class="w-1.5 h-1.5 rounded-full"
+              ></span>
+              {{ authStore.user.emailVerified ? 'Email Verified' : 'Email Not Verified' }}
             </div>
-            <div class="text-yellow-500 text-sm font-bold tabular-nums">{{ authStore.user.coins || 0 }} Credits</div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/20 text-[10px] font-bold uppercase tracking-wider">
+              <Coins :size="12" />
+              {{ authStore.user.coins || 0 }} Credits
+            </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Server Ownership Info -->
+      <div class="card-surface p-8 space-y-6">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-text-primary">Server Ownership</h3>
+          <p class="text-sm text-text-muted">Your server usage and allocation details.</p>
+        </div>
+
+        <div v-if="serverLoading" class="flex items-center justify-center py-8">
+          <div class="loading-spinner"></div>
+        </div>
+
+        <div v-else class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="bg-base/50 rounded-lg p-4 border border-border text-center">
+            <Server :size="18" class="text-accent mx-auto mb-2" />
+            <p class="text-2xl font-bold text-text-primary tabular-nums">{{ serverInfo.total }}</p>
+            <p class="text-[10px] text-text-muted uppercase font-bold tracking-wider mt-1">Total Servers</p>
+          </div>
+          <div class="bg-base/50 rounded-lg p-4 border border-border text-center">
+            <CheckCircle :size="18" class="text-emerald-400 mx-auto mb-2" />
+            <p class="text-2xl font-bold text-emerald-400 tabular-nums">{{ serverInfo.active }}</p>
+            <p class="text-[10px] text-text-muted uppercase font-bold tracking-wider mt-1">Active</p>
+          </div>
+          <div class="bg-base/50 rounded-lg p-4 border border-border text-center">
+            <XCircle :size="18" class="text-red-400 mx-auto mb-2" />
+            <p class="text-2xl font-bold text-red-400 tabular-nums">{{ serverInfo.suspended }}</p>
+            <p class="text-[10px] text-text-muted uppercase font-bold tracking-wider mt-1">Suspended</p>
+          </div>
+          <div class="bg-base/50 rounded-lg p-4 border border-border text-center">
+            <AlertTriangle :size="18" class="text-yellow-400 mx-auto mb-2" />
+            <p class="text-2xl font-bold text-yellow-400 tabular-nums">{{ serverInfo.expired }}</p>
+            <p class="text-[10px] text-text-muted uppercase font-bold tracking-wider mt-1">Expired</p>
+          </div>
+        </div>
+
+        <!-- Resource Usage -->
+        <div v-if="!serverLoading && serverInfo.active > 0" class="bg-base/50 rounded-lg p-4 border border-border">
+          <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-3">Resource Usage</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex items-center gap-2">
+              <MemoryStick :size="14" class="text-amber-400" />
+              <span class="text-xs text-text-muted">Total RAM:</span>
+              <span class="text-xs font-bold text-text-primary">{{ totalRamGb }} GB</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <HardDrive :size="14" class="text-purple-400" />
+              <span class="text-xs text-text-muted">Total Disk:</span>
+              <span class="text-xs font-bold text-text-primary">{{ totalDiskGb }} GB</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="!serverLoading && serverInfo.total === 0" class="text-center py-6">
+          <p class="text-sm text-text-muted">No servers deployed yet.</p>
+          <router-link to="/services" class="text-sm font-bold text-accent hover:underline mt-2 inline-block">Deploy your first server</router-link>
         </div>
       </div>
 
@@ -165,7 +232,15 @@
           </div>
           <div class="space-y-1">
             <p class="text-label opacity-40">Credit Balance</p>
-            <p class="text-sm font-bold text-yellow-500 tabular-nums">{{ authStore.user.coins || 0 }} Credits</p>
+            <p class="text-sm font-bold text-accent tabular-nums">{{ authStore.user.coins || 0 }} Credits</p>
+          </div>
+          <div v-if="authStore.user.discord_id" class="space-y-1">
+            <p class="text-label opacity-40">Discord</p>
+            <p class="text-sm font-bold text-text-primary">{{ authStore.user.discord_username || 'Linked' }}</p>
+          </div>
+          <div v-if="authStore.user.pterodactyl_user_id" class="space-y-1">
+            <p class="text-label opacity-40">Pterodactyl</p>
+            <p class="text-sm font-bold text-text-primary">{{ authStore.user.pterodactyl_username || `#${authStore.user.pterodactyl_user_id}` }}</p>
           </div>
         </div>
       </div>
@@ -177,6 +252,15 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
+import {
+  Server,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  MemoryStick,
+  HardDrive,
+  Coins,
+} from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 
@@ -188,6 +272,30 @@ const selectedFile = ref(null)
 const photoPreview = ref('')
 const uploading = ref(false)
 const dragOver = ref(false)
+
+const serverLoading = ref(true)
+const servers = ref([])
+
+const serverInfo = computed(() => {
+  return {
+    total: servers.value.length,
+    active: servers.value.filter(s => s.status === 'active').length,
+    suspended: servers.value.filter(s => s.status === 'suspended').length,
+    expired: servers.value.filter(s => s.status === 'expired').length,
+  }
+})
+
+const totalRamGb = computed(() => {
+  const activeServers = servers.value.filter(s => s.status === 'active')
+  const totalMb = activeServers.reduce((acc, s) => acc + (s.ramMb || 0), 0)
+  return (totalMb / 1024).toFixed(1)
+})
+
+const totalDiskGb = computed(() => {
+  const activeServers = servers.value.filter(s => s.status === 'active')
+  const totalMb = activeServers.reduce((acc, s) => acc + (s.diskMb || 0), 0)
+  return (totalMb / 1024).toFixed(1)
+})
 
 const form = reactive({
   username: '',
@@ -216,6 +324,16 @@ onMounted(async () => {
     }
   } catch {
     // Error handled in store
+  }
+
+  // Fetch user's servers for ownership info
+  try {
+    const { data } = await client.get('/servers')
+    servers.value = Array.isArray(data) ? data : []
+  } catch {
+    servers.value = []
+  } finally {
+    serverLoading.value = false
   }
 })
 

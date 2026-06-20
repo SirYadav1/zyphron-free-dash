@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, In, Not, IsNull } from 'typeorm';
 import { Server } from '../entities/server.entity';
 import { User } from '../entities/user.entity';
+import { Setting } from '../entities/setting.entity';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
 import { MailService } from '../mail/mail.service';
 
@@ -14,9 +15,15 @@ export class ServerLifecycleService {
   constructor(
     @InjectRepository(Server) private serverRepo: Repository<Server>,
     @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Setting) private settingRepo: Repository<Setting>,
     private pterodactylService: PterodactylService,
     private mailService: MailService,
   ) {}
+
+  private async getSetting(key: string, defaultValue: string): Promise<string> {
+    const setting = await this.settingRepo.findOne({ where: { key } });
+    return setting?.value || defaultValue;
+  }
 
   @Cron(CronExpression.EVERY_HOUR)
   async checkExpiredServers() {
@@ -30,6 +37,7 @@ export class ServerLifecycleService {
         expires_at: LessThan(now.toISOString()),
         status: 'active',
       },
+      relations: { user: true },
     });
 
     for (const server of activeExpired) {
@@ -41,9 +49,30 @@ export class ServerLifecycleService {
           this.logger.error(`Failed to suspend expired server ${server.id}:`, error);
         }
       }
-      await this.serverRepo.update(server.id, { status: 'expired' });
+      await this.serverRepo.update(server.id, {
+        status: 'expired',
+        suspend_reason: 'Server expired',
+        suspended_at: now.toISOString(),
+      });
 
-      // Transfer ownership to admin so server disappears from original user's dashboard
+      // Send auto-suspend email (24h warning before deletion)
+      if (server.user?.email) {
+        try {
+          await this.mailService.sendEmail(
+            server.user.email,
+            'Server Expiring Soon - Zyphron',
+            `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <h1 style="color:#f59e0b;">Server Expiring</h1>
+              <p>Your server <strong>${server.server_name}</strong> is expiring in 24 hours. Renew now or it will be deleted.</p>
+              <p>Please log in to your dashboard to renew or back up your data.</p>
+            </div>`,
+          );
+        } catch (error) {
+          this.logger.error('Failed to send expiry email:', error);
+        }
+      }
+
+      // Transfer ownership to admin
       try {
         await this.transferServerToAdmin(server.id);
       } catch (error) {
@@ -188,16 +217,52 @@ export class ServerLifecycleService {
       throw new Error('Server not found');
     }
 
-    const adminUser = await this.userRepo.findOne({ where: { is_admin: 1 } });
+    const transferEmail = await this.getSetting('server_owner_transfer_email', 'admin@zyphron.cloud');
+    const adminUser = await this.userRepo.findOne({ where: { email: transferEmail } });
     if (!adminUser) {
-      this.logger.warn('No admin user found to transfer server ownership');
-      return;
+      // Fallback to any admin user
+      const fallbackAdmin = await this.userRepo.findOne({ where: { is_admin: 1 } });
+      if (!fallbackAdmin) {
+        this.logger.warn('No admin user found to transfer server ownership');
+        return;
+      }
+      return this.transferServerToAdminById(serverId, fallbackAdmin.id);
     }
 
+    return this.transferServerToAdminById(serverId, adminUser.id);
+  }
+
+  private async transferServerToAdminById(serverId: number, adminUserId: string): Promise<void> {
+    const server = await this.serverRepo.findOne({ where: { id: serverId } });
+    if (!server) throw new Error('Server not found');
+
     const previousOwner = server.user_id;
-    await this.serverRepo.update(serverId, { user_id: adminUser.id });
+
+    // Send email to original owner about transfer
+    const originalUser = await this.userRepo.findOne({ where: { id: previousOwner } });
+    if (originalUser?.email) {
+      try {
+        await this.mailService.sendEmail(
+          originalUser.email,
+          'Server Ownership Transferred - Zyphron',
+          `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <h1 style="color:#f59e0b;">Server Transferred</h1>
+            <p>Your server <strong>${server.server_name}</strong> has been transferred to admin management.</p>
+            <p>The server was suspended due to expiry. Please contact support if you need assistance.</p>
+          </div>`,
+        );
+      } catch (error) {
+        this.logger.error('Failed to send ownership transfer email:', error);
+      }
+    }
+
+    await this.serverRepo.update(serverId, {
+      user_id: adminUserId,
+      status: 'suspended',
+      suspend_reason: 'Ownership transferred to admin due to expiry',
+    });
     this.logger.log(
-      `Transferred server ${serverId} (${server.server_name}) from user ${previousOwner} to admin ${adminUser.id}`,
+      `Transferred server ${serverId} (${server.server_name}) from user ${previousOwner} to admin ${adminUserId}`,
     );
   }
 

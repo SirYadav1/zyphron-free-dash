@@ -7,6 +7,7 @@ import { Setting } from '../entities/setting.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { Product } from '../entities/product.entity';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
+import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -23,6 +24,7 @@ export class ServersService {
     @InjectRepository(Product)
     private readonly productRepo: Repository<Product>,
     private pterodactylService: PterodactylService,
+    private mailService: MailService,
   ) {}
 
   private async getSetting(key: string, defaultValue: string): Promise<string> {
@@ -418,6 +420,28 @@ export class ServersService {
 
     try {
       const savedServer = await this.serverRepo.save(server);
+
+      // Send deploy complete email
+      if (user.email) {
+        try {
+          await this.mailService.sendEmail(
+            user.email,
+            'Server Ready! - Zyphron',
+            `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <h1 style="color:#22c55e;">Server Ready! 🎉</h1>
+              <p>Your server <strong>${finalServerName}</strong> is ready!</p>
+              <p>Manage it from your dashboard.</p>
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:20px 0;text-align:center;">
+                <p style="margin:0;color:#166534;font-size:18px;font-weight:bold;">Server Active</p>
+              </div>
+              <p style="color:#6b7280;font-size:12px;">This server will expire on ${expiryDate.toDateString()}.</p>
+            </div>`,
+          );
+        } catch (error) {
+          this.logger.error('Failed to send deploy email:', error);
+        }
+      }
+
       return {
         id: savedServer.id,
         serverName: savedServer.server_name,
@@ -462,7 +486,7 @@ export class ServersService {
     }
   }
 
-  async suspendServer(serverId: number): Promise<any> {
+  async suspendServer(serverId: number, reason?: string): Promise<any> {
     const server = await this.getServerById(serverId);
     if (server.pterodactyl_server_id) {
       try {
@@ -473,7 +497,30 @@ export class ServersService {
         this.logger.error('Failed to suspend Pterodactyl server:', error);
       }
     }
-    await this.serverRepo.update(serverId, { status: 'suspended' });
+    await this.serverRepo.update(serverId, {
+      status: 'suspended',
+      suspend_reason: reason || null,
+      suspended_at: new Date().toISOString(),
+    });
+
+    // Send suspension email
+    if (server.user?.email) {
+      try {
+        await this.mailService.sendEmail(
+          server.user.email,
+          'Server Suspended - Zyphron',
+          `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <h1 style="color:#f59e0b;">Server Suspended</h1>
+            <p>Your server <strong>${server.server_name}</strong> has been suspended.</p>
+            ${reason ? `<p>Reason: <strong>${reason}</strong></p>` : ''}
+            <p>Please contact support or take action to restore your server.</p>
+          </div>`,
+        );
+      } catch (error) {
+        this.logger.error('Failed to send suspension email:', error);
+      }
+    }
+
     return this.serverRepo.findOne({ where: { id: serverId } });
   }
 
@@ -488,7 +535,29 @@ export class ServersService {
         this.logger.error('Failed to unsuspend Pterodactyl server:', error);
       }
     }
-    await this.serverRepo.update(serverId, { status: 'active' });
+    await this.serverRepo.update(serverId, {
+      status: 'active',
+      suspend_reason: null,
+      suspended_at: null,
+    });
+
+    // Send unsuspension email
+    if (server.user?.email) {
+      try {
+        await this.mailService.sendEmail(
+          server.user.email,
+          'Server Restored - Zyphron',
+          `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <h1 style="color:#22c55e;">Server Restored</h1>
+            <p>Your server <strong>${server.server_name}</strong> has been restored and is now active.</p>
+            <p>You can manage it from your dashboard.</p>
+          </div>`,
+        );
+      } catch (error) {
+        this.logger.error('Failed to send unsuspension email:', error);
+      }
+    }
+
     return this.serverRepo.findOne({ where: { id: serverId } });
   }
 
@@ -503,7 +572,28 @@ export class ServersService {
         this.logger.error('Failed to delete Pterodactyl server:', error);
       }
     }
+
+    // Send deletion email
+    const serverName = server.server_name;
+    const userEmail = server.user?.email;
     await this.serverRepo.delete(serverId);
+
+    if (userEmail) {
+      try {
+        await this.mailService.sendEmail(
+          userEmail,
+          'Server Deleted - Zyphron',
+          `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <h1 style="color:#ef4444;">Server Deleted</h1>
+            <p>Your server <strong>${serverName}</strong> has been deleted.</p>
+            <p>All data associated with this server has been permanently removed.</p>
+            <p>If you want to create a new server, please make sure you have enough credits.</p>
+          </div>`,
+        );
+      } catch (error) {
+        this.logger.error('Failed to send deletion email:', error);
+      }
+    }
   }
 
   async updateServer(serverId: number, userId: string, data: { serverName?: string }): Promise<any> {

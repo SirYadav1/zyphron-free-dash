@@ -35,63 +35,81 @@
       </router-link>
     </div>
 
-    <div v-else class="card-surface overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left">
-          <thead>
-            <tr class="bg-base/50 border-b border-border">
-              <th class="px-6 py-4 text-label opacity-40">Ticket ID</th>
-              <th class="px-6 py-4 text-label opacity-40">Category</th>
-              <th class="px-6 py-4 text-label opacity-40">Title</th>
-              <th class="px-6 py-4 text-label opacity-40">Priority</th>
-              <th class="px-6 py-4 text-label opacity-40">Status</th>
-              <th class="px-6 py-4 text-label opacity-40">Last Updated</th>
-              <th class="px-6 py-4 text-label opacity-40">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-border">
-            <tr v-for="ticket in tickets" :key="ticket.id" class="hover:bg-white/[0.01] transition-colors group">
-              <td class="px-6 py-4">
-                <p class="text-sm font-bold text-text-primary font-mono">#{{ String(ticket.id).substring(0, 8) }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <p class="text-sm font-medium text-text-muted">{{ ticket.category || 'General' }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <p class="text-sm font-bold text-text-primary group-hover:text-accent transition-colors">{{ ticket.title }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <span :class="priorityClass(ticket.priority)" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">
-                  {{ ticket.priority }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <span :class="statusClass(ticket.status)" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">
-                  {{ ticket.status }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <p class="text-sm font-medium text-text-muted">{{ formatDate(ticket.updatedAt || ticket.updated_at) }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <router-link :to="`/ticket/${ticket.id}`" class="text-xs font-bold text-text-muted hover:text-accent transition-colors">
-                  View
-                </router-link>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Open Tickets -->
+    <div v-if="openTickets.length > 0" class="space-y-4">
+      <h3 class="text-sm font-bold text-text-primary uppercase tracking-widest opacity-50">Open Tickets</h3>
+      <div class="space-y-2">
+        <router-link
+          v-for="ticket in openTickets"
+          :key="ticket.id"
+          :to="`/ticket/${ticket.id}`"
+          class="card-surface p-4 flex items-center gap-4 group hover:border-accent/30 transition-all block"
+        >
+          <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent flex-shrink-0">
+            <MessageSquare :size="18" :stroke-width="2" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-accent font-mono">{{ formatTicketId(ticket) }}</span>
+              <span :class="statusClass(ticket.status)" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">
+                {{ ticket.status }}
+              </span>
+              <span :class="priorityClass(ticket.priority)" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">
+                {{ ticket.priority }}
+              </span>
+            </div>
+            <p class="text-sm font-bold text-text-primary group-hover:text-accent transition-colors truncate mt-1">{{ ticket.title }}</p>
+            <p class="text-[11px] text-text-muted mt-0.5">Updated {{ formatDate(ticket.updatedAt || ticket.updated_at) }}</p>
+          </div>
+          <svg class="w-4 h-4 text-text-muted group-hover:text-accent transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Closed Tickets -->
+    <div v-if="closedTickets.length > 0" class="space-y-4">
+      <h3 class="text-sm font-bold text-text-primary uppercase tracking-widest opacity-50">Closed Tickets</h3>
+      <div class="space-y-2">
+        <router-link
+          v-for="ticket in closedTickets"
+          :key="ticket.id"
+          :to="`/ticket/${ticket.id}`"
+          class="card-surface p-4 flex items-center gap-4 group hover:border-accent/30 transition-all block opacity-60 hover:opacity-100"
+        >
+          <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-text-muted flex-shrink-0">
+            <CheckCircle :size="18" :stroke-width="2" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-text-muted font-mono">{{ formatTicketId(ticket) }}</span>
+              <span :class="statusClass(ticket.status)" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border">
+                {{ ticket.status }}
+              </span>
+            </div>
+            <p class="text-sm font-bold text-text-primary truncate mt-1">{{ ticket.title }}</p>
+            <p class="text-[11px] text-text-muted mt-0.5">Closed {{ formatDate(ticket.updatedAt || ticket.updated_at) }}</p>
+          </div>
+          <svg class="w-4 h-4 text-text-muted group-hover:text-accent transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import client from '../api/client'
+import { MessageSquare, CheckCircle } from 'lucide-vue-next'
 
 const tickets = ref([])
 const loading = ref(true)
+
+const openTickets = computed(() => tickets.value.filter(t => t.status !== 'closed'))
+const closedTickets = computed(() => tickets.value.filter(t => t.status === 'closed'))
 
 onMounted(async () => {
   try {
@@ -103,6 +121,14 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+function formatTicketId(ticket) {
+  // Use ticket_id (hex) if available, otherwise fall back to numeric ID
+  if (ticket.ticket_id) {
+    return `ZYPHC-${ticket.ticket_id.substring(0, 4).toUpperCase()}`
+  }
+  return `ZYPHC-${String(ticket.id).padStart(4, '0')}`
+}
 
 function priorityClass(priority) {
   return {

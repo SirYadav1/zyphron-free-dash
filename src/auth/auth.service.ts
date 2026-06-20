@@ -19,6 +19,7 @@ import { DailyLogin } from '../entities/daily-login.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
+import { EmailVerificationService } from '../email-verification/email-verification.service';
 
 @Injectable()
 export class AuthService {
@@ -36,6 +37,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private pterodactylService: PterodactylService,
+    private emailVerificationService: EmailVerificationService,
   ) {}
 
   async register(dto: RegisterDto, ipAddress?: string) {
@@ -102,11 +104,22 @@ export class AuthService {
       }
     }
 
+    // Send verification email
+    try {
+      const verificationService = this.emailVerificationService;
+      if (verificationService) {
+        await verificationService.sendVerificationEmail(user.id);
+        this.logger.log(`Verification email sent to ${user.email}`);
+      }
+    } catch (emailErr) {
+      this.logger.warn(`Failed to send verification email: ${emailErr.message}`);
+      // Don't fail registration if email sending fails
+    }
+
     const token = this.signToken(user.id);
 
     return {
-      message: 'Registration successful',
-      access_token: token,
+      message: 'Registration successful. Please check your email for verification link.',
       userId: user.id,
     };
   }
@@ -176,6 +189,15 @@ export class AuthService {
       throw new UnauthorizedException('Your account has been banned');
     }
 
+    // Check if email verification is required
+    if (!user.email_verified) {
+      return {
+        requiresEmailVerification: true,
+        email: user.email,
+        message: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+      };
+    }
+
     // Auto-sync Pterodactyl account if not linked yet
     if (!user.pterodactyl_user_id) {
       await this.syncPterodactylAccount(user);
@@ -211,7 +233,7 @@ export class AuthService {
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
-        emailVerified: true,
+        emailVerified: !!user.email_verified,
         isAdmin: !!user.is_admin,
         coins: updatedUser?.coins ?? (user.coins + dailyBonus),
         profilePhoto: user.profile_photo,
@@ -257,6 +279,15 @@ export class AuthService {
       throw new UnauthorizedException('Your account has been banned');
     }
 
+    // Check if email verification is required
+    if (!user.email_verified) {
+      return {
+        requiresEmailVerification: true,
+        email: user.email,
+        message: 'Please verify your email address before logging in.',
+      };
+    }
+
     const dailyBonus = await this.awardDailyLoginBonus(user.id);
 
     // Re-fetch user to get updated coin balance after daily bonus
@@ -272,7 +303,7 @@ export class AuthService {
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
-        emailVerified: true,
+        emailVerified: !!user.email_verified,
         isAdmin: !!user.is_admin,
         coins: updatedUser2FA?.coins ?? (user.coins + dailyBonus),
         profilePhoto: user.profile_photo,
@@ -303,7 +334,7 @@ export class AuthService {
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
-      emailVerified: true,
+      emailVerified: !!user.email_verified,
       isAdmin: !!user.is_admin,
       coins: user.coins,
       profilePhoto: user.profile_photo,

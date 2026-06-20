@@ -44,7 +44,11 @@ export const useAuthStore = defineStore('auth', {
         if (data.requires2FA) {
           return data
         }
-        sessionStorage.setItem('access_token', data.access_token)  // BUG-H5 FIX
+        // If email not verified, return data with flag but don't store token yet
+        if (data.requiresEmailVerification) {
+          return data
+        }
+        sessionStorage.setItem('access_token', data.access_token)
         this.user = data.user
         return data
       } catch (error) {
@@ -86,6 +90,20 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async sendVerificationEmail() {
+      this.loading = true
+      this.error = null
+      try {
+        const { data } = await client.post('/auth/send-verification-email')
+        return data
+      } catch (error) {
+        this.error = formatError(error, 'Failed to send verification email')
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     async fetchProfile() {
       try {
         const { data } = await client.get('/auth/me')
@@ -93,14 +111,14 @@ export const useAuthStore = defineStore('auth', {
         return data
       } catch (error) {
         this.user = null
-        sessionStorage.removeItem('access_token')  // BUG-H5 FIX
+        sessionStorage.removeItem('access_token')
         throw error
       }
     },
 
     logout() {
       this.user = null
-      sessionStorage.removeItem('access_token')  // BUG-H5 FIX
+      sessionStorage.removeItem('access_token')
     },
   },
 })

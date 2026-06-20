@@ -5,6 +5,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -44,6 +45,14 @@ export class AdminTicketsController {
   @Get()
   async getAllTickets() {
     return this.ticketsService.getAllTickets();
+  }
+
+  @Get('search')
+  async searchTickets(
+    @Query('email') email?: string,
+    @Query('user_id') userId?: string,
+  ) {
+    return this.ticketsService.searchTickets(email, userId);
   }
 
   @Get('categories')

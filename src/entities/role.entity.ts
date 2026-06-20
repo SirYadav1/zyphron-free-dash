@@ -17,6 +17,18 @@ export class Role {
   @Column({ type: 'text', default: 'web' })
   guard_name: string;
 
+  @Column({ type: 'integer', default: 0 })
+  ticket_accept: number;
+
+  @Column({ type: 'integer', default: 0 })
+  ticket_reject: number;
+
+  @Column({ type: 'integer', default: 0 })
+  ticket_chat: number;
+
+  @Column({ type: 'integer', default: 0 })
+  coin_approve: number;
+
   @CreateDateColumn({ type: 'text' })
   created_at: string;
 

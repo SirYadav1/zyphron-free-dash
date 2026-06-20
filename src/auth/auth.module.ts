@@ -13,6 +13,7 @@ import { Setting } from '../entities/setting.entity';
 import { AfkSession } from '../entities/afk-session.entity';
 import { DailyLogin } from '../entities/daily-login.entity';
 import { PterodactylModule } from '../pterodactyl/pterodactyl.module';
+import { EmailVerificationModule } from '../email-verification/email-verification.module';
 
 @Global()
 @Module({
@@ -39,6 +40,7 @@ import { PterodactylModule } from '../pterodactyl/pterodactyl.module';
       },
     }),
     PterodactylModule,
+    EmailVerificationModule,
   ],
   controllers: [AuthController, TwoFactorController],
   providers: [AuthService, JwtAuthGuard, TwoFactorService],

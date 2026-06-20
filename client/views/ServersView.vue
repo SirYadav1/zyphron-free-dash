@@ -1,15 +1,20 @@
 <template>
   <div class="space-y-8">
+    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="space-y-1">
-        <h2 class="text-2xl font-bold text-text-primary tracking-tight">Servers</h2>
-        <p class="text-sm text-text-muted">{{ store.servers.length }} active instance{{ store.servers.length !== 1 ? 's' : '' }}</p>
+        <h2 class="text-2xl font-bold text-text-primary tracking-tight">My Servers</h2>
+        <p class="text-sm text-text-muted">
+          {{ store.servers.length }} server{{ store.servers.length !== 1 ? 's' : '' }} &middot;
+          <span class="text-emerald-400">{{ activeCount }} active</span>
+          <span v-if="suspendedCount > 0" class="text-red-400"> &middot; {{ suspendedCount }} suspended</span>
+        </p>
       </div>
       <router-link to="/services" class="btn-primary inline-flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
         </svg>
-        Create Server
+        Deploy Server
       </router-link>
     </div>
 
@@ -42,7 +47,7 @@
       <router-link to="/services" class="btn-primary inline-flex">Deploy New Server</router-link>
     </div>
 
-    <!-- Server Cards (Pterodactyl Style) -->
+    <!-- Server Cards -->
     <div v-else class="space-y-3">
       <div
         v-for="server in store.servers"
@@ -50,18 +55,10 @@
         class="card-surface border-l-4 transition-all hover:border-l-accent group cursor-pointer"
         :class="statusBorderColor(server)"
       >
-        <div class="p-5 flex items-center gap-5">
-          <!-- Status Indicator -->
-          <div class="flex-shrink-0">
-            <div
-              :class="statusDotClass(server)"
-              class="w-3 h-3 rounded-full"
-            ></div>
-          </div>
-
-          <!-- Server Info -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-3">
+        <div class="p-5">
+          <!-- Top Row: Server Name + Status -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-9 h-9 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-accent flex-shrink-0">
                 <Server :size="16" :stroke-width="2" />
               </div>
@@ -70,13 +67,36 @@
                 <p class="text-[11px] text-text-muted truncate font-mono">{{ getNodeHost(server) }}</p>
               </div>
             </div>
+
+            <!-- Status Badge -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span
+                :class="statusBadgeClass(server)"
+                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5"
+              >
+                <span :class="statusDotClass(server)" class="w-1.5 h-1.5 rounded-full"></span>
+                {{ getStatusLabel(server) }}
+              </span>
+            </div>
           </div>
 
-          <!-- Resources -->
-          <div class="hidden sm:flex items-center gap-6 flex-shrink-0">
+          <!-- Suspended Reason Banner -->
+          <div
+            v-if="server.status === 'suspended'"
+            class="mb-4 px-3 py-2 rounded-lg bg-red-500/5 border border-red-500/20 flex items-center gap-2"
+          >
+            <AlertTriangle :size="14" :stroke-width="2" class="text-red-400 flex-shrink-0" />
+            <span class="text-xs text-red-400">
+              This server has been suspended by an administrator.
+              <span v-if="server.suspendedAt" class="text-red-400/60"> ({{ formatDate(server.suspendedAt) }})</span>
+            </span>
+          </div>
+
+          <!-- Resource Cards -->
+          <div class="grid grid-cols-3 gap-3 mb-4">
             <!-- CPU -->
-            <div class="text-center min-w-[70px]">
-              <div class="flex items-center gap-1.5 justify-center mb-1">
+            <div class="bg-base/50 rounded-lg p-3 border border-border">
+              <div class="flex items-center gap-1.5 mb-1.5">
                 <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
                 </svg>
@@ -86,59 +106,74 @@
             </div>
 
             <!-- RAM -->
-            <div class="text-center min-w-[80px]">
-              <div class="flex items-center gap-1.5 justify-center mb-1">
-                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="10" x2="10" y2="14"/><line x1="14" y1="10" x2="14" y2="14"/><line x1="18" y1="10" x2="18" y2="14"/>
-                </svg>
+            <div class="bg-base/50 rounded-lg p-3 border border-border">
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <MemoryStick :size="14" class="text-amber-400" />
                 <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">RAM</span>
               </div>
               <p class="text-sm font-bold text-text-primary tabular-nums">{{ formatRam(server.ramMb) }}</p>
             </div>
 
             <!-- Disk -->
-            <div class="text-center min-w-[80px]">
-              <div class="flex items-center gap-1.5 justify-center mb-1">
-                <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-                </svg>
+            <div class="bg-base/50 rounded-lg p-3 border border-border">
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <HardDrive :size="14" class="text-purple-400" />
                 <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider">Disk</span>
               </div>
               <p class="text-sm font-bold text-text-primary tabular-nums">{{ formatDisk(server.diskMb) }}</p>
             </div>
           </div>
 
-          <!-- Status + Actions -->
-          <div class="flex items-center gap-3 flex-shrink-0">
-            <span
-              :class="statusBadgeClass(server)"
-              class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider hidden sm:inline-block"
-            >{{ getStatusLabel(server) }}</span>
+          <!-- Dates Row -->
+          <div class="flex items-center gap-4 text-[11px] text-text-muted mb-3">
+            <div class="flex items-center gap-1.5">
+              <Calendar :size="12" />
+              <span>Created {{ formatDate(server.createdAt) }}</span>
+            </div>
+            <div v-if="server.expiresAt" class="flex items-center gap-1.5">
+              <Clock :size="12" />
+              <span :class="isExpiringSoon(server.expiresAt) ? 'text-yellow-400' : ''">
+                Expires {{ formatDate(server.expiresAt) }}
+                <span v-if="isExpiringSoon(server.expiresAt) && !isExpired(server.expiresAt)" class="text-yellow-400 font-bold">(Soon)</span>
+                <span v-if="isExpired(server.expiresAt)" class="text-red-400 font-bold">(Expired)</span>
+              </span>
+            </div>
+            <div v-if="server.autoRenew" class="flex items-center gap-1.5 text-accent">
+              <RefreshCw :size="12" />
+              <span>Auto-Renew</span>
+            </div>
+          </div>
 
+          <!-- Actions -->
+          <div class="flex items-center justify-between pt-3 border-t border-border">
+            <div class="flex items-center gap-1.5 text-[11px] text-text-muted">
+              <span class="w-1.5 h-1.5 rounded-full" :class="statusDotClass(server)"></span>
+              <span class="font-medium">{{ getStatusLabel(server) }}</span>
+            </div>
             <div class="flex items-center gap-2">
+              <router-link
+                :to="`/servers/${server.id}/renew`"
+                class="p-2 rounded-lg text-text-muted hover:text-amber-400 hover:bg-amber-500/10 transition-all"
+                title="Renew"
+              >
+                <RefreshCw :size="14" :stroke-width="2" />
+              </router-link>
               <router-link
                 :to="`/servers/${server.id}/settings`"
                 class="p-2 rounded-lg text-text-muted hover:text-accent hover:bg-accent/10 transition-all"
                 title="Settings"
               >
-                <Settings :size="16" :stroke-width="2" />
+                <Settings :size="14" :stroke-width="2" />
               </router-link>
               <button
                 @click.stop="handleDelete(server.id)"
                 class="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
                 title="Delete"
               >
-                <Trash2 :size="16" :stroke-width="2" />
+                <Trash2 :size="14" :stroke-width="2" />
               </button>
             </div>
           </div>
-        </div>
-
-        <!-- Mobile Resources (shown on small screens) -->
-        <div class="sm:hidden px-5 pb-4 flex items-center gap-4 text-xs">
-          <span class="text-blue-400 font-bold">CPU: {{ server.cpuPercent }}%</span>
-          <span class="text-amber-400 font-bold">RAM: {{ formatRam(server.ramMb) }}</span>
-          <span class="text-purple-400 font-bold">Disk: {{ formatDisk(server.diskMb) }}</span>
         </div>
       </div>
     </div>
@@ -146,11 +181,24 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useServersStore } from '../stores/servers'
-import { Server, Settings, Trash2, AlertTriangle } from 'lucide-vue-next'
+import {
+  Server,
+  Settings,
+  Trash2,
+  AlertTriangle,
+  MemoryStick,
+  HardDrive,
+  Calendar,
+  Clock,
+  RefreshCw,
+} from 'lucide-vue-next'
 
 const store = useServersStore()
+
+const activeCount = computed(() => store.servers.filter(s => s.status === 'active').length)
+const suspendedCount = computed(() => store.servers.filter(s => s.status === 'suspended').length)
 
 onMounted(async () => {
   try {
@@ -165,41 +213,64 @@ function getNodeHost(server) {
 }
 
 function formatRam(mb) {
-  if (mb >= 1024) return (mb / 1024).toFixed(0) + ' GB'
+  if (mb >= 1024) return (mb / 1024).toFixed(1) + ' GB'
   return mb + ' MB'
 }
 
 function formatDisk(mb) {
-  if (mb >= 1024) return (mb / 1024).toFixed(0) + ' GB'
+  if (mb >= 1024) return (mb / 1024).toFixed(1) + ' GB'
   return mb + ' MB'
 }
 
 function statusBorderColor(server) {
   if (server.status === 'suspended') return 'border-red-500'
   if (server.status === 'active') return 'border-emerald-500'
+  if (server.status === 'expired') return 'border-yellow-500'
   return 'border-gray-500'
 }
 
 function statusDotClass(server) {
   if (server.status === 'suspended') return 'bg-red-500'
   if (server.status === 'active') return 'bg-emerald-500'
+  if (server.status === 'expired') return 'bg-yellow-500'
   return 'bg-gray-500'
 }
 
 function statusBadgeClass(server) {
   if (server.status === 'suspended') return 'bg-red-500/15 text-red-400'
   if (server.status === 'active') return 'bg-emerald-500/15 text-emerald-400'
+  if (server.status === 'expired') return 'bg-yellow-500/15 text-yellow-400'
   return 'bg-gray-500/15 text-gray-400'
 }
 
 function getStatusLabel(server) {
   if (server.status === 'suspended') return 'Suspended'
-  if (server.status === 'active') return 'Running'
-  return 'Starting'
+  if (server.status === 'active') return 'Active'
+  if (server.status === 'expired') return 'Expired'
+  return server.status || 'Unknown'
+}
+
+function isExpiringSoon(dateStr) {
+  if (!dateStr) return false
+  const expiry = new Date(dateStr)
+  const now = new Date()
+  const threeDays = 3 * 24 * 60 * 60 * 1000
+  return expiry.getTime() - now.getTime() < threeDays && expiry.getTime() > now.getTime()
+}
+
+function isExpired(dateStr) {
+  if (!dateStr) return false
+  return new Date(dateStr).getTime() < Date.now()
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—'
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 async function handleDelete(id) {
-  if (!confirm('Are you sure you want to delete this server?')) return
+  if (!confirm('Are you sure you want to delete this server? This action cannot be undone.')) return
   try {
     await store.deleteServer(id)
   } catch {}

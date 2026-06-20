@@ -25,6 +25,18 @@ class CreateRoleDto {
   @IsOptional()
   @IsArray()
   permissions?: string[];
+
+  @IsOptional()
+  ticket_accept?: number;
+
+  @IsOptional()
+  ticket_reject?: number;
+
+  @IsOptional()
+  ticket_chat?: number;
+
+  @IsOptional()
+  coin_approve?: number;
 }
 
 class UpdateRoleDto {
@@ -39,6 +51,18 @@ class UpdateRoleDto {
   @IsOptional()
   @IsArray()
   permissions?: string[];
+
+  @IsOptional()
+  ticket_accept?: number;
+
+  @IsOptional()
+  ticket_reject?: number;
+
+  @IsOptional()
+  ticket_chat?: number;
+
+  @IsOptional()
+  coin_approve?: number;
 }
 
 class AssignRoleDto {
