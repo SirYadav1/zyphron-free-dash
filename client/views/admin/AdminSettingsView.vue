@@ -233,12 +233,11 @@
           </div>
           <div class="flex items-center gap-3">
             <button 
-              v-if="!pteroConfigured"
               @click="loadPterodactylOptions" 
               :disabled="loadingPteroOptions"
               class="px-4 py-2 text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-40"
             >
-              {{ loadingPteroOptions ? 'Loading...' : 'Load from Pterodactyl' }}
+              {{ loadingPteroOptions ? 'Loading...' : 'Refresh Options' }}
             </button>
             <button 
               @click="saveBlueprint" 
@@ -723,12 +722,14 @@ onMounted(async () => {
 
   // Auto-load nodes if Pterodactyl is configured
   if (pteroConfigured.value) {
-    await loadNodes()
-    // Pre-select current node if set
-    if (selectedNodeId.value && nodes.value.length > 0) {
-      const exists = nodes.value.find(n => n.id === selectedNodeId.value)
-      if (!exists) selectedNodeId.value = null
-    }
+    loadNodes().then(() => {
+      if (selectedNodeId.value && nodes.value.length > 0) {
+        const exists = nodes.value.find(n => n.id === selectedNodeId.value)
+        if (!exists) selectedNodeId.value = null
+      }
+    }).catch(() => {})
+    // Auto-load blueprint options (don't block page render)
+    loadPterodactylOptions().catch(() => {})
   }
 
   // Load allocation settings
