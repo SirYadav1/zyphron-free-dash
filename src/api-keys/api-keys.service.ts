@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import { ApplicationApi } from '../entities/application-api.entity';
 
 @Injectable()
@@ -21,16 +21,19 @@ export class ApiKeysService {
     return api;
   }
 
-  async create(dto: Partial<ApplicationApi>): Promise<ApplicationApi> {
-    const token = dto.token || randomBytes(32).toString('hex');
-    const permissions = dto.permissions || '[]';
-    return this.apiRepo.save(
+  async create(dto: Partial<ApplicationApi>): Promise<{ api: ApplicationApi; token: string }> {
+    const token = dto.token || this.generateToken();
+    
+    const api = await this.apiRepo.save(
       this.apiRepo.create({
         ...dto,
         token,
-        permissions: typeof permissions === 'string' ? permissions : JSON.stringify(permissions),
+        permissions: typeof dto.permissions === 'string' ? dto.permissions : JSON.stringify(dto.permissions || '[]'),
       }),
     );
+
+    // Return the plain token (not hashed) so user can copy it
+    return { api, token };
   }
 
   async update(
@@ -42,6 +45,8 @@ export class ApiKeysService {
     if (updateData.permissions && Array.isArray(updateData.permissions)) {
       updateData.permissions = JSON.stringify(updateData.permissions);
     }
+    // don't allow token update
+    delete updateData.token;
     await this.apiRepo.update(id, updateData);
     return this.findOne(id);
   }
@@ -49,5 +54,12 @@ export class ApiKeysService {
   async remove(id: number): Promise<void> {
     const result = await this.apiRepo.delete(id);
     if (result.affected === 0) throw new NotFoundException('API key not found');
+  }
+
+  private generateToken(): string {
+    // Generate a token similar to Pterodactyl's ptla_ format
+    const prefix = 'zya_';
+    const randomPart = randomBytes(32).toString('hex');
+    return `${prefix}${randomPart}`;
   }
 }
