@@ -80,16 +80,57 @@
             </div>
           </div>
 
-          <!-- Suspended Reason Banner -->
+          <!-- Suspended Reason Banner — Admin Suspend (Contact Support) -->
           <div
-            v-if="server.status === 'suspended'"
-            class="mb-4 px-3 py-2 rounded-lg bg-red-500/5 border border-red-500/20 flex items-center gap-2"
+            v-if="server.status === 'suspended' && server.suspendReason && server.suspendReason !== 'expired'"
+            class="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-start gap-3"
           >
-            <AlertTriangle :size="14" :stroke-width="2" class="text-red-400 flex-shrink-0" />
-            <span class="text-xs text-red-400">
-              This server has been suspended by an administrator.
-              <span v-if="server.suspendedAt" class="text-red-400/60"> ({{ formatDate(server.suspendedAt) }})</span>
-            </span>
+            <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertTriangle :size="16" :stroke-width="2" class="text-red-400" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-red-400 mb-0.5">Server Suspended by Administrator</p>
+              <p class="text-xs text-red-400/70">
+                This server has been suspended by an administrator.
+                <span v-if="server.suspendReason"> Reason: {{ server.suspendReason }}</span>
+              </p>
+              <p v-if="server.suspendedAt" class="text-[10px] text-red-400/50 mt-1">{{ formatDate(server.suspendedAt) }}</p>
+              <a
+                :href="`${pteroUrl || '#'}/submit`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md bg-red-500/20 text-red-300 text-xs font-bold hover:bg-red-500/30 transition-all"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Contact Support Team
+              </a>
+            </div>
+          </div>
+
+          <!-- Suspended Reason Banner — System/Expiry (Renew with Credits) -->
+          <div
+            v-if="server.status === 'suspended' && (!server.suspendReason || server.suspendReason === 'expired')"
+            class="mb-4 px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
+          >
+            <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Clock :size="16" :stroke-width="2" class="text-amber-400" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-amber-400 mb-0.5">Server Expired</p>
+              <p class="text-xs text-amber-400/70">
+                Your server subscription has expired. Renew with your credits to restore access.
+              </p>
+              <p v-if="server.suspendedAt" class="text-[10px] text-amber-400/50 mt-1">{{ formatDate(server.suspendedAt) }}</p>
+              <router-link
+                :to="`/servers/${server.id}/renew`"
+                class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md bg-amber-500/20 text-amber-300 text-xs font-bold hover:bg-amber-500/30 transition-all"
+              >
+                <RefreshCw :size="13" :stroke-width="2" />
+                Renew with Credits ({{ server.renewalPrice || 50 }} coins)
+              </router-link>
+            </div>
           </div>
 
           <!-- Resource Cards -->
