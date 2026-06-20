@@ -10,6 +10,19 @@
       </div>
 
       <div class="auth-card" style="animation: slideUp 0.5s ease-out 0.2s both;">
+        <!-- Maintenance Mode Banner -->
+        <div v-if="maintenanceMode && !loadingMaintenance" class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+              <Wrench :size="20" class="text-red-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-red-400">System Under Maintenance</h3>
+              <p class="text-[11px] text-red-300/80 mt-0.5">We're currently performing scheduled maintenance. Please try again later. Admin accounts are not affected.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Step 1: Email/Password Login -->
         <form v-if="!requires2FA" @submit.prevent="handleLogin" class="space-y-6">
           <div v-if="store.error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2">
@@ -123,7 +136,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
@@ -133,6 +146,7 @@ import {
   Loader2,
   ShieldCheck,
   Check,
+  Wrench,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -144,6 +158,19 @@ const requires2FA = ref(false)
 const twoFACode = ref('')
 const twoFALoading = ref(false)
 const twoFAError = ref('')
+const maintenanceMode = ref(false)
+const loadingMaintenance = ref(true)
+
+onMounted(async () => {
+  try {
+    const { data } = await client.get('/auth/maintenance')
+    maintenanceMode.value = data.enabled
+  } catch {
+    // if check fails, allow login attempt (backend will enforce)
+  } finally {
+    loadingMaintenance.value = false
+  }
+})
 
 async function handleLogin() {
   try {

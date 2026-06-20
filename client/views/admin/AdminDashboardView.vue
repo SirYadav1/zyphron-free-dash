@@ -114,7 +114,7 @@
             <Zap :size="16" :stroke-width="2" class="text-accent" />
             Quick Actions
           </h3>
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <router-link to="/admin/users" class="quick-action-btn group">
               <div class="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 group-hover:bg-accent/20 transition-all duration-300">
                 <Users :size="22" :stroke-width="2" class="text-accent" />

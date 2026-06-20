@@ -114,7 +114,7 @@
             <input v-model.number="createForm.amount" type="number" min="0" placeholder="0"
               class="w-full bg-base border border-border rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder-text-muted/40 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/30" />
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Currency</label>
               <select v-model="createForm.currency"

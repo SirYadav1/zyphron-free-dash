@@ -55,22 +55,7 @@ export class ServerLifecycleService {
         suspended_at: now.toISOString(),
       });
 
-      // Send auto-suspend email (24h warning before deletion)
-      if (server.user?.email) {
-        try {
-          await this.mailService.sendEmail(
-            server.user.email,
-            'Server Expiring Soon - Zyphron',
-            `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-              <h1 style="color:#f59e0b;">Server Expiring</h1>
-              <p>Your server <strong>${server.server_name}</strong> is expiring in 24 hours. Renew now or it will be deleted.</p>
-              <p>Please log in to your dashboard to renew or back up your data.</p>
-            </div>`,
-          );
-        } catch (error) {
-          this.logger.error('Failed to send expiry email:', error);
-        }
-      }
+      // expiry email disabled
 
       // transfer ownership to admin
       try {
@@ -108,21 +93,31 @@ export class ServerLifecycleService {
         `Processing expired server: ${server.server_name} (ID: ${server.id})`,
       );
 
+      let pterodactylDeleted = false;
+
       if (server.pterodactyl_server_id) {
         try {
           await this.pterodactylService.deleteServer(
             server.pterodactyl_server_id,
           );
+          pterodactylDeleted = true;
           this.logger.log(
             `Deleted server from Pterodactyl: ${server.pterodactyl_server_id}`,
           );
         } catch (error) {
           this.logger.error(
-            `Failed to delete server from Pterodactyl: ${server.pterodactyl_server_id}`,
+            `FAILED to delete server from Pterodactyl: ${server.pterodactyl_server_id}. Server NOT deleted from DB. Error: ${error.message}`,
             error,
           );
+          // don't delete from DB if Pterodactyl deletion failed
+          return;
         }
+      } else {
+        // never reached the panel, db row only
+        pterodactylDeleted = true;
       }
+
+      if (!pterodactylDeleted) return;
 
       await this.serverRepo.delete(server.id);
 
@@ -238,6 +233,32 @@ export class ServerLifecycleService {
     if (!server) throw new Error('Server not found');
 
     const previousOwner = server.user_id;
+
+    // transfer on Pterodactyl panel if server exists there
+    if (server.pterodactyl_server_id) {
+      try {
+        const adminUser = await this.userRepo.findOne({ where: { id: adminUserId } });
+        if (adminUser?.pterodactyl_user_id) {
+          await this.pterodactylService.transferServer(
+            server.pterodactyl_server_id,
+            adminUser.pterodactyl_user_id,
+          );
+          this.logger.log(
+            `Transferred Pterodactyl server ${server.pterodactyl_server_id} to admin Pterodactyl user ${adminUser.pterodactyl_user_id}`,
+          );
+        } else {
+          this.logger.warn(
+            `Admin user ${adminUserId} has no pterodactyl_user_id — skipping Pterodactyl transfer`,
+          );
+        }
+      } catch (error) {
+        this.logger.error(
+          `Failed to transfer Pterodactyl server ${server.pterodactyl_server_id}: ${error.message}`,
+          error,
+        );
+        // don't throw, ownership still needs updating
+      }
+    }
 
     // send email to original owner about transfer
     const originalUser = await this.userRepo.findOne({ where: { id: previousOwner } });

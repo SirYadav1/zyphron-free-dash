@@ -1,13 +1,13 @@
 <template>
   <div class="max-w-4xl mx-auto space-y-10">
     <div class="space-y-1">
-      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Preferences</h2>
-      <p class="text-sm text-text-muted">Customize your experience and application settings.</p>
+      <h2 class="text-2xl font-bold text-text-primary tracking-tight">{{ t('preferences.preferences') }}</h2>
+      <p class="text-sm text-text-muted">{{ t('preferences.customizeExp') }}</p>
     </div>
 
     <div v-if="loading" class="flex flex-col items-center justify-center py-20 gap-4">
       <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-xs font-semibold text-text-muted tracking-widest uppercase">Loading Preferences...</p>
+      <p class="text-xs font-semibold text-text-muted tracking-widest uppercase">{{ t('common.loading') }}</p>
     </div>
 
     <div v-if="successMsg" class="card-surface p-4 border-accent/20 bg-accent/5 text-accent text-sm font-bold">
@@ -20,57 +20,63 @@
     <form @submit.prevent="handleSave" class="space-y-8">
       <div class="card-surface p-8 space-y-6">
         <div class="space-y-1">
-          <h3 class="text-lg font-bold text-text-primary">Application Preferences</h3>
-          <p class="text-sm text-text-muted">Choose your language and display preferences.</p>
+          <h3 class="text-lg font-bold text-text-primary">{{ t('preferences.appPreferences') }}</h3>
+          <p class="text-sm text-text-muted">{{ t('preferences.customizeExp') }}</p>
         </div>
 
         <div class="space-y-1.5">
-          <label for="locale" class="text-label">Language / Locale</label>
-          <select id="locale" v-model="prefs.locale" class="input-field">
-            <option value="en-US">English (US)</option>
-            <option value="en-GB">English (UK)</option>
-            <option value="de">Deutsch</option>
-            <option value="fr">Francais</option>
-            <option value="es">Espanol</option>
-            <option value="ja">日本语</option>
+          <label for="locale" class="text-label">{{ t('preferences.languageLocale') }}</label>
+          <select id="locale" v-model="prefs.locale" @change="switchLocale" class="input-field">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="fr">Français (French)</option>
+            <option value="de">Deutsch (German)</option>
+            <option value="pt">Português (Portuguese)</option>
+            <option value="ja">日本語 (Japanese)</option>
+            <option value="ar">العربية (Arabic)</option>
+            <option value="zh">中文 (Chinese)</option>
+            <option value="ru">Русский (Russian)</option>
+            <option value="tr">Türkçe (Turkish)</option>
+            <option value="id">Bahasa Indonesia</option>
           </select>
-          <p class="text-[11px] text-text-muted mt-2">Sets the display language for the control panel interface.</p>
+          <p class="text-[11px] text-text-muted mt-2">{{ t('preferences.languageDesc') }}</p>
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-label">Theme</label>
+          <label class="text-label">{{ t('preferences.theme') }}</label>
           <div class="flex items-center gap-4">
             <label class="flex items-center gap-3 cursor-pointer group">
               <input type="radio" v-model="prefs.theme" value="dark" class="hidden" />
               <div :class="prefs.theme === 'dark' ? 'bg-accent border-accent' : 'bg-base border-border group-hover:border-border-bright'" class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all">
                 <div v-if="prefs.theme === 'dark'" class="w-2 h-2 rounded-full bg-white"></div>
               </div>
-              <span class="text-sm font-medium text-text-primary">Dark</span>
+              <span class="text-sm font-medium text-text-primary">{{ t('preferences.dark') }}</span>
             </label>
             <label class="flex items-center gap-3 cursor-pointer group">
               <input type="radio" v-model="prefs.theme" value="light" class="hidden" />
               <div :class="prefs.theme === 'light' ? 'bg-accent border-accent' : 'bg-base border-border group-hover:border-border-bright'" class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all">
                 <div v-if="prefs.theme === 'light'" class="w-2 h-2 rounded-full bg-white"></div>
               </div>
-              <span class="text-sm font-medium text-text-primary">Light</span>
+              <span class="text-sm font-medium text-text-primary">{{ t('preferences.light') }}</span>
             </label>
             <label class="flex items-center gap-3 cursor-pointer group">
               <input type="radio" v-model="prefs.theme" value="system" class="hidden" />
               <div :class="prefs.theme === 'system' ? 'bg-accent border-accent' : 'bg-base border-border group-hover:border-border-bright'" class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all">
                 <div v-if="prefs.theme === 'system'" class="w-2 h-2 rounded-full bg-white"></div>
               </div>
-              <span class="text-sm font-medium text-text-primary">System</span>
+              <span class="text-sm font-medium text-text-primary">{{ t('preferences.system') }}</span>
             </label>
           </div>
-          <p class="text-[11px] text-text-muted mt-2">Choose between dark, light, or system-default theme.</p>
+          <p class="text-[11px] text-text-muted mt-2">{{ t('preferences.themeDesc') }}</p>
         </div>
       </div>
 
       <div class="pt-6 border-t border-border flex items-center justify-between">
-        <p class="text-xs text-text-muted font-medium">Preferences are saved to your account.</p>
+        <p class="text-xs text-text-muted font-medium">{{ t('preferences.savedToAccount') }}</p>
         <div class="flex items-center gap-3">
           <button type="submit" :disabled="saving" class="btn-primary px-10">
-            {{ saving ? 'Saving...' : 'Save Preferences' }}
+            {{ saving ? t('common.loading') : t('preferences.savePreferences') }}
           </button>
         </div>
       </div>
@@ -80,7 +86,10 @@
 
 <script setup>
 import { ref, reactive, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import client from '../api/client'
+
+const { t, locale } = useI18n()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -89,7 +98,7 @@ const errorMsg = ref('')
 
 const savedTheme = localStorage.getItem('zyphron_theme') || 'dark'
 const prefs = reactive({
-  locale: localStorage.getItem('zyphron_locale') || 'en-US',
+  locale: localStorage.getItem('zyphron_locale') || 'en',
   theme: savedTheme,
 })
 
@@ -105,6 +114,12 @@ function applyTheme(theme) {
   localStorage.setItem('zyphron_theme', theme)
 }
 
+function switchLocale() {
+  locale.value = prefs.locale
+  localStorage.setItem('zyphron_locale', prefs.locale)
+  document.documentElement.lang = prefs.locale
+}
+
 // apply theme immediately on load
 applyTheme(savedTheme)
 
@@ -115,7 +130,11 @@ watch(() => prefs.theme, (newTheme) => {
 onMounted(async () => {
   try {
     const { data } = await client.get('/preferences')
-    if (data.locale) prefs.locale = data.locale
+    if (data.locale) {
+      prefs.locale = data.locale
+      locale.value = data.locale
+      document.documentElement.lang = data.locale
+    }
     if (data.theme) prefs.theme = data.theme
   } catch {
     // use localStorage defaults
@@ -136,11 +155,7 @@ async function handleSave() {
     })
     localStorage.setItem('zyphron_locale', prefs.locale)
     localStorage.setItem('zyphron_theme', prefs.theme)
-    if (prefs.locale !== 'en-US') {
-      successMsg.value = 'Language preference saved. Full translation support coming soon.'
-    } else {
-      successMsg.value = 'Preferences saved successfully.'
-    }
+    successMsg.value = 'Preferences saved successfully.'
   } catch (err) {
     errorMsg.value = err.response?.data?.message || 'Failed to save preferences'
   } finally {

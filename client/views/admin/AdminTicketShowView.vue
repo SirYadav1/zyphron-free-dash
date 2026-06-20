@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-10 max-w-4xl">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1">
         <div class="flex items-center gap-3">
           <router-link to="/admin/ticket" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to Tickets</router-link>

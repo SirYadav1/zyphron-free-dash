@@ -39,6 +39,11 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @Get('maintenance')
+  async checkMaintenance() {
+    return this.authService.checkMaintenanceMode();
+  }
+
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('login-2fa')
   async loginWith2FA(@Body() body: { email: string; code: string }) {

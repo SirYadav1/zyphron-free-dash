@@ -60,6 +60,22 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ===== MOBILE RESPONSIVENESS ===== */
+@media (max-width: 640px) {
+  /* Reduce card padding on mobile */
+  .card-surface { padding: 1rem; }
+  .auth-card { padding: 1.25rem; }
+  .stat-card { padding: 1rem; }
+
+  /* Reduce font sizes on mobile */
+  h1 { font-size: 1.375rem; line-height: 1.75rem; }
+  h2 { font-size: 1.25rem; line-height: 1.75rem; }
+  h3 { font-size: 1rem; line-height: 1.5rem; }
+
+  /* Reduce app container padding on mobile */
+  .app-container { padding-left: 1rem; padding-right: 1rem; }
+}
+
 /* Ensure consistent font sizes */
 h1 { font-size: 1.875rem; line-height: 2.25rem; }
 h2 { font-size: 1.5rem; line-height: 2rem; }

@@ -95,6 +95,10 @@ class CreateProductDto {
   nest_name?: string;
 
   @IsOptional()
+  @IsString()
+  image_url?: string;
+
+  @IsOptional()
   @IsNumber()
   coin_price?: number;
 
@@ -183,6 +187,10 @@ class UpdateProductDto {
   @IsOptional()
   @IsString()
   nest_name?: string;
+
+  @IsOptional()
+  @IsString()
+  image_url?: string;
 
   @IsOptional()
   @IsNumber()

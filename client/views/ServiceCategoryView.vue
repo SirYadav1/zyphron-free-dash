@@ -37,6 +37,8 @@
               <Package :size="56" class="text-blue-400/40" />
             </div>
             <div class="absolute inset-0 bg-gradient-to-t from-[#0f1729] via-[#0f1729]/40 to-transparent"></div>
+            <!-- Sub Image Badge -->
+            <img v-if="category.sub_image_url" :src="category.sub_image_url" alt="badge" class="absolute top-4 left-4 w-12 h-12 rounded-xl object-cover border border-blue-500/30 shadow-lg z-10" />
             <!-- Overlay Content -->
             <div class="absolute inset-0 flex items-end p-6 sm:p-8">
               <div class="flex-1">
@@ -63,8 +65,17 @@
             @click="selectPlan(plan)"
             class="group bg-[#0f1729] border border-blue-500/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 cursor-pointer"
           >
-            <!-- Plan Header -->
-            <div class="p-6 pb-4 text-center border-b border-white/5">
+            <!-- Plan Banner Image -->
+            <div v-if="plan.image_url" class="relative h-32 overflow-hidden">
+              <img :src="plan.image_url" :alt="plan.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#0f1729] via-[#0f1729]/40 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 right-0 p-4 pb-3 text-center">
+                <h4 class="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{{ plan.name }}</h4>
+                <p v-if="plan.description" class="text-xs text-gray-300 mt-0.5 line-clamp-1">{{ plan.description }}</p>
+              </div>
+            </div>
+            <!-- Plan Header (fallback when no image) -->
+            <div v-else class="p-6 pb-4 text-center border-b border-white/5">
               <h4 class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">{{ plan.name }}</h4>
               <p v-if="plan.description" class="text-sm text-gray-400 mt-1">{{ plan.description }}</p>
             </div>
@@ -72,7 +83,7 @@
             <!-- Specs -->
             <div class="p-6 space-y-5">
               <!-- RAM / CPU / Disk -->
-              <div class="grid grid-cols-3 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div class="bg-[#0a0f1a] rounded-xl p-4 text-center border border-blue-500/10">
                   <div class="flex items-center justify-center gap-1.5 mb-2">
                     <MemoryStick :size="14" class="text-blue-400" />

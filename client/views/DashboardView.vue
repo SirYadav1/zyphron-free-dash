@@ -86,8 +86,9 @@
         </div>
         <div class="space-y-2">
           <!-- Dynamic links from API -->
-          <a
-            v-for="link in usefulLinks"
+          <template v-if="!linksLoading">
+            <a
+              v-for="link in usefulLinks"
             :key="link.id"
             :href="link.link"
             target="_blank"
@@ -102,9 +103,10 @@
               <span v-if="link.description" class="text-[10px] text-text-muted/60 truncate block">{{ link.description }}</span>
             </div>
           </a>
+          </template>
 
           <!-- Fallback static links if no API links -->
-          <template v-if="usefulLinks.length === 0">
+          <template v-if="!linksLoading && usefulLinks.length === 0">
             <a
               :href="serverStats.panelUrl || 'https://console.zyphron.cloud'"
               target="_blank"
@@ -160,7 +162,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-4 mb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
             <div class="space-y-1">
               <p class="text-label opacity-40">CPU</p>
               <p class="text-sm font-bold text-text-primary">{{ server.cpuPercent || 0 }}%</p>
@@ -259,6 +261,7 @@ const authStore = useAuthStore()
 
 const serverStats = computed(() => store.stats)
 const usefulLinks = ref([])
+const linksLoading = ref(true)
 const motdMessage = ref('')
 const motdEnabled = ref(false)
 
@@ -298,23 +301,20 @@ const expiringSoonCount = computed(() => {
 })
 
 onMounted(async () => {
-  try {
-    await Promise.all([store.fetchServers(), store.fetchStats()])
-  } catch {}
-  // Fetch MOTD
-  try {
-    const { data } = await client.get('/admin/settings')
-    if (data.motd_message) motdMessage.value = data.motd_message
-    if (data.motd_enabled) motdEnabled.value = data.motd_enabled === 'true'
-  } catch {}
-
-  // Fetch useful links from API
-  try {
-    const { data } = await client.get('/useful-links')
-    usefulLinks.value = Array.isArray(data) ? data.filter(l => l.position !== 'sidebar' || !l.position) : []
-  } catch {
-    // Fallback to static links
-  }
+  // fire all the fetches at once
+  const fetches = [
+    store.fetchServers().catch(() => {}),
+    store.fetchStats().catch(() => {}),
+    client.get('/useful-links').then(({ data }) => {
+      usefulLinks.value = Array.isArray(data) ? data.filter(l => l.position !== 'sidebar' || !l.position) : []
+    }).catch(() => {}),
+    client.get('/admin/settings').then(({ data }) => {
+      if (data.motd_message) motdMessage.value = data.motd_message
+      if (data.motd_enabled) motdEnabled.value = data.motd_enabled === 'true'
+    }).catch(() => {}),
+  ]
+  await Promise.allSettled(fetches)
+  linksLoading.value = false
 })
 
 // animate when data changes

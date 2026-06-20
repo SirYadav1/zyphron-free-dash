@@ -6,7 +6,7 @@
         <h2 class="text-2xl font-bold text-text-primary tracking-tight">Manage Users</h2>
         <p class="text-sm text-text-muted mt-1">{{ filteredUsers.length }} of {{ store.users.length }} users</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
         <div class="relative">
           <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
@@ -16,7 +16,7 @@
             class="input-field pl-9 pr-4 py-2 w-64"
           />
         </div>
-        <select v-model="perPage" class="input-field w-28 py-2">
+        <select v-model="perPage" class="input-field w-full sm:w-28 py-2">
           <option :value="10">10 / page</option>
           <option :value="25">25 / page</option>
           <option :value="50">50 / page</option>

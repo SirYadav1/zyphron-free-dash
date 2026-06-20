@@ -440,8 +440,8 @@ export class PterodactylService {
       const raw = res.data || [];
       // unwrap Pterodactyl v1 format: { id, attributes: { name, fqdn, ... } }
       return raw.map((n: any) => ({
-        id: n.id,
-        name: n.attributes?.name || n.name || 'Node #' + n.id,
+        id: n.attributes?.id || n.id,
+        name: n.attributes?.name || n.name || 'Node #' + (n.attributes?.id || n.id),
         fqdn: n.attributes?.fqdn || n.fqdn || 'unknown',
         memory: n.attributes?.memory || n.memory || 0,
         disk: n.attributes?.disk || n.disk || 0,

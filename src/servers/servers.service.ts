@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, InternalServerErrorException, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Server } from '../entities/server.entity';
@@ -539,26 +539,7 @@ export class ServersService {
     try {
       const savedServer = await this.serverRepo.save(server);
 
-      // Send deploy complete email
-      if (user.email) {
-        try {
-          await this.mailService.sendEmail(
-            user.email,
-            'Server Ready! - Zyphron',
-            `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-              <h1 style="color:#22c55e;">Server Ready! 🎉</h1>
-              <p>Your server <strong>${finalServerName}</strong> is ready!</p>
-              <p>Manage it from your dashboard.</p>
-              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:20px 0;text-align:center;">
-                <p style="margin:0;color:#166534;font-size:18px;font-weight:bold;">Server Active</p>
-              </div>
-              <p style="color:#6b7280;font-size:12px;">This server will expire on ${expiryDate.toDateString()}.</p>
-            </div>`,
-          );
-        } catch (error) {
-          this.logger.error('Failed to send deploy email:', error);
-        }
-      }
+      // deploy email disabled
 
       return {
         id: savedServer.id,
@@ -681,13 +662,21 @@ export class ServersService {
 
   async deleteServer(serverId: number, userId?: string): Promise<void> {
     const server = await this.getServerById(serverId, userId);
+
     if (server.pterodactyl_server_id) {
       try {
         await this.pterodactylService.deleteServer(
           server.pterodactyl_server_id,
         );
       } catch (error) {
-        this.logger.error('Failed to delete Pterodactyl server:', error);
+        this.logger.error(
+          `FAILED to delete Pterodactyl server ${server.pterodactyl_server_id}. Server NOT deleted from DB. Error: ${error.message}`,
+          error,
+        );
+        throw new HttpException(
+          `Failed to delete server from Pterodactyl panel: ${error.message}. Server NOT deleted.`,
+          HttpStatus.BAD_GATEWAY,
+        );
       }
     }
 

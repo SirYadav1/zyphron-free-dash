@@ -6,7 +6,7 @@
         <p class="text-sm text-text-muted mt-1">{{ filteredServers.length }} deployed instance{{ filteredServers.length !== 1 ? 's' : '' }}</p>
       </div>
       <div class="flex items-center gap-3">
-        <input v-model="searchQuery" type="text" placeholder="Search servers..." class="input-field w-64" />
+        <input v-model="searchQuery" type="text" placeholder="Search servers..." class="input-field w-full sm:w-64" />
       </div>
     </div>
 

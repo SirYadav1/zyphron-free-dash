@@ -61,6 +61,12 @@ export class AfkService {
     if (user.is_banned)
       throw new HttpException('Account is banned', HttpStatus.FORBIDDEN);
 
+    // check if AFK earning is enabled
+    const afkEnabledSetting = await this.settingRepo.findOne({ where: { key: 'afk_enabled' } });
+    if (afkEnabledSetting && afkEnabledSetting.value === 'false') {
+      throw new HttpException('AFK earning is currently disabled by administrator', HttpStatus.FORBIDDEN);
+    }
+
     const existingSession = await this.afkSessionRepo.findOne({
       where: { user_id: userId, is_active: 1 },
     });

@@ -56,7 +56,7 @@
               <p class="text-xs text-text-muted">{{ plan.description }}</p>
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <div class="p-2 bg-base/50 rounded-lg text-center border border-border">
                 <p class="text-[9px] font-bold text-text-muted uppercase mb-0.5">RAM</p>
                 <p class="text-xs font-bold text-text-primary">{{ plan.ram }} MB</p>

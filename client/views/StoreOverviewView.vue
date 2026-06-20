@@ -42,7 +42,7 @@
           </span>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
           <div class="bg-base/50 rounded-lg py-3 text-center border border-border">
             <p class="text-label mb-1">RAM</p>
             <p class="text-sm font-bold text-blue-400">{{ server.ramMb }}MB</p>

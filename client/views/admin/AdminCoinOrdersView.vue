@@ -15,7 +15,7 @@
     <!-- Status Filter -->
     <div class="flex items-center gap-3">
       <label class="text-label text-xs">Filter:</label>
-      <select v-model="filterStatus" class="input-field w-48 text-xs py-1.5">
+      <select v-model="filterStatus" class="input-field w-full sm:w-48 text-xs py-1.5">
         <option :value="null">All Orders</option>
         <option value="pending">Pending Payment</option>
         <option value="awaiting_screenshot">Awaiting Review</option>

@@ -51,6 +51,7 @@
                       <p class="text-[11px] text-text-muted font-medium">
                         {{ item.current }} {{ item.unit }} <span class="opacity-30">→</span> 
                         <span class="text-text-primary font-bold">{{ item.current + item.amount }}</span> {{ item.unit }}
+                        <span class="text-[10px] text-text-muted opacity-50">/ {{ item.max }} max</span>
                       </p>
                     </div>
                   </div>
@@ -72,15 +73,16 @@
                     </div>
                     <button
                       @click="increment(item)"
-                      class="w-8 h-8 rounded-md bg-white/5 text-text-muted hover:text-text-primary hover:bg-white/10 transition-all font-bold"
+                      :disabled="item.current + item.amount >= item.max"
+                      class="w-8 h-8 rounded-md bg-white/5 text-text-muted hover:text-text-primary hover:bg-white/10 disabled:opacity-20 transition-all font-bold"
                     >+</button>
                   </div>
                   <button
                     @click="handleUpgrade(item)"
-                    :disabled="store.loading || item.amount <= 0 || store.userCoins < item.amount * item.costPerUnit"
+                    :disabled="store.loading || item.amount <= 0 || store.userCoins < item.amount * item.costPerUnit || item.current + item.amount > item.max"
                     class="btn-primary px-6 h-10"
                   >
-                    Upgrade
+                    {{ item.current + item.amount > item.max ? 'Limit Reached' : 'Upgrade' }}
                   </button>
                 </div>
               </div>
@@ -90,7 +92,7 @@
           <!-- Active Allocation -->
           <div class="card-surface p-8 space-y-6">
             <h3 class="text-label">Active Allocation</h3>
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div class="p-5 bg-base/50 rounded-xl text-center space-y-1 border border-border">
                 <p class="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-40">Memory</p>
                 <p class="text-base font-bold text-text-primary tabular-nums">{{ store.server.ram.current }} MB</p>
@@ -183,6 +185,7 @@ const upgradeItems = reactive([
     costPerUnit: 2,
     amount: 0,
     current: 0,
+    max: 16384,
     iconBg: 'border-blue-500/10 bg-blue-500/5',
   },
   {
@@ -192,6 +195,7 @@ const upgradeItems = reactive([
     costPerUnit: 5,
     amount: 0,
     current: 0,
+    max: 400,
     iconBg: 'border-amber-500/10 bg-amber-500/5',
   },
   {
@@ -201,6 +205,7 @@ const upgradeItems = reactive([
     costPerUnit: 1,
     amount: 0,
     current: 0,
+    max: 51200,
     iconBg: 'border-purple-500/10 bg-purple-500/5',
   },
 ])
@@ -221,13 +226,18 @@ onMounted(async () => {
   }
   if (store.server) {
     upgradeItems[0].current = store.server.ram.current
+    upgradeItems[0].max = store.server.ram.max || 16384
     upgradeItems[1].current = store.server.cpu.current
+    upgradeItems[1].max = store.server.cpu.max || 400
     upgradeItems[2].current = store.server.disk.current
+    upgradeItems[2].max = store.server.disk.max || 51200
   }
 })
 
 function increment(item) {
   const step = item.key === 'cpu' ? 5 : 128
+  const newValue = item.current + item.amount + step
+  if (newValue > item.max) return
   item.amount += step
 }
 

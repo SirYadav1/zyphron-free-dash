@@ -89,6 +89,16 @@ export class AuthService {
     return !!hasRole?.[0];
   }
 
+  private async isMaintenanceMode(): Promise<boolean> {
+    const setting = await this.settingRepo.findOne({ where: { key: 'maintenance_mode' } });
+    return setting?.value === 'true';
+  }
+
+  async checkMaintenanceMode(): Promise<{ enabled: boolean }> {
+    const enabled = await this.isMaintenanceMode();
+    return { enabled };
+  }
+
   async register(dto: RegisterDto, ipAddress?: string) {
     const existingEmail = await this.userRepo.findOne({
       where: { email: dto.email },
@@ -261,6 +271,15 @@ export class AuthService {
       throw new UnauthorizedException('Your account has been banned');
     }
 
+    // check maintenance mode - admins can still login
+    const inMaintenance = await this.isMaintenanceMode();
+    if (inMaintenance) {
+      const userIsAdmin = await this.isUserAdmin(user.id, user.is_admin);
+      if (!userIsAdmin) {
+        throw new UnauthorizedException('System is under maintenance. Please try again later.');
+      }
+    }
+
     // check if email verification is required
     if (!user.email_verified) {
       return {
@@ -366,6 +385,15 @@ export class AuthService {
 
     if (user.is_banned) {
       throw new UnauthorizedException('Your account has been banned');
+    }
+
+    // check maintenance mode - admins can still login
+    const inMaintenance2FA = await this.isMaintenanceMode();
+    if (inMaintenance2FA) {
+      const userIsAdmin2FA = await this.isUserAdmin(user.id, user.is_admin);
+      if (!userIsAdmin2FA) {
+        throw new UnauthorizedException('System is under maintenance. Please try again later.');
+      }
     }
 
     // check if email verification is required
