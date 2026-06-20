@@ -54,6 +54,87 @@
       </div>
     </div>
 
+    <!-- Default Server Node Section -->
+    <div class="card-surface p-6 space-y-6 border border-accent/10 relative overflow-hidden">
+      <div class="absolute inset-0 bg-orange-500/[0.02] pointer-events-none"></div>
+      <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+          <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
+            <Server :size="18" :stroke-width="2" class="text-orange-400" /> Default Server Node
+          </h3>
+          <p class="text-sm text-text-muted">Choose which Pterodactyl node will be used for all new server deployments.</p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button 
+            @click="loadNodes" 
+            :disabled="loadingNodes"
+            class="px-4 py-2 text-xs font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-colors disabled:opacity-40"
+          >
+            {{ loadingNodes ? 'Loading...' : 'Refresh Nodes' }}
+          </button>
+          <button 
+            @click="saveDefaultNode" 
+            :disabled="savingNode || !selectedNodeId"
+            class="btn-primary px-6 py-2 text-xs"
+          >
+            {{ savingNode ? 'Saving...' : 'Save Node' }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="loadingNodes" class="flex items-center gap-3 py-4">
+        <div class="loading-spinner" style="width:20px;height:20px;border-width:2px;"></div>
+        <p class="text-sm text-text-muted">Fetching available nodes from Pterodactyl...</p>
+      </div>
+
+      <div v-else-if="nodes.length === 0" class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 text-sm">
+        <div class="flex items-center gap-2 text-yellow-400 mb-2">
+          <AlertTriangle :size="16" :stroke-width="2" />
+          <span class="font-bold">No Nodes Available</span>
+        </div>
+        <p class="text-text-muted">Configure your Pterodactyl API connection below first, then click "Refresh Nodes".</p>
+      </div>
+
+      <div v-else class="space-y-4">
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Select Default Node</label>
+          <select v-model="selectedNodeId" class="input-field py-2">
+            <option :value="null" disabled>Choose a node...</option>
+            <option v-for="node in nodes" :key="node.id" :value="node.id">
+              {{ node.name }} — {{ node.fqdn }} (RAM: {{ formatRam(node.ram) }}, Disk: {{ formatDisk(node.disk) }})
+            </option>
+          </select>
+        </div>
+
+        <div v-if="selectedNode" class="bg-base/50 p-4 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <p class="text-[9px] font-bold text-text-muted uppercase mb-1">Node Name</p>
+            <p class="text-sm font-bold text-text-primary">{{ selectedNode.name }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-bold text-text-muted uppercase mb-1">Hostname</p>
+            <p class="text-sm font-bold text-text-primary">{{ selectedNode.fqdn }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-bold text-text-muted uppercase mb-1">RAM</p>
+            <p class="text-sm font-bold text-text-primary">{{ formatRam(selectedNode.ram) }}</p>
+          </div>
+          <div>
+            <p class="text-[9px] font-bold text-text-muted uppercase mb-1">Disk</p>
+            <p class="text-sm font-bold text-text-primary">{{ formatDisk(selectedNode.disk) }}</p>
+          </div>
+        </div>
+
+        <div v-if="nodeSuccess" class="p-3 bg-green-500/10 border border-green-500/20 rounded-md text-xs font-bold text-green-500 flex items-center gap-2">
+          <CheckCircle :size="14" :stroke-width="2.5" /> {{ nodeSuccess }}
+        </div>
+        <div v-if="nodeError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2">
+          <AlertTriangle :size="14" :stroke-width="2.5" /> {{ nodeError }}
+        </div>
+      </div>
+    </div>
+
     <!-- Default Blueprint Config Section -->
     <div class="card-surface p-6 space-y-6 border border-accent/10 relative overflow-hidden">
       <div class="absolute inset-0 bg-blue-500/[0.02] pointer-events-none"></div>
@@ -360,7 +441,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
-import { AlertTriangle, CheckCircle, Zap, Check, X } from 'lucide-vue-next'
+import { AlertTriangle, CheckCircle, Zap, Check, X, Server } from 'lucide-vue-next'
 
 const store = useAdminStore()
 const editingKey = ref(null)
@@ -379,6 +460,13 @@ const savingLoginImage = ref(false)
 const savingFavicon = ref(false)
 const loginImageError = ref(false)
 const faviconError = ref(false)
+
+const loadingNodes = ref(false)
+const savingNode = ref(false)
+const nodes = ref([])
+const selectedNodeId = ref(null)
+const nodeSuccess = ref('')
+const nodeError = ref('')
 
 const savingBlueprint = ref(false)
 const blueprint = ref({
@@ -426,6 +514,53 @@ const currentEgg = computed(() => {
   return currentEggs.value.find(e => e.id === blueprint.value.egg_id)
 })
 
+const selectedNode = computed(() => {
+  if (!selectedNodeId.value || !nodes.value.length) return null
+  return nodes.value.find(n => n.id === selectedNodeId.value)
+})
+
+function formatRam(mb) {
+  if (mb >= 1024) return (mb / 1024).toFixed(0) + ' GB'
+  return mb + ' MB'
+}
+
+function formatDisk(mb) {
+  if (mb >= 1024) return (mb / 1024).toFixed(0) + ' GB'
+  return mb + ' MB'
+}
+
+async function loadNodes() {
+  loadingNodes.value = true
+  nodeError.value = ''
+  nodeSuccess.value = ''
+  try {
+    const res = await store.fetchPterodactylNodes()
+    nodes.value = res || []
+    if (nodes.value.length === 0) {
+      nodeError.value = 'No nodes found. Check your Pterodactyl API connection.'
+    }
+  } catch (err) {
+    nodeError.value = err.response?.data?.message || 'Failed to load nodes from Pterodactyl'
+  } finally {
+    loadingNodes.value = false
+  }
+}
+
+async function saveDefaultNode() {
+  if (!selectedNodeId.value) return
+  savingNode.value = true
+  nodeError.value = ''
+  nodeSuccess.value = ''
+  try {
+    await store.updateSetting('default_node_id', selectedNodeId.value.toString())
+    nodeSuccess.value = `Default node updated to "${selectedNode.value?.name}" (ID: ${selectedNodeId.value})`
+  } catch (err) {
+    nodeError.value = err.response?.data?.message || 'Failed to save default node'
+  } finally {
+    savingNode.value = false
+  }
+}
+
 onMounted(async () => {
   await store.fetchSettings()
   if (store.settings['afk_coins_per_minute']) {
@@ -458,8 +593,23 @@ onMounted(async () => {
     faviconUrl.value = store.settings['favicon_url']
   }
 
-  // Load Pterodactyl configuration
+  // Load default node setting
+  if (store.settings['default_node_id']) {
+    selectedNodeId.value = parseInt(store.settings['default_node_id']) || null
+  }
+
+  // Load Pterodactyl configuration first
   await loadPterodactylConfig()
+
+  // Auto-load nodes if Pterodactyl is configured
+  if (pteroConfigured.value) {
+    await loadNodes()
+    // Pre-select current node if set
+    if (selectedNodeId.value && nodes.value.length > 0) {
+      const exists = nodes.value.find(n => n.id === selectedNodeId.value)
+      if (!exists) selectedNodeId.value = null
+    }
+  }
 })
 
 async function saveLoginImage() {
