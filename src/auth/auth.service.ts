@@ -95,8 +95,50 @@ export class AuthService {
     };
   }
 
+  /**
+   * Sync a dashboard user with Pterodactyl panel.
+   * If user already has pterodactyl_user_id, skip.
+   * If user exists on Pterodactyl (matched by email), link accounts.
+   * If not found on Pterodactyl, create a new account.
+   */
+  private async syncPterodactylAccount(user: any): Promise<void> {
+    if (user.pterodactyl_user_id) return; // Already linked
+
+    try {
+      // Step 1: Try to find existing Pterodactyl user by email
+      const existingPteroUser = await this.pterodactylService.getUserByEmail(user.email);
+      if (existingPteroUser) {
+        // Found on Pterodactyl — link accounts
+        const pteroId = existingPteroUser.attributes?.id || existingPteroUser.id;
+        await this.userRepo.update(user.id, {
+          pterodactyl_user_id: pteroId,
+          pterodactyl_username: existingPteroUser.attributes?.username || user.username,
+        });
+        this.logger.log(`Linked existing Pterodactyl user ${pteroId} to dashboard user ${user.id} (email match)`);
+        return;
+      }
+
+      // Step 2: Not found — create new Pterodactyl account
+      const pteroUser = await this.pterodactylService.createUser({
+        username: user.username,
+        email: user.email,
+        password: crypto.randomBytes(16).toString('hex'), // Random password — user won't login to panel directly
+      });
+      const pteroId = pteroUser?.attributes?.id || pteroUser?.id;
+      if (pteroId) {
+        await this.userRepo.update(user.id, {
+          pterodactyl_user_id: pteroId,
+          pterodactyl_username: user.username,
+        });
+        this.logger.log(`Created new Pterodactyl user ${pteroId} for dashboard user ${user.id}`);
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to sync Pterodactyl account for user ${user.id}: ${err.message}`);
+    }
+  }
+
   async login(dto: LoginDto) {
-    const user = await this.userRepo.findOne({ where: { email: dto.email } });
+    let user = await this.userRepo.findOne({ where: { email: dto.email } });
     if (!user || !user.password_hash) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -111,6 +153,14 @@ export class AuthService {
 
     if (user.is_banned) {
       throw new UnauthorizedException('Your account has been banned');
+    }
+
+    // Auto-sync Pterodactyl account if not linked yet
+    if (!user.pterodactyl_user_id) {
+      await this.syncPterodactylAccount(user);
+      // Re-fetch user to get updated pterodactyl_user_id
+      const refreshed = await this.userRepo.findOne({ where: { email: dto.email } });
+      if (refreshed) user = refreshed;
     }
 
     // Update last_active timestamp
