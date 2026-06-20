@@ -68,6 +68,12 @@ export class User {
   @Column({ type: 'integer', default: 0 })
   email_verified: number;
 
+  @Column({ type: 'text', nullable: true })
+  verification_token: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  verification_expiry: string | null;
+
   @CreateDateColumn({ type: 'text' })
   created_at: string;
 

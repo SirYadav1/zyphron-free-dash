@@ -243,12 +243,12 @@
         <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <button
             v-for="egg in eggs"
-            :key="egg.id"
+            :key="egg.attributes?.id || egg.id"
             type="button"
             @click="selectedEgg = egg"
             :class="[
               'card-surface p-5 text-left transition-all duration-200',
-              selectedEgg?.id === egg.id ? 'border-accent/50 bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:border-accent/30'
+              selectedEgg?.attributes?.id === (egg.attributes?.id || egg.id) ? 'border-accent/50 bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:border-accent/30'
             ]"
           >
             <div class="flex items-start justify-between">
@@ -256,7 +256,7 @@
                 <p class="text-sm font-bold text-text-primary">{{ egg.attributes?.name || 'Egg #' + egg.id }}</p>
                 <p v-if="egg.attributes?.description" class="text-xs text-text-muted mt-1 line-clamp-2">{{ egg.attributes.description }}</p>
               </div>
-              <div v-if="selectedEgg?.id === egg.id" class="w-5 h-5 rounded-full bg-accent flex items-center justify-center shrink-0 ml-3">
+              <div v-if="selectedEgg?.attributes?.id === (egg.attributes?.id || egg.id)" class="w-5 h-5 rounded-full bg-accent flex items-center justify-center shrink-0 ml-3">
                 <Check :size="12" :stroke-width="3" class="text-white" />
               </div>
             </div>
@@ -495,7 +495,7 @@ async function deployServer() {
   error.value = ''
   try {
     await serversStore.createServer(serverName.value, selectedPlan.value.id, {
-      eggId: selectedEgg.value.id,
+      eggId: selectedEgg.value.attributes?.id || selectedEgg.value.id,
       nestId: selectedPlan.value.nest_id
     })
     await authStore.fetchProfile()

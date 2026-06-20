@@ -244,9 +244,10 @@ export class ServersService {
       if (product.disabled) throw new BadRequestException('This product is currently unavailable');
       const productNestId = product.nest_id;
       const productEggId = product.egg_id;
-      if (!productNestId || !productEggId) {
+      if (!productNestId) {
         throw new BadRequestException('Product is not properly configured. Please contact support.');
       }
+      // egg_id can be null (neutral egg — user will choose)
 
       ramMb = product.ram || 2048;
       cpuPercent = product.cpu || 100;
@@ -255,7 +256,12 @@ export class ServersService {
       durationDays = product.duration_days || 7;
       productDisplay = product.name || `Product #${product.id}`;
       nestId = overrideNestId || productNestId;
-      eggId = overrideEggId || productEggId;
+      const resolvedEggId = overrideEggId || productEggId;
+      // Validate egg is resolved (neutral egg requires user selection)
+      if (!resolvedEggId) {
+        throw new BadRequestException('Please select a software option for your server.');
+      }
+      eggId = resolvedEggId!;
     } else {
       // Fallback to blueprint from settings (backward compatibility)
       const blueprint = await this.getBlueprint();
