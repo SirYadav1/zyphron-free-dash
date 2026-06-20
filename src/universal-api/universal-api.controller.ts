@@ -9,7 +9,7 @@ import {
   Req,
   HttpCode,
 } from '@nestjs/common';
-import { ApiKeyGuard } from '../common/guards/api-key.guard';
+import { ApiKeyGuard, RequirePermission } from '../common/guards/api-key.guard';
 import { DataSource } from 'typeorm';
 
 @Controller('v1')
@@ -17,7 +17,7 @@ import { DataSource } from 'typeorm';
 export class UniversalApiController {
   constructor(private readonly dataSource: DataSource) {}
 
-  // health & info
+  // health & info (no permission needed)
 
   @Get('health')
   async health() {
@@ -28,24 +28,16 @@ export class UniversalApiController {
     };
   }
 
-  @Get('info')
-  async info() {
-    const userCount = await this.dataSource.query(
-      'SELECT COUNT(*) as count FROM users',
-    );
-    const serverCount = await this.dataSource.query(
-      'SELECT COUNT(*) as count FROM servers',
-    );
-    return {
-      platform: 'Zyphron Free Dashboard',
-      users: userCount[0]?.count || 0,
-      servers: serverCount[0]?.count || 0,
-    };
+  @Get('permissions')
+  async getPermissions() {
+    const { PERMISSIONS } = require('../common/guards/api-key.guard');
+    return PERMISSIONS;
   }
 
   // user endpoints
 
   @Get('users/:id')
+  @RequirePermission('users', 'read')
   async getUser(@Param('id') id: string) {
     const user = await this.dataSource.query(
       'SELECT id, username, email, first_name, last_name, is_admin, coins, created_at FROM users WHERE id = ?',
@@ -58,6 +50,7 @@ export class UniversalApiController {
   }
 
   @Get('users')
+  @RequirePermission('users', 'read')
   async listUsers(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -99,6 +92,7 @@ export class UniversalApiController {
   // server endpoints
 
   @Get('servers/:id')
+  @RequirePermission('servers', 'read')
   async getServer(@Param('id') id: string) {
     const server = await this.dataSource.query(
       'SELECT id, server_name, ram_mb, cpu_percent, disk_mb, status, created_at FROM servers WHERE id = ?',
@@ -111,6 +105,7 @@ export class UniversalApiController {
   }
 
   @Get('servers')
+  @RequirePermission('servers', 'read')
   async listServers(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -150,6 +145,7 @@ export class UniversalApiController {
   // stats endpoints
 
   @Get('stats')
+  @RequirePermission('stats', 'read')
   async getStats() {
     const users = await this.dataSource.query(
       'SELECT COUNT(*) as count FROM users',
@@ -175,6 +171,7 @@ export class UniversalApiController {
   // ticket endpoints
 
   @Get('tickets/:id')
+  @RequirePermission('tickets', 'read')
   async getTicket(@Param('id') id: string) {
     const ticket = await this.dataSource.query(
       'SELECT id, subject, status, priority, user_id, created_at FROM tickets WHERE id = ?',
@@ -187,6 +184,7 @@ export class UniversalApiController {
   }
 
   @Get('tickets')
+  @RequirePermission('tickets', 'read')
   async listTickets(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -237,6 +235,7 @@ export class UniversalApiController {
   // coupon endpoints
 
   @Get('coupons')
+  @RequirePermission('coupons', 'read')
   async listCoupons(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -267,6 +266,7 @@ export class UniversalApiController {
   // product endpoints
 
   @Get('products')
+  @RequirePermission('products', 'read')
   async listProducts(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -306,6 +306,7 @@ export class UniversalApiController {
   // webhook endpoints
 
   @Post('webhooks/test')
+  @RequirePermission('webhooks', 'write')
   @HttpCode(200)
   async testWebhook(@Body() body: any) {
     return {

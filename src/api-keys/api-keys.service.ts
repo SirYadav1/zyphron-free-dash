@@ -23,7 +23,14 @@ export class ApiKeysService {
 
   async create(dto: Partial<ApplicationApi>): Promise<ApplicationApi> {
     const token = dto.token || randomBytes(32).toString('hex');
-    return this.apiRepo.save(this.apiRepo.create({ ...dto, token }));
+    const permissions = dto.permissions || '[]';
+    return this.apiRepo.save(
+      this.apiRepo.create({
+        ...dto,
+        token,
+        permissions: typeof permissions === 'string' ? permissions : JSON.stringify(permissions),
+      }),
+    );
   }
 
   async update(
@@ -31,7 +38,11 @@ export class ApiKeysService {
     dto: Partial<ApplicationApi>,
   ): Promise<ApplicationApi> {
     await this.findOne(id);
-    await this.apiRepo.update(id, dto);
+    const updateData: any = { ...dto };
+    if (updateData.permissions && Array.isArray(updateData.permissions)) {
+      updateData.permissions = JSON.stringify(updateData.permissions);
+    }
+    await this.apiRepo.update(id, updateData);
     return this.findOne(id);
   }
 
