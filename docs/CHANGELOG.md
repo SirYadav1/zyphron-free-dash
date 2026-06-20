@@ -7,6 +7,45 @@
 
 ---
 
+## [1.1.0] — 2026-06-20
+
+### 🚀 New Features
+- **Neutral Egg Option** — Admin can set egg as "Neutral — Let User Choose" when creating/editing services
+  - If admin selects specific egg → user sees "Pre-configured by admin" (locked)
+  - If admin keeps egg neutral → user sees all available eggs and picks one
+- **2FA QR Code Fix** — Fixed broken QR code generation (was using otpauth:// URL as img src, now converts to PNG via qrcode package)
+- **Admin Panel Mobile Responsive** — Added hamburger menu, mobile sidebar toggle, overlay for Android/phone users
+- **Pterodactyl Settings Persistence** — Panel type and API key status now load correctly on page refresh
+- **Discord OAuth Fix** — Updated to correct Discord application credentials (Client ID: 1513776167470108832)
+
+### 🎨 UI/UX Changes
+- **Modern Sidebar Redesign** — Gradient section dividers, glowing active indicator bar, icon containers with rounded backgrounds
+- **Earning Section Submenu** — Visual nesting with accent border, gradient background, indented items
+- **Service Card Banner Images** — Category cards now have large banner images with gradient fade overlay
+- **Sidebar Footer** — Gradient card design for coin balance display
+
+### 🐛 Bug Fixes
+- **Server Creation 404 Fix** — Frontend now sends eggId + nestId to backend (was missing, caused Pterodactyl 404)
+- **2FA Secret Key Display** — Shows manual entry key below QR code for users who can't scan
+- **Pterodactyl Config Loading** — loadPterodactylConfig() now loads panelType from API response
+- **API Key Persistence** — Empty apiKey no longer overwrites existing key on save
+
+### 📁 Files Changed
+- `client/views/ServicesView.vue` — Banner images, neutral egg support, deployServer fix
+- `client/views/TwoFactorView.vue` — QR code generation via qrcode package
+- `client/layouts/MainLayout.vue` — Sidebar redesign with modern styling
+- `client/views/admin/AdminLayout.vue` — Mobile responsive sidebar
+- `client/views/admin/AdminSettingsView.vue` — Pterodactyl config persistence
+- `client/views/admin/AdminProductCreateView.vue` — Neutral egg option
+- `client/views/admin/AdminProductEditView.vue` — Neutral egg option
+- `client/style.css` — Submenu CSS rules, scrollbar-thin styles
+- `src/pterodactyl/pterodactyl.service.ts` — apiKeyConfigured flag, optional apiKey
+- `src/admin/admin.service.ts` — getPterodactylConfig returns panelType
+- `src/admin/admin.controller.ts` — apiKey optional in DTO
+- `.env` — Updated Discord + Pterodactyl credentials
+
+---
+
 ## [1.0.0] — 2026-06-19 (Latest Push)
 
 ### 🚀 New Features

@@ -1,7 +1,7 @@
 # 🛡️ Zyphron Free Dashboard — Bug & Security Fix Report
 
-**Last Updated:** 2026-06-18
-**Total Fixes:** 39
+**Last Updated:** 2026-06-20
+**Total Fixes:** 51
 **Status:** ✅ Production Ready (with notes)
 
 ---
@@ -13,9 +13,9 @@
 | 🔴 Security Bugs Fixed | 10 | ✅ All Fixed |
 | 🟠 Critical Bugs Fixed | 8 | ✅ All Fixed |
 | 🟡 Feature Bugs Fixed | 12 | ✅ All Fixed |
-| 🔵 UI/UX Fixes | 6 | ✅ All Fixed |
-| ⚙️ Infrastructure Fixes | 3 | ✅ All Fixed |
-| **TOTAL** | **39** | ✅ |
+| 🔵 UI/UX Fixes | 12 | ✅ All Fixed |
+| ⚙️ Infrastructure Fixes | 5 | ✅ All Fixed |
+| **TOTAL** | **51** | ✅ |
 
 ---
 
@@ -361,6 +361,66 @@
 
 ### Config
 - `.env` — FRONTEND_URL, panel URL
+
+---
+
+## 🟡 NEW FIXES — 2026-06-20
+
+### 40. Server Creation 404 — Pterodactyl API Error
+- **Date:** 2026-06-20
+- **Issue:** Frontend `deployServer()` only sent `serverName` + `productId`, missing `eggId` and `nestId`. Pterodactyl returned 404 because it didn't know which egg to use.
+- **Fix:** Added `eggId` and `nestId` to the extraPayload in `serversStore.createServer()` call.
+- **File:** `client/views/ServicesView.vue` — `deployServer()` function
+- **Status:** ✅ Fixed
+
+### 41. 2FA QR Code Not Generating
+- **Date:** 2026-06-20
+- **Issue:** Frontend used raw `otpauth://` URL as `<img src>` — browsers can't render protocol URLs as images.
+- **Fix:** Added `qrcode` package import, converted `otpauthUrl` to PNG data URL via `QRCode.toDataURL()`. Also shows manual entry key below QR.
+- **File:** `client/views/TwoFactorView.vue`
+- **Status:** ✅ Fixed
+
+### 42. Admin Panel Not Mobile Responsive
+- **Date:** 2026-06-20
+- **Issue:** AdminLayout had fixed `w-64` sidebar with no hamburger menu, no mobile overlay, no responsive behavior. Broken on Android.
+- **Fix:** Added hamburger menu button, mobile sidebar toggle with translate-x, overlay, auto-close on nav click.
+- **File:** `client/views/admin/AdminLayout.vue`
+- **Status:** ✅ Fixed
+
+### 43. Pterodactyl Settings Disappear on Refresh
+- **Date:** 2026-06-20
+- **Issue:** `loadPterodactylConfig()` only loaded `panelUrl`, not `panelType`. API key appeared empty on refresh (security: not returned by backend). No "configured" indicator.
+- **Fix:** Backend returns `apiKeyConfigured` boolean + `panelType`. Frontend loads panelType, shows green "✓ Configured" indicator. API key only sent if non-empty.
+- **Files:** `src/pterodactyl/pterodactyl.service.ts`, `src/admin/admin.service.ts`, `src/admin/admin.controller.ts`, `client/views/admin/AdminSettingsView.vue`
+- **Status:** ✅ Fixed
+
+### 44. Discord OAuth "Invalid redirect_uri"
+- **Date:** 2026-06-20
+- **Issue:** `.env` had wrong Discord Client ID (`1501630988667588701`) while user was using different application (`1513776167470108832`). Mismatch caused redirect_uri rejection.
+- **Fix:** Updated all Discord credentials in `.env` to correct application.
+- **File:** `.env`
+- **Status:** ✅ Fixed
+
+### 45. Service Card Images Too Small
+- **Date:** 2026-06-20
+- **Issue:** Category cards had tiny `w-14 h-14` icon images. User wanted banner-style images filling the top half.
+- **Fix:** Redesigned cards with full-width banner images (h-44), gradient fade overlay, hover zoom effect.
+- **File:** `client/views/ServicesView.vue`
+- **Status:** ✅ Fixed
+
+### 46. Sidebar Menu Flat / No Visual Hierarchy
+- **Date:** 2026-06-20
+- **Issue:** All nav items looked identical. Earning section didn't look like a submenu.
+- **Fix:** Added gradient section dividers, glowing left accent bar on active items, icon containers, Earning section with gradient background card.
+- **Files:** `client/layouts/MainLayout.vue`, `client/style.css`
+- **Status:** ✅ Fixed
+
+### 47. Neutral Egg Option — Admin Service Configuration
+- **Date:** 2026-06-20
+- **Issue:** Admin had to select a specific egg for every service. No way to let users choose their own egg.
+- **Fix:** Added "Neutral — Let User Choose" option in admin egg dropdown. User ServicesView skips egg selection when plan has specific egg, shows egg picker when neutral.
+- **Files:** `client/views/admin/AdminProductCreateView.vue`, `client/views/admin/AdminProductEditView.vue`, `client/views/ServicesView.vue`
+- **Status:** ✅ Fixed
 
 ---
 
