@@ -9,5 +9,6 @@ import { ActivityLogsController } from './activity-logs.controller';
   imports: [TypeOrmModule.forFeature([ActivityLog, User])],
   controllers: [ActivityLogsController],
   providers: [ActivityLogsService],
+  exports: [ActivityLogsService],
 })
 export class ActivityLogsModule {}
