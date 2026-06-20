@@ -20,7 +20,7 @@
       <div
         v-for="server in filteredServers"
         :key="server.id"
-        class="bg-[#1e293b] border border-border rounded-xl border-l-4 transition-all hover:border-l-accent group overflow-hidden"
+        class="card-surface border-l-4 transition-all hover:border-l-accent group overflow-hidden"
         :class="statusBorderColor(server)"
       >
         <div class="p-5">

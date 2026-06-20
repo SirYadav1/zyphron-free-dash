@@ -50,6 +50,91 @@ body {
     radial-gradient(ellipse 50% 40% at 100% 0%, rgba(59, 130, 246, 0.06), transparent 50%),
     radial-gradient(ellipse 40% 30% at 0% 100%, rgba(37, 99, 235, 0.08), transparent 50%);
   background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent horizontal overflow globally */
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Ensure consistent font sizes */
+h1 { font-size: 1.875rem; line-height: 2.25rem; }
+h2 { font-size: 1.5rem; line-height: 2rem; }
+h3 { font-size: 1.25rem; line-height: 1.75rem; }
+h4 { font-size: 1.125rem; line-height: 1.5rem; }
+
+/* Consistent card padding */
+.card-surface {
+  padding: 1.5rem;
+}
+
+/* Consistent badge sizing */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Consistent error/success messages */
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 12px;
+  font-weight: 700;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Consistent loading spinner */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  gap: 1rem;
+}
+
+.loading-state .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(37, 99, 235, 0.15);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-state .loading-text {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
 }
 
 html.light body,
@@ -149,6 +234,7 @@ body.light-bg {
 
 .input-field {
   @apply w-full px-3 py-2.5 bg-base/80 border border-border rounded-lg text-text-primary placeholder-text-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all duration-200;
+  font-size: 13px;
 }
 
 .auth-shell {

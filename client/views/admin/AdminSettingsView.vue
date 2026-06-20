@@ -32,7 +32,7 @@
     <!-- ==================== GENERAL TAB ==================== -->
     <div v-if="activeTab === 'general'" class="space-y-6">
       <!-- AFK Earning Rates -->
-      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+      <div class="card-surface p-6 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
@@ -44,7 +44,7 @@
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 bg-[#0f172a]/50 px-3 py-1.5 rounded-lg border border-border">
+            <div class="flex items-center gap-2 bg-surface/50 px-3 py-1.5 rounded-lg border border-border">
               <input v-model="afkCoins" type="number" class="w-14 bg-transparent text-accent font-bold text-center text-sm border-none focus:ring-0 p-0" />
               <span class="text-[10px] text-text-muted font-bold">CR /</span>
               <input v-model="afkInterval" type="number" class="w-10 bg-transparent text-text-primary font-bold text-center text-sm border-none focus:ring-0 p-0" />
@@ -55,13 +55,13 @@
             </button>
           </div>
         </div>
-        <p class="text-[11px] text-text-muted bg-[#0f172a]/50 px-3 py-2 rounded-lg border border-border">
+        <p class="text-[11px] text-text-muted bg-surface/50 px-3 py-2 rounded-lg border border-border">
           Users earn <span class="text-accent font-bold">{{ afkCoins || 0 }} CR</span> every <span class="text-text-primary font-bold">{{ afkInterval || 0 }} min</span> of active focus.
         </p>
       </div>
 
       <!-- Message of the Day -->
-      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+      <div class="card-surface p-6 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
@@ -90,7 +90,7 @@
       </div>
 
       <!-- Branding -->
-      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+      <div class="card-surface p-6 space-y-4">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
             <Layers :size="16" class="text-purple-400" />
@@ -134,7 +134,7 @@
     <!-- ==================== PTERODACTYL TAB ==================== -->
     <div v-if="activeTab === 'pterodactyl'" class="space-y-6">
       <!-- Panel API Configuration -->
-      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+      <div class="card-surface p-6 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -174,7 +174,7 @@
           <label class="text-[10px] font-bold text-text-muted uppercase">API Key</label>
           <!-- Show masked key when configured and not editing -->
           <div v-if="pteroApiKeyConfigured && !pteroConfig.apiKey && !editingApiKey" class="flex items-center gap-3">
-            <div class="flex-1 flex items-center gap-2 bg-[#0f172a]/50 px-3 py-2 rounded-lg border border-border">
+            <div class="flex-1 flex items-center gap-2 bg-surface/50 px-3 py-2 rounded-lg border border-border">
               <Lock :size="14" class="text-accent" />
               <span class="text-xs font-mono text-text-primary">{{ maskedApiKey }}</span>
               <span class="flex items-center gap-1 text-emerald-400 text-[10px] font-bold">
@@ -206,7 +206,7 @@
         </div>
 
         <!-- Show panel URL that's configured -->
-        <div v-if="pteroConfigured && pteroConfig.panelUrl" class="flex items-center gap-2 bg-[#0f172a]/50 px-3 py-2 rounded-lg border border-border">
+        <div v-if="pteroConfigured && pteroConfig.panelUrl" class="flex items-center gap-2 bg-surface/50 px-3 py-2 rounded-lg border border-border">
           <Globe :size="14" class="text-accent" />
           <span class="text-[10px] text-text-muted font-bold">Configured Panel:</span>
           <a :href="pteroConfig.panelUrl" target="_blank" class="text-xs text-accent hover:text-white font-bold transition-colors">{{ pteroConfig.panelUrl }}</a>
@@ -224,7 +224,7 @@
       </div>
 
       <!-- Default Server Node -->
-      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+      <div class="card-surface p-6 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
@@ -262,7 +262,7 @@
             </option>
           </select>
 
-          <div v-if="selectedNode" class="bg-[#0f172a]/50 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div v-if="selectedNode" class="bg-surface/50 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Node</p><p class="text-text-primary font-bold">{{ selectedNode.name || 'Node #' + selectedNode.id }}</p></div>
             <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Host</p><p class="text-text-primary font-bold">{{ selectedNode.fqdn || '—' }}</p></div>
             <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">RAM</p><p class="text-text-primary font-bold">{{ formatRam(selectedNode.memory || selectedNode.ram) }}</p></div>
@@ -279,7 +279,7 @@
     <div v-if="activeTab === 'email'" class="space-y-6">
       <!-- SMTP Configuration -->
       <div class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
-        <div class="px-5 py-4 border-b border-border bg-[#0f172a]/50">
+        <div class="px-5 py-4 border-b border-border bg-surface/50">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
@@ -454,7 +454,7 @@
     <!-- ==================== SERVER DEFAULTS TAB ==================== -->
     <div v-if="activeTab === 'server'" class="space-y-6">
       <!-- Default Allocation Settings -->
-      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+      <div class="card-surface p-6 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
@@ -533,7 +533,7 @@
 
     <!-- ==================== SECURITY TAB ==================== -->
     <div v-if="activeTab === 'security'" class="space-y-6">
-      <div class="bg-[#1e293b] border border-border rounded-xl p-5 space-y-4">
+      <div class="card-surface p-6 space-y-4">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
             <Shield :size="16" class="text-red-400" />

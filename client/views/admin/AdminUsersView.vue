@@ -29,7 +29,7 @@
     </div>
 
     <!-- Users Table -->
-    <div v-if="paginatedUsers.length > 0" class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
+    <div v-if="paginatedUsers.length > 0" class="card-surface overflow-hidden">
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b border-border bg-[#0f172a]">
@@ -168,7 +168,7 @@
     </div>
 
     <!-- Empty state -->
-    <div v-if="filteredUsers.length === 0 && !store.loading" class="bg-[#1e293b] border border-border rounded-xl py-16 text-center">
+    <div v-if="filteredUsers.length === 0 && !store.loading" class="card-surface py-16 text-center">
       <p class="text-text-muted text-lg font-bold mb-1">No Users Found</p>
       <p class="text-sm text-text-muted/60">No users match your search.</p>
     </div>
@@ -181,7 +181,7 @@
     <!-- Edit User Modal -->
     <Teleport to="body">
       <div v-if="showEditModal && editUser" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] pt-[8vh] px-4" @click.self="showEditModal = false">
-        <div class="bg-[#1e293b] border border-border rounded-xl w-full max-w-md shadow-2xl">
+        <div class="card-surface w-full max-w-md shadow-2xl">
           <div class="px-5 py-4 border-b border-border flex items-center justify-between">
             <div>
               <h3 class="text-lg font-bold text-text-primary">Edit {{ editUser.username }}</h3>
@@ -247,7 +247,7 @@
     <!-- Roles Modal -->
     <Teleport to="body">
       <div v-if="showRolesModal && rolesUser" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] pt-[8vh] px-4" @click.self="showRolesModal = false">
-        <div class="bg-[#1e293b] border border-border rounded-xl w-full max-w-md shadow-2xl">
+        <div class="card-surface w-full max-w-md shadow-2xl">
           <div class="px-5 py-4 border-b border-border flex items-center justify-between">
             <div>
               <h3 class="text-lg font-bold text-text-primary">Roles — {{ rolesUser.username }}</h3>
