@@ -84,3 +84,43 @@ Frontend compared `selectedEgg?.id === egg.id` — both were `undefined` (since 
 ## 📸 Evidence
 - Screenshot showing all eggs selected: `/root/.hermes/image_cache/img_6ed9a7a5352a.jpg`
 - Screenshot showing "Product not properly configured" error: same image (top banner)
+
+---
+
+### BUG-003: "Pterodactyl API error: Not Found" on server deploy
+**Reporter:** User  
+**Severity:** Critical  
+**Status:** ✅ Fixed
+
+**Description:**  
+When deploying a server, the Pterodactyl API returned 404:
+```
+Failed to provision server: Pterodactyl API error: Not Found
+```
+
+**Root Cause:**  
+Two issues:
+1. **API key had trailing space** — stored value was `ptla_...CHw7Ki ` (with space), causing 401 Unauthorized on some requests
+2. **`default_node_id=6` but only 5 nodes exist** — Node 6 doesn't exist on the panel, so allocation fetch failed with 404
+
+**Fix:**  
+- Trimmed API key: removed trailing space from `pterodactyl_api_key` in settings table
+- Changed `default_node_id` from `6` to `1` (existing node "slime")
+- Verified: 71 allocations on node 1, 64 free
+
+**Files:**  
+- Database: `zyphron.db` settings table
+
+---
+
+## Updated Test Results
+
+| Scenario | Expected | Status |
+|----------|----------|--------|
+| Product with neutral egg (egg_id=null) | Shows egg selection, deploys successfully | ✅ |
+| Product with specific egg | Auto-selects egg, skips selection step | ✅ |
+| Egg selection — click one egg | Only that egg highlighted, others unselected | ✅ |
+| Deploy without selecting egg | Error: "Please select a software option" | ✅ |
+| Deploy with selected egg | Server created successfully | ✅ |
+| API key authentication | Works without trailing space | ✅ |
+| Node ID exists on panel | Node 1 (slime) exists with allocations | ✅ |
