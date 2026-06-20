@@ -23,9 +23,21 @@
           <h2 class="text-2xl font-bold text-text-primary tracking-tight">Server Settings</h2>
           <p class="text-sm text-text-muted">Configuring <span class="text-text-primary font-bold">{{ server.serverName }}</span></p>
         </div>
-        <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-base border border-border">
-          <div :class="statusColor(server.status)" class="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]"></div>
-          <span :class="statusText(server.status)" class="text-[10px] font-bold uppercase tracking-wider">{{ server.status }}</span>
+        <div class="flex items-center gap-3">
+          <a
+            v-if="server.identifier && pteroUrl"
+            :href="`${pteroUrl}/server/${server.identifier}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-secondary inline-flex items-center gap-2 text-sm"
+          >
+            <ExternalLink :size="14" :stroke-width="2" />
+            Open Console
+          </a>
+          <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-base border border-border">
+            <div :class="statusColor(server.status)" class="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]"></div>
+            <span :class="statusText(server.status)" class="text-[10px] font-bold uppercase tracking-wider">{{ server.status }}</span>
+          </div>
         </div>
       </div>
 
@@ -38,20 +50,15 @@
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-1 border-b border-border">
+      <div class="flex gap-1 border-b border-border overflow-x-auto">
         <button
-          @click="activeTab = 'general'"
-          :class="activeTab === 'general' ? 'border-accent text-text-primary' : 'border-transparent text-text-muted hover:text-text-primary'"
-          class="px-6 py-3 text-sm font-bold border-b-2 transition-colors"
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          :class="activeTab === tab.id ? (tab.id === 'danger' ? 'border-red-500 text-red-400' : 'border-accent text-text-primary') : 'border-transparent text-text-muted hover:text-text-primary'"
+          class="px-5 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
         >
-          General
-        </button>
-        <button
-          @click="activeTab = 'danger'"
-          :class="activeTab === 'danger' ? 'border-red-500 text-red-400' : 'border-transparent text-text-muted hover:text-text-primary'"
-          class="px-6 py-3 text-sm font-bold border-b-2 transition-colors"
-        >
-          Danger Zone
+          {{ tab.label }}
         </button>
       </div>
 
@@ -112,6 +119,150 @@
         </div>
       </div>
 
+      <!-- Upgrade Tab -->
+      <div v-if="activeTab === 'upgrade'" class="space-y-6">
+        <!-- Balance Card -->
+        <div class="card-surface p-6 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+            <Coins :size="24" class="text-yellow-500" />
+          </div>
+          <div>
+            <p class="text-sm text-text-muted">Your Balance</p>
+            <p class="text-2xl font-bold text-yellow-500">{{ authStore.user?.coins || 0 }} coins</p>
+          </div>
+        </div>
+
+        <!-- RAM Upgrade -->
+        <div class="card-surface p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <MemoryStick :size="18" class="text-amber-400" />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-text-primary">Memory (RAM)</p>
+                <p class="text-xs text-text-muted">Current: {{ server.ramMb }} MB</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-text-muted">{{ upgradeCosts.ram }} coins per 128 MB</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex-1 relative">
+              <input
+                v-model.number="upgradeAmounts.ram"
+                type="number"
+                min="128"
+                step="128"
+                :max="4096"
+                class="input-field pr-16"
+                placeholder="128"
+              />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">MB</span>
+            </div>
+            <button
+              @click="handleUpgrade('ram')"
+              :disabled="upgrading || !upgradeAmounts.ram || upgradeAmounts.ram < 128 || (upgradeCosts.ram * Math.ceil(upgradeAmounts.ram / 128)) > (authStore.user?.coins || 0)"
+              class="btn-primary px-6 py-2.5 text-sm"
+            >
+              {{ upgrading === 'ram' ? 'Upgrading...' : `Upgrade (${upgradeCosts.ram * Math.ceil(upgradeAmounts.ram / 128)} coins)` }}
+            </button>
+          </div>
+        </div>
+
+        <!-- CPU Upgrade -->
+        <div class="card-surface p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Cpu :size="18" class="text-blue-400" />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-text-primary">CPU Power</p>
+                <p class="text-xs text-text-muted">Current: {{ server.cpuPercent }}%</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-text-muted">{{ upgradeCosts.cpu }} coins per 10%</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex-1 relative">
+              <input
+                v-model.number="upgradeAmounts.cpu"
+                type="number"
+                min="10"
+                step="10"
+                :max="500"
+                class="input-field pr-16"
+                placeholder="10"
+              />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">%</span>
+            </div>
+            <button
+              @click="handleUpgrade('cpu')"
+              :disabled="upgrading || !upgradeAmounts.cpu || upgradeAmounts.cpu < 10 || (upgradeCosts.cpu * Math.ceil(upgradeAmounts.cpu / 10)) > (authStore.user?.coins || 0)"
+              class="btn-primary px-6 py-2.5 text-sm"
+            >
+              {{ upgrading === 'cpu' ? 'Upgrading...' : `Upgrade (${upgradeCosts.cpu * Math.ceil(upgradeAmounts.cpu / 10)} coins)` }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Disk Upgrade -->
+        <div class="card-surface p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <HardDrive :size="18" class="text-purple-400" />
+              </div>
+              <div>
+                <p class="text-sm font-bold text-text-primary">Disk Space</p>
+                <p class="text-xs text-text-muted">Current: {{ server.diskMb }} MB</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-text-muted">{{ upgradeCosts.disk }} coins per 512 MB</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex-1 relative">
+              <input
+                v-model.number="upgradeAmounts.disk"
+                type="number"
+                min="512"
+                step="512"
+                :max="10240"
+                class="input-field pr-16"
+                placeholder="512"
+              />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">MB</span>
+            </div>
+            <button
+              @click="handleUpgrade('disk')"
+              :disabled="upgrading || !upgradeAmounts.disk || upgradeAmounts.disk < 512 || (upgradeCosts.disk * Math.ceil(upgradeAmounts.disk / 512)) > (authStore.user?.coins || 0)"
+              class="btn-primary px-6 py-2.5 text-sm"
+            >
+              {{ upgrading === 'disk' ? 'Upgrading...' : `Upgrade (${upgradeCosts.disk * Math.ceil(upgradeAmounts.disk / 512)} coins)` }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Upgrade Info -->
+        <div class="card-surface p-4 border-accent/20 bg-accent/5">
+          <div class="flex items-start gap-3">
+            <Info :size="16" class="text-accent mt-0.5 flex-shrink-0" />
+            <div class="text-xs text-text-muted space-y-1">
+              <p class="font-bold text-text-primary">How upgrades work</p>
+              <p>• Upgrades are instant and apply immediately to your server.</p>
+              <p>• Coins are deducted from your balance before the upgrade.</p>
+              <p>• Upgraded resources cannot be downgraded — contact support if needed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Danger Zone Tab -->
       <div v-if="activeTab === 'danger'" class="card-surface p-8 space-y-6 border-red-500/20 bg-red-500/[0.02]">
         <div class="flex items-center gap-3">
@@ -145,10 +296,15 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
+import {
+  ExternalLink, MemoryStick, Cpu, HardDrive, Coins, Info,
+} from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const serverId = computed(() => route.params.id)
 const server = ref(null)
@@ -159,9 +315,29 @@ const updateError = ref('')
 const successMsg = ref('')
 const activeTab = ref('general')
 const deleting = ref(false)
+const upgrading = ref(null)
+const pteroUrl = ref('')
+
+const tabs = [
+  { id: 'general', label: 'General' },
+  { id: 'upgrade', label: 'Upgrade' },
+  { id: 'danger', label: 'Danger Zone' },
+]
 
 const form = reactive({
   name: '',
+})
+
+const upgradeAmounts = reactive({
+  ram: 128,
+  cpu: 10,
+  disk: 512,
+})
+
+const upgradeCosts = reactive({
+  ram: 2,
+  cpu: 5,
+  disk: 1,
 })
 
 onMounted(async () => {
@@ -173,6 +349,17 @@ onMounted(async () => {
     error.value = err.response?.data?.message || 'Failed to load server'
   } finally {
     loading.value = false
+  }
+
+  // Load panel URL
+  try {
+    const { data } = await client.get('/servers/stats')
+    if (data.panelUrl) pteroUrl.value = data.panelUrl
+  } catch {
+    try {
+      const { data } = await client.get('/admin/settings')
+      if (data.pterodactyl_panel_url) pteroUrl.value = data.pterodactyl_panel_url
+    } catch {}
   }
 })
 
@@ -189,6 +376,29 @@ async function handleUpdate() {
     updateError.value = err.response?.data?.message || 'Failed to update server'
   } finally {
     saving.value = false
+  }
+}
+
+async function handleUpgrade(type) {
+  const amount = upgradeAmounts[type]
+  if (!amount || amount <= 0) return
+  
+  upgrading.value = type
+  updateError.value = ''
+  successMsg.value = ''
+  
+  try {
+    await client.post(`/store/${serverId.value}/upgrade`, { type, amount })
+    // Refresh server data
+    const { data } = await client.get(`/servers/${serverId.value}`)
+    server.value = data
+    await authStore.fetchProfile()
+    successMsg.value = `${type.toUpperCase()} upgraded successfully by ${amount} ${type === 'cpu' ? '%' : 'MB'}!`
+    upgradeAmounts[type] = type === 'ram' ? 128 : type === 'cpu' ? 10 : 512
+  } catch (err) {
+    updateError.value = err.response?.data?.message || 'Failed to upgrade server'
+  } finally {
+    upgrading.value = null
   }
 }
 
