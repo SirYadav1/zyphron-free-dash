@@ -67,9 +67,9 @@ class PterodactylConfigDto {
   @IsString()
   panelUrl: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  apiKey: string;
+  apiKey?: string;
 
   @IsOptional()
   @IsString()
