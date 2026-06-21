@@ -9,6 +9,7 @@ import {
   Ip,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -95,6 +96,40 @@ export class AuthController {
       dto.username,
       dto.email,
       dto.password,
+    );
+  }
+
+  // ============================================================
+  // FORGOT PASSWORD — OTP FLOW
+  // ============================================================
+
+  @Throttle({ default: { limit: 3, ttl: 900000 } }) // 3 per 15 min
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    if (!email) throw new BadRequestException('Email is required');
+    return this.authService.forgotPassword(email.trim().toLowerCase());
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 300000 } }) // 5 per 5 min
+  @Post('verify-reset-otp')
+  async verifyResetOtp(@Body() body: { email: string; otp: string }) {
+    if (!body.email || !body.otp) throw new BadRequestException('Email and OTP are required');
+    return this.authService.verifyResetOtp(body.email.trim().toLowerCase(), body.otp.trim());
+  }
+
+  @Throttle({ default: { limit: 3, ttl: 300000 } }) // 3 per 5 min
+  @Post('reset-password')
+  async resetPassword(@Body() body: { email: string; reset_token: string; new_password: string }) {
+    if (!body.email || !body.reset_token || !body.new_password) {
+      throw new BadRequestException('Email, reset token, and new password are required');
+    }
+    if (body.new_password.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+    return this.authService.resetPassword(
+      body.email.trim().toLowerCase(),
+      body.reset_token,
+      body.new_password,
     );
   }
 }

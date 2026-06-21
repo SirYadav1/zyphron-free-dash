@@ -16,11 +16,13 @@ import { Transaction } from '../entities/transaction.entity';
 import { Setting } from '../entities/setting.entity';
 import { AfkSession } from '../entities/afk-session.entity';
 import { DailyLogin } from '../entities/daily-login.entity';
+import { PasswordReset } from '../entities/password-reset.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
 import { EmailVerificationService } from '../email-verification/email-verification.service';
 import { ActivityLogsService } from '../activity-logs/activity-logs.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -40,11 +42,14 @@ export class AuthService {
     private afkSessionRepo: Repository<AfkSession>,
     @InjectRepository(DailyLogin)
     private dailyLoginRepo: Repository<DailyLogin>,
+    @InjectRepository(PasswordReset)
+    private passwordResetRepo: Repository<PasswordReset>,
     private jwtService: JwtService,
     private configService: ConfigService,
     private pterodactylService: PterodactylService,
     private emailVerificationService: EmailVerificationService,
     private activityLogsService: ActivityLogsService,
+    private mailService: MailService,
   ) {}
 
   private checkAccountLockout(identifier: string): void {
@@ -606,5 +611,230 @@ export class AuthService {
       `Awarded daily login bonus of ${bonusAmount} coins to user ${userId}`,
     );
     return bonusAmount;
+  }
+
+  // ============================================================
+  // FORGOT PASSWORD — OTP FLOW
+  // ============================================================
+
+  /**
+   * Step 1: Request password reset — generates OTP, sends email
+   * Rate limit: max 3 requests per 15 minutes per email
+   */
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const user = await this.userRepo.findOne({ where: { email } });
+    if (!user) {
+      // Don't reveal if email exists — always return success
+      return { message: 'If an account exists with this email, you will receive a reset code.' };
+    }
+
+    // Check rate limit: max 3 resends per 15 minutes
+    const recentResets = await this.passwordResetRepo.find({
+      where: { email },
+      order: { created_at: 'DESC' },
+      take: 10,
+    });
+
+    const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const recentCount = recentResets.filter(r => r.created_at > fifteenMinAgo).length;
+
+    if (recentCount >= 3) {
+      throw new BadRequestException('Too many reset requests. Please wait 15 minutes before trying again.');
+    }
+
+    // Invalidate any existing unverified resets for this email
+    for (const reset of recentResets) {
+      if (!reset.verified) {
+        reset.otp = 'invalidated';
+        await this.passwordResetRepo.save(reset);
+      }
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otp, 10);
+
+    // Expires in 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    const resetRecord = this.passwordResetRepo.create({
+      email,
+      otp: otpHash,
+      expires_at: expiresAt,
+      attempts: 0,
+      resend_count: recentCount + 1,
+    });
+    await this.passwordResetRepo.save(resetRecord);
+
+    // Send OTP email
+    try {
+      await this.mailService.sendEmail(
+        email,
+        'Password Reset Code — Zyphron Cloud',
+        `<div style="margin:0;padding:0;background:#0a0f1a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1a;">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr><td style="padding:48px 40px 36px;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);border-radius:16px 16px 0 0;text-align:center;">
+          <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;line-height:56px;font-size:28px;">🔑</div>
+          <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;">Password Reset</h1>
+          <p style="margin:10px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Enter this code to reset your password</p>
+        </td></tr>
+        <tr><td style="padding:36px 40px;background:#0f1729;border-left:1px solid rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.04);">
+          <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Hey <strong style="color:#e2e8f0;">${user.first_name || user.username}</strong>,</p>
+          <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">We received a request to reset your password. Use the code below:</p>
+          <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:24px;margin:24px 0;text-align:center;">
+            <p style="margin:0 0 6px;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Your Reset Code</p>
+            <p style="margin:0;font-size:42px;font-weight:800;color:#f59e0b;letter-spacing:8px;">${otp}</p>
+          </div>
+          <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:12px;padding:16px;margin:20px 0;">
+            <p style="margin:0;font-size:13px;color:#ef4444;">⚠️ This code expires in <strong>10 minutes</strong>.</p>
+            <p style="margin:8px 0 0;font-size:13px;color:#ef4444;">If you didn't request this, <strong>contact our support team immediately</strong> — your account may be at risk.</p>
+          </div>
+        </td></tr>
+        <tr><td style="padding:24px 40px;background:#080c15;border-radius:0 0 16px 16px;border-top:1px solid rgba(255,255,255,0.04);text-align:center;">
+          <p style="margin:0 0 6px;font-size:11px;color:#4b5563;letter-spacing:0.5px;text-transform:uppercase;">Zyphron Cloud</p>
+          <p style="margin:0;font-size:11px;color:#374151;">© 2026 Zyphron Cloud. All rights reserved.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</div>`,
+      );
+      this.logger.log(`Password reset OTP sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password reset email: ${error.message}`);
+    }
+
+    return { message: 'If an account exists with this email, you will receive a reset code.' };
+  }
+
+  /**
+   * Step 2: Verify OTP — returns a short-lived reset token
+   */
+  async verifyResetOtp(email: string, otp: string): Promise<{ reset_token: string }> {
+    const resetRecord = await this.passwordResetRepo.findOne({
+      where: { email },
+      order: { created_at: 'DESC' },
+    });
+
+    if (!resetRecord) {
+      throw new BadRequestException('No reset request found. Please request a new code.');
+    }
+
+    if (resetRecord.verified) {
+      throw new BadRequestException('This code has already been used. Please request a new code.');
+    }
+
+    if (resetRecord.otp === 'invalidated') {
+      throw new BadRequestException('This code has been invalidated. Please request a new code.');
+    }
+
+    if (new Date(resetRecord.expires_at) < new Date()) {
+      throw new BadRequestException('This code has expired. Please request a new code.');
+    }
+
+    if (resetRecord.attempts >= 5) {
+      throw new BadRequestException('Too many failed attempts. Please request a new code.');
+    }
+
+    // Increment attempts
+    resetRecord.attempts += 1;
+    await this.passwordResetRepo.save(resetRecord);
+
+    const valid = await bcrypt.compare(otp, resetRecord.otp);
+    if (!valid) {
+      throw new BadRequestException(`Invalid code. ${5 - resetRecord.attempts} attempts remaining.`);
+    }
+
+    // OTP is valid — mark as verified and generate reset token
+    resetRecord.verified = true;
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    resetRecord.reset_token = await bcrypt.hash(resetToken, 10);
+    await this.passwordResetRepo.save(resetRecord);
+
+    return { reset_token: resetToken };
+  }
+
+  /**
+   * Step 3: Reset password — sets new password, sends confirmation email
+   */
+  async resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
+    const resetRecord = await this.passwordResetRepo.findOne({
+      where: { email, verified: true },
+      order: { created_at: 'DESC' },
+    });
+
+    if (!resetRecord) {
+      throw new BadRequestException('Invalid or expired reset session. Please start over.');
+    }
+
+    if (!resetRecord.reset_token) {
+      throw new BadRequestException('Invalid reset token. Please start over.');
+    }
+
+    if (new Date(resetRecord.expires_at) < new Date()) {
+      throw new BadRequestException('Reset session expired. Please request a new code.');
+    }
+
+    const tokenValid = await bcrypt.compare(resetToken, resetRecord.reset_token);
+    if (!tokenValid) {
+      throw new BadRequestException('Invalid reset token.');
+    }
+
+    // Find user and update password
+    const user = await this.userRepo.findOne({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('User not found.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.userRepo.update(user.id, { password_hash: passwordHash });
+
+    // Invalidate the reset record
+    resetRecord.reset_token = 'used';
+    await this.passwordResetRepo.save(resetRecord);
+
+    // Send confirmation email with the new password
+    try {
+      await this.mailService.sendEmail(
+        email,
+        'Password Changed — Zyphron Cloud',
+        `<div style="margin:0;padding:0;background:#0a0f1a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1a;">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr><td style="padding:48px 40px 36px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:16px 16px 0 0;text-align:center;">
+          <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;line-height:56px;font-size:28px;">✅</div>
+          <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;">Password Changed</h1>
+          <p style="margin:10px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Your password has been updated successfully</p>
+        </td></tr>
+        <tr><td style="padding:36px 40px;background:#0f1729;border-left:1px solid rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.04);">
+          <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Hey <strong style="color:#e2e8f0;">${user.first_name || user.username}</strong>,</p>
+          <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Your password has been changed. Here are your new login details:</p>
+          <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:20px;margin:20px 0;">
+            <p style="margin:4px 0;font-size:13px;color:#94a3b8;">📧 Email: <strong style="color:#e2e8f0;">${email}</strong></p>
+            <p style="margin:4px 0;font-size:13px;color:#94a3b8;">🔑 New Password: <strong style="color:#e2e8f0;">${newPassword}</strong></p>
+          </div>
+          <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:12px;padding:16px;margin:20px 0;">
+            <p style="margin:0;font-size:13px;color:#ef4444;">⚠️ <strong>If you did NOT request this password change, contact our support team immediately</strong> — your account may be compromised.</p>
+          </div>
+          <p style="margin:10px 0;font-size:13px;color:#64748b;">For security, we recommend changing this password to something only you know.</p>
+        </td></tr>
+        <tr><td style="padding:24px 40px;background:#080c15;border-radius:0 0 16px 16px;border-top:1px solid rgba(255,255,255,0.04);text-align:center;">
+          <p style="margin:0 0 6px;font-size:11px;color:#4b5563;letter-spacing:0.5px;text-transform:uppercase;">Zyphron Cloud</p>
+          <p style="margin:0;font-size:11px;color:#374151;">© 2026 Zyphron Cloud. All rights reserved.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</div>`,
+      );
+      this.logger.log(`Password changed confirmation email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password change email: ${error.message}`);
+    }
+
+    return { message: 'Password updated successfully. You can now log in with your new password.' };
   }
 }

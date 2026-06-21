@@ -12,9 +12,11 @@ import { Transaction } from '../entities/transaction.entity';
 import { Setting } from '../entities/setting.entity';
 import { AfkSession } from '../entities/afk-session.entity';
 import { DailyLogin } from '../entities/daily-login.entity';
+import { PasswordReset } from '../entities/password-reset.entity';
 import { PterodactylModule } from '../pterodactyl/pterodactyl.module';
 import { EmailVerificationModule } from '../email-verification/email-verification.module';
 import { ActivityLogsModule } from '../activity-logs/activity-logs.module';
+import { MailModule } from '../mail/mail.module';
 
 @Global()
 @Module({
@@ -25,6 +27,7 @@ import { ActivityLogsModule } from '../activity-logs/activity-logs.module';
       Setting,
       AfkSession,
       DailyLogin,
+      PasswordReset,
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -43,6 +46,7 @@ import { ActivityLogsModule } from '../activity-logs/activity-logs.module';
     PterodactylModule,
     EmailVerificationModule,
     ActivityLogsModule,
+    MailModule,
   ],
   controllers: [AuthController, TwoFactorController],
   providers: [AuthService, JwtAuthGuard, TwoFactorService],
