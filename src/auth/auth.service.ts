@@ -224,11 +224,15 @@ export class AuthService {
       user = await this.userRepo.findOne({ where: { username: identifier } });
     }
     if (!user) {
-      // SECURITY FIX: Generic error to prevent email/username enumeration
-      throw new UnauthorizedException('Invalid credentials');
+      // User not found - give specific error based on input type
+      if (identifier.includes('@')) {
+        throw new UnauthorizedException('No account found with this email address');
+      } else {
+        throw new UnauthorizedException('No account found with this username');
+      }
     }
     if (!user.password_hash) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('This account uses social login. Please sign in with Discord.');
     }
 
     const passwordValid = await bcrypt.compare(
@@ -237,7 +241,7 @@ export class AuthService {
     );
     if (!passwordValid) {
       this.recordFailedLogin(identifier);
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Incorrect password. Please try again.');
     }
 
     this.clearFailedLogins(identifier);
@@ -327,7 +331,7 @@ export class AuthService {
       user = await this.userRepo.findOne({ where: { username: identifier } });
     }
     if (!user || !user.password_hash) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('No account found with this email');
     }
 
     if (!user.two_factor_enabled || !user.two_factor_secret) {
