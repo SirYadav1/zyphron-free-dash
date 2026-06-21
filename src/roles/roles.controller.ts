@@ -37,6 +37,9 @@ class CreateRoleDto {
 
   @IsOptional()
   coin_approve?: number;
+
+  @IsOptional()
+  level?: number;
 }
 
 class UpdateRoleDto {
@@ -63,6 +66,9 @@ class UpdateRoleDto {
 
   @IsOptional()
   coin_approve?: number;
+
+  @IsOptional()
+  level?: number;
 }
 
 class AssignRoleDto {
