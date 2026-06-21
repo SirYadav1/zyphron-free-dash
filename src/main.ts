@@ -13,9 +13,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.disable('x-powered-by');
 
-  // Increase body size limit to handle large uploads
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ limit: '50mb', extended: true }));
+  // Body size limits — reduced from 50mb to prevent DoS
+  app.use(json({ limit: '5mb' }));
+  app.use(urlencoded({ limit: '10mb', extended: true }));
 
   const frontendUrls = process.env.FRONTEND_URL || 'http://localhost:5173';
   const allowedOrigins = frontendUrls.split(',').map(url => url.trim());

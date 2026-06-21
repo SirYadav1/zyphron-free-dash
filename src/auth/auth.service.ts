@@ -26,6 +26,11 @@ import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
+  // In-memory failed login tracker: { identifier: { count, lockedUntil } }
+  private failedLogins = new Map<string, { count: number; lockedUntil: number }>();
+  private readonly MAX_FAILED_ATTEMPTS = 5;
+  private readonly LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Transaction)
@@ -41,6 +46,32 @@ export class AuthService {
     private emailVerificationService: EmailVerificationService,
     private activityLogsService: ActivityLogsService,
   ) {}
+
+  private checkAccountLockout(identifier: string): void {
+    const record = this.failedLogins.get(identifier);
+    if (record && record.lockedUntil > Date.now()) {
+      const remainingSeconds = Math.ceil((record.lockedUntil - Date.now()) / 1000);
+      throw new UnauthorizedException(`Account temporarily locked. Try again in ${remainingSeconds} seconds.`);
+    }
+    // Clear lockout if expired
+    if (record && record.lockedUntil <= Date.now()) {
+      this.failedLogins.delete(identifier);
+    }
+  }
+
+  private recordFailedLogin(identifier: string): void {
+    const record = this.failedLogins.get(identifier) || { count: 0, lockedUntil: 0 };
+    record.count++;
+    if (record.count >= this.MAX_FAILED_ATTEMPTS) {
+      record.lockedUntil = Date.now() + this.LOCKOUT_DURATION_MS;
+      this.logger.warn(`Account locked due to ${record.count} failed attempts: ${identifier}`);
+    }
+    this.failedLogins.set(identifier, record);
+  }
+
+  private clearFailedLogins(identifier: string): void {
+    this.failedLogins.delete(identifier);
+  }
 
   async register(dto: RegisterDto, ipAddress?: string) {
     const existingEmail = await this.userRepo.findOne({
@@ -186,21 +217,18 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const identifier = dto.email.trim().toLowerCase();
+    this.checkAccountLockout(identifier);
     let user = await this.userRepo.findOne({ where: { email: identifier } });
     if (!user) {
       // Try by username
       user = await this.userRepo.findOne({ where: { username: identifier } });
     }
     if (!user) {
-      // User not found - check if email format to give better error
-      if (identifier.includes('@')) {
-        throw new UnauthorizedException('No account found with this email address');
-      } else {
-        throw new UnauthorizedException('No account found with this username');
-      }
+      // SECURITY FIX: Generic error to prevent email/username enumeration
+      throw new UnauthorizedException('Invalid credentials');
     }
     if (!user.password_hash) {
-      throw new UnauthorizedException('This account uses social login. Please sign in with Discord.');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const passwordValid = await bcrypt.compare(
@@ -208,8 +236,11 @@ export class AuthService {
       user.password_hash,
     );
     if (!passwordValid) {
-      throw new UnauthorizedException('Incorrect password. Please try again.');
+      this.recordFailedLogin(identifier);
+      throw new UnauthorizedException('Invalid credentials');
     }
+
+    this.clearFailedLogins(identifier);
 
     if (user.is_banned) {
       throw new UnauthorizedException('Your account has been banned');
