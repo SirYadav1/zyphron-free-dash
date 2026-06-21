@@ -127,6 +127,29 @@
               <span v-if="faviconError" class="text-[10px] text-red-400">Invalid</span>
             </div>
           </div>
+          <div class="space-y-2">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Email Logo URL</label>
+            <div class="flex gap-2">
+              <input v-model="emailLogoUrl" type="text" placeholder="https://example.com/logo.png" class="input-field py-2 flex-1" />
+              <button @click="saveEmailLogo" :disabled="savingEmailLogo" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+                {{ savingEmailLogo ? '...' : 'Save' }}
+              </button>
+            </div>
+            <div v-if="emailLogoUrl" class="mt-2 rounded-lg overflow-hidden border border-border max-w-[180px]">
+              <img :src="emailLogoUrl" @error="emailLogoError = true" @load="emailLogoError = false" class="w-full h-20 object-cover" />
+            </div>
+            <p class="text-[10px] text-text-muted">Logo displayed in all email headers (forgot password, notifications, etc.)</p>
+          </div>
+          <div class="space-y-2">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Brand Name</label>
+            <div class="flex gap-2">
+              <input v-model="brandName" type="text" placeholder="Zyphron Cloud" class="input-field py-2 flex-1" />
+              <button @click="saveBrandName" :disabled="savingBrandName" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+                {{ savingBrandName ? '...' : 'Save' }}
+              </button>
+            </div>
+            <p class="text-[10px] text-text-muted">Brand name displayed in email headers and footers</p>
+          </div>
         </div>
       </div>
     </div>
@@ -644,10 +667,15 @@ const savingMotd = ref(false)
 
 const loginImageUrl = ref('')
 const faviconUrl = ref('')
+const emailLogoUrl = ref('')
+const brandName = ref('')
 const savingLoginImage = ref(false)
 const savingFavicon = ref(false)
+const savingEmailLogo = ref(false)
+const savingBrandName = ref(false)
 const loginImageError = ref(false)
 const faviconError = ref(false)
+const emailLogoError = ref(false)
 
 const loadingNodes = ref(false)
 const savingNode = ref(false)
@@ -755,6 +783,8 @@ onMounted(async () => {
   if (store.settings['motd_enabled']) motdEnabled.value = store.settings['motd_enabled'] === 'true'
   if (store.settings['login_image_url']) loginImageUrl.value = store.settings['login_image_url']
   if (store.settings['favicon_url']) faviconUrl.value = store.settings['favicon_url']
+  if (store.settings['email_logo_url']) emailLogoUrl.value = store.settings['email_logo_url']
+  if (store.settings['brand_name']) brandName.value = store.settings['brand_name']
   if (store.settings['default_node_id']) selectedNodeId.value = parseInt(store.settings['default_node_id']) || null
 
   const getSettingNum = (key, fallback) => store.settings[`default_${key}`] ? parseInt(store.settings[`default_${key}`]) : fallback
@@ -818,6 +848,20 @@ async function saveFavicon() {
   try { await store.updateSetting('favicon_url', faviconUrl.value); success.value = 'Favicon updated' }
   catch (err) { error.value = err.response?.data?.message || 'Failed' }
   finally { savingFavicon.value = false }
+}
+
+async function saveEmailLogo() {
+  savingEmailLogo.value = true; error.value = ''; success.value = ''
+  try { await store.updateSetting('email_logo_url', emailLogoUrl.value); success.value = 'Email logo updated' }
+  catch (err) { error.value = err.response?.data?.message || 'Failed' }
+  finally { savingEmailLogo.value = false }
+}
+
+async function saveBrandName() {
+  savingBrandName.value = true; error.value = ''; success.value = ''
+  try { await store.updateSetting('brand_name', brandName.value); success.value = 'Brand name updated' }
+  catch (err) { error.value = err.response?.data?.message || 'Failed' }
+  finally { savingBrandName.value = false }
 }
 
 async function saveAfkRates() {
