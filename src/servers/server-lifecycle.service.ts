@@ -135,6 +135,7 @@ export class ServerLifecycleService {
             user.email,
             server.server_name,
             'Server expired due to credit expiry',
+            user.first_name || user.username,
           );
         }
       } catch (error) {

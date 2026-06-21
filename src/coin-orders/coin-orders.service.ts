@@ -103,6 +103,7 @@ export class CoinOrdersService {
             user.username,
             order.coins_amount,
             order.id,
+            user.first_name || user.username,
           );
         }
       } catch (error) {

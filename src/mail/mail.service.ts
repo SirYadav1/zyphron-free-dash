@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as nodemailer from 'nodemailer';
 import { Setting } from '../entities/setting.entity';
+import { EmailTemplate } from '../entities/email-template.entity';
 
 function escapeHtml(text: string): string {
   if (!text) return '';
@@ -23,6 +24,8 @@ export class MailService {
   constructor(
     @InjectRepository(Setting)
     private readonly settingRepo: Repository<Setting>,
+    @InjectRepository(EmailTemplate)
+    private readonly templateRepo: Repository<EmailTemplate>,
   ) {
     this.initTransporter();
   }
@@ -151,187 +154,183 @@ export class MailService {
   }
 
   /**
+   * Render a template from the database by name, replacing {{variable}} placeholders.
+   * Falls back to a minimal HTML email if the template is not found.
+   */
+  async renderFromDb(templateName: string, vars: Record<string, string> = {}): Promise<{ subject: string; html: string }> {
+    const template = await this.templateRepo.findOne({ where: { name: templateName } });
+    if (!template) {
+      this.logger.warn(`Template "${templateName}" not found in DB, using fallback`);
+      return {
+        subject: `Notification — ${templateName}`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <p>${Object.entries(vars).map(([k, v]) => `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}`).join('<br>')}</p>
+        </div>`,
+      };
+    }
+    if (!template.is_active) {
+      this.logger.warn(`Template "${templateName}" is inactive, skipping`);
+      return { subject: '', html: '' };
+    }
+    return {
+      subject: this.renderTemplate(template.subject, vars),
+      html: this.renderTemplate(template.body, vars),
+    };
+  }
+
+  /**
    * Send a test email to verify SMTP configuration
    */
   async sendTestEmail(to: string): Promise<boolean> {
     const settings = await this.settingRepo.find();
     const settingsMap = new Map(settings.map(s => [s.key, s.value]));
     const from = settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@zyphron.com';
+    const fromName = settingsMap.get('smtp_from_name') || 'ZyphronCloud';
 
     return this.safeSendMail({
-      from,
+      from: `${fromName} <${from}>`,
       to,
-      subject: 'Zyphron — Test Email',
+      subject: 'Zyphron Cloud — SMTP Test ✅',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0;">
-          <div style="text-align: center; padding: 30px 0;">
-            <h1 style="color: #7c3aed; margin: 0;">Zyphron</h1>
-            <p style="color: #9ca3af; margin-top: 8px;">Email System Test</p>
-          </div>
-          <div style="background: #16213e; border-radius: 12px; padding: 30px; border: 1px solid #2d3748;">
-            <h2 style="color: #22c55e; margin-top: 0;">✅ SMTP Configuration Working!</h2>
-            <p>This is a test email sent from your Zyphron dashboard to verify that SMTP is configured correctly.</p>
-            <div style="background: #0f172a; border-radius: 8px; padding: 16px; margin: 20px 0; border: 1px solid #1e293b;">
-              <p style="margin: 0; color: #9ca3af; font-size: 13px;">Sent to: <strong style="color: #e0e0e0;">${escapeHtml(to)}</strong></p>
-              <p style="margin: 8px 0 0; color: #9ca3af; font-size: 13px;">Time: <strong style="color: #e0e0e0;">${new Date().toISOString()}</strong></p>
-            </div>
-            <p style="color: #6b7280; font-size: 13px;">If you received this email, your SMTP settings are working correctly. You can now send automated notifications to users.</p>
-          </div>
-          <div style="text-align: center; padding: 20px 0; color: #4b5563; font-size: 12px;">
-            <p>This is an automated message from Zyphron Hosting Panel.</p>
-          </div>
+        <div style="margin:0;padding:0;background:#0a0f1a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1a;">
+            <tr><td align="center" style="padding:40px 20px;">
+              <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+                <tr><td style="padding:48px 40px 36px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:16px 16px 0 0;text-align:center;">
+                  <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;line-height:56px;font-size:28px;">☁️</div>
+                  <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;">SMTP Working!</h1>
+                  <p style="margin:10px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Email system is configured correctly</p>
+                </td></tr>
+                <tr><td style="padding:36px 40px;background:#0f1729;border-left:1px solid rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.04);">
+                  <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">This is a test email from your <strong style="color:#e2e8f0;">Zyphron Cloud</strong> dashboard to verify SMTP configuration.</p>
+                  <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:20px;margin:20px 0;">
+                    <p style="margin:4px 0;font-size:13px;color:#94a3b8;">📧 Sent to: <strong style="color:#e2e8f0;">${escapeHtml(to)}</strong></p>
+                    <p style="margin:4px 0;font-size:13px;color:#94a3b8;">🕐 Time: <strong style="color:#e2e8f0;">${new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })}</strong></p>
+                  </div>
+                  <p style="margin:10px 0;font-size:13px;color:#64748b;">✅ If you received this, your SMTP settings are working. You can now send automated notifications to users.</p>
+                </td></tr>
+                <tr><td style="padding:24px 40px;background:#080c15;border-radius:0 0 16px 16px;border-top:1px solid rgba(255,255,255,0.04);text-align:center;">
+                  <p style="margin:0 0 6px;font-size:11px;color:#4b5563;letter-spacing:0.5px;text-transform:uppercase;">Zyphron Cloud</p>
+                  <p style="margin:0;font-size:11px;color:#374151;">© 2026 Zyphron Cloud. All rights reserved.</p>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
         </div>
       `,
     });
   }
 
-  async sendVerificationEmail(to: string, token: string) {
+  async sendVerificationEmail(to: string, token: string, firstName?: string) {
     const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify?token=${token}`;
+    const { subject, html } = await this.renderFromDb('email_verification', {
+      first_name: firstName || to.split('@')[0],
+      verification_url: verificationUrl,
+      expiry_hours: '24',
+    });
+    if (!html) return false;
+    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
+  }
 
-    await this.safeSendMail({
+  async sendBanNotification(to: string, reason: string, firstName?: string) {
+    const { subject, html } = await this.renderFromDb('Account Banned', {
+      first_name: firstName || to.split('@')[0],
+      reason: reason || 'Terms of service violation',
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+    });
+    if (!html) return false;
+    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
+  }
+
+  async sendUnbanNotification(to: string, firstName?: string) {
+    // No dedicated template — send a simple confirmation
+    return this.safeSendMail({
       from: process.env.MAIL_FROM || 'noreply@zyphron.com',
       to,
-      subject: 'Verify Your Email - Zyphron',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #7c3aed;">Welcome to Zyphron!</h1>
-          <p>Thank you for registering. Please verify your email address by clicking the button below:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationUrl}" 
-               style="background-color: #7c3aed; color: white; padding: 12px 30px; 
-                      text-decoration: none; border-radius: 6px; font-size: 16px;">
-              Verify Email
-            </a>
-          </div>
-          <p>Or copy this link into your browser:</p>
-          <p style="color: #6b7280; word-break: break-all;">${verificationUrl}</p>
-          <p style="color: #6b7280; font-size: 12px;">This link expires in 24 hours.</p>
-        </div>
-      `,
+      subject: 'Account Unbanned — Zyphron Cloud',
+      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0a0f1a;color:#e2e8f0;">
+        <h2 style="color:#10b981;">✅ Account Unbanned</h2>
+        <p>Hey ${escapeHtml(firstName || to.split('@')[0])},</p>
+        <p>Your account has been unbanned. You may now log in and use our services again.</p>
+        <p style="color:#6b7280;font-size:12px;margin-top:20px;">© 2026 Zyphron Cloud</p>
+      </div>`,
     });
   }
 
-  async sendBanNotification(to: string, reason: string) {
-    await this.safeSendMail({
+  async sendServerSuspension(to: string, serverName: string, reason: string, firstName?: string) {
+    const { subject, html } = await this.renderFromDb('Server Suspended', {
+      first_name: firstName || to.split('@')[0],
+      server_name: serverName,
+      reason: reason || 'Policy violation',
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      dashboard_url: process.env.FRONTEND_URL || 'https://zyphron.cloud',
+    });
+    if (!html) return false;
+    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
+  }
+
+  async sendServerUnsuspension(to: string, serverName: string, firstName?: string) {
+    // No dedicated template — send a simple confirmation
+    return this.safeSendMail({
       from: process.env.MAIL_FROM || 'noreply@zyphron.com',
       to,
-      subject: 'Account Banned - Zyphron',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #ef4444;">Account Banned</h1>
-          <p>Your account has been banned.</p>
-          ${reason ? `<p>Reason: ${escapeHtml(reason)}</p>` : ''}
-          <p>If you believe this is a mistake, please contact support.</p>
-        </div>
-      `,
+      subject: `Server Unsuspended — ${serverName}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0a0f1a;color:#e2e8f0;">
+        <h2 style="color:#10b981;">✅ Server Unsuspended</h2>
+        <p>Hey ${escapeHtml(firstName || to.split('@')[0])},</p>
+        <p>Your server <strong>${escapeHtml(serverName)}</strong> has been unsuspended and is now active.</p>
+        <p style="color:#6b7280;font-size:12px;margin-top:20px;">© 2026 Zyphron Cloud</p>
+      </div>`,
     });
   }
 
-  async sendUnbanNotification(to: string) {
-    await this.safeSendMail({
+  async sendServerDeletion(to: string, serverName: string, reason: string, firstName?: string) {
+    return this.safeSendMail({
       from: process.env.MAIL_FROM || 'noreply@zyphron.com',
       to,
-      subject: 'Account Unbanned - Zyphron',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #22c55e;">Account Unbanned</h1>
-          <p>Your account has been unbanned. You may now log in and use our services again.</p>
-        </div>
-      `,
-    });
-  }
-
-  async sendServerSuspension(to: string, serverName: string, reason: string) {
-    await this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
-      to,
-      subject: 'Server Suspended - Zyphron',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #f59e0b;">Server Suspended</h1>
-          <p>Your server <strong>${escapeHtml(serverName)}</strong> has been suspended.</p>
-          <p>Reason: ${escapeHtml(reason)}</p>
-          <p>Please contact support or take the necessary actions to restore it.</p>
-        </div>
-      `,
-    });
-  }
-
-  async sendServerUnsuspension(to: string, serverName: string) {
-    await this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
-      to,
-      subject: 'Server Unsuspended - Zyphron',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #22c55e;">Server Unsuspended</h1>
-          <p>Your server <strong>${serverName}</strong> has been unsuspended and is now active.</p>
-        </div>
-      `,
-    });
-  }
-
-  async sendServerDeletion(to: string, serverName: string, reason: string) {
-    await this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
-      to,
-      subject: 'Server Deleted - Zyphron',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #ef4444;">Server Deleted</h1>
-          <p>Your server <strong>${escapeHtml(serverName)}</strong> has been deleted.</p>
-          <p>Reason: ${escapeHtml(reason)}</p>
-          <p>All data associated with this server has been permanently removed.</p>
-          <p>If you want to create a new server, please make sure you have enough credits.</p>
-        </div>
-      `,
+      subject: `Server Deleted — ${serverName}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0a0f1a;color:#e2e8f0;">
+        <h2 style="color:#ef4444;">🗑️ Server Deleted</h2>
+        <p>Hey ${escapeHtml(firstName || to.split('@')[0])},</p>
+        <p>Your server <strong>${escapeHtml(serverName)}</strong> has been deleted.</p>
+        ${reason ? `<p>Reason: <strong>${escapeHtml(reason)}</strong></p>` : ''}
+        <p>All data associated with this server has been permanently removed.</p>
+        <p style="color:#6b7280;font-size:12px;margin-top:20px;">© 2026 Zyphron Cloud</p>
+      </div>`,
     });
   }
 
   /**
    * Send payment approved email
    */
-  async sendPaymentApproved(to: string, username: string, coins: number, orderId: number) {
-    await this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
-      to,
-      subject: `Payment Approved — ${coins} Coins Added - Zyphron`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #22c55e;">Payment Approved! 🎉</h1>
-          <p>Hi <strong>${escapeHtml(username)}</strong>,</p>
-          <p>Your payment for order <strong>#${orderId}</strong> has been approved and <strong>${coins} coins</strong> have been added to your account.</p>
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
-            <p style="margin: 0; color: #166534; font-size: 24px; font-weight: bold;">+${coins} Coins</p>
-          </div>
-          <p>You can now use your coins to purchase servers and other services.</p>
-          <p style="color: #6b7280; font-size: 12px;">If you have any questions, please contact support.</p>
-        </div>
-      `,
+  async sendPaymentApproved(to: string, username: string, coins: number, orderId: number, firstName?: string) {
+    const { subject, html } = await this.renderFromDb('Payment Received', {
+      first_name: firstName || username,
+      username,
+      amount: String(coins),
+      order_id: String(orderId),
+      dashboard_url: process.env.FRONTEND_URL || 'https://zyphron.cloud',
     });
+    if (!html) return false;
+    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
   }
 
   /**
    * Send payment declined email
    */
   async sendPaymentDeclined(to: string, username: string, orderId: number, reason?: string) {
-    await this.safeSendMail({
+    return this.safeSendMail({
       from: process.env.MAIL_FROM || 'noreply@zyphron.com',
       to,
-      subject: `Payment Declined — Order #${orderId} - Zyphron`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #ef4444;">Payment Declined</h1>
-          <p>Hi <strong>${escapeHtml(username)}</strong>,</p>
-          <p>Your payment for order <strong>#${orderId}</strong> has been declined.</p>
-          ${reason ? `<p>Reason: <strong>${escapeHtml(reason)}</strong></p>` : ''}
-          <p>Please try again or contact support for assistance.</p>
-          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
-            <p style="margin: 0; color: #991b1b; font-size: 16px; font-weight: bold;">Payment Not Processed</p>
-          </div>
-          <p style="color: #6b7280; font-size: 12px;">If you believe this is an error, please contact support.</p>
-        </div>
-      `,
+      subject: `Payment Declined — Order #${orderId} — Zyphron Cloud`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0a0f1a;color:#e2e8f0;">
+        <h2 style="color:#ef4444;">Payment Declined</h2>
+        <p>Hey ${escapeHtml(username)},</p>
+        <p>Your payment for order <strong>#${orderId}</strong> has been declined.</p>
+        ${reason ? `<p>Reason: <strong>${escapeHtml(reason)}</strong></p>` : ''}
+        <p>Please try again or contact support.</p>
+        <p style="color:#6b7280;font-size:12px;margin-top:20px;">© 2026 Zyphron Cloud</p>
+      </div>`,
     });
   }
 
@@ -339,22 +338,16 @@ export class MailService {
    * Send voucher redeemed email
    */
   async sendVoucherRedeemed(to: string, username: string, voucherCode: string, credits: number) {
-    await this.safeSendMail({
+    return this.safeSendMail({
       from: process.env.MAIL_FROM || 'noreply@zyphron.com',
       to,
-      subject: `Voucher Redeemed — +${credits} Coins - Zyphron`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #22c55e;">Voucher Redeemed! 🎟️</h1>
-          <p>Hi <strong>${escapeHtml(username)}</strong>,</p>
-          <p>You have successfully redeemed voucher <strong>${escapeHtml(voucherCode)}</strong> and received <strong>${credits} coins</strong>.</p>
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
-            <p style="margin: 0; color: #166534; font-size: 24px; font-weight: bold;">+${credits} Coins</p>
-          </div>
-          <p>You can now use your coins to purchase servers and other services.</p>
-          <p style="color: #6b7280; font-size: 12px;">If you have any questions, please contact support.</p>
-        </div>
-      `,
+      subject: `Voucher Redeemed — +${credits} Coins — Zyphron Cloud`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0a0f1a;color:#e2e8f0;">
+        <h2 style="color:#10b981;">🎟️ Voucher Redeemed!</h2>
+        <p>Hey ${escapeHtml(username)},</p>
+        <p>You redeemed <strong>${escapeHtml(voucherCode)}</strong> and received <strong>${credits} coins</strong>.</p>
+        <p style="color:#6b7280;font-size:12px;margin-top:20px;">© 2026 Zyphron Cloud</p>
+      </div>`,
     });
   }
 
@@ -362,22 +355,17 @@ export class MailService {
    * Send partner commission email
    */
   async sendPartnerCommission(to: string, username: string, commission: number, referredUser: string) {
-    await this.safeSendMail({
+    return this.safeSendMail({
       from: process.env.MAIL_FROM || 'noreply@zyphron.com',
       to,
-      subject: `Partner Commission Earned — +${commission} Coins - Zyphron`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #7c3aed;">Partner Commission Earned! 💰</h1>
-          <p>Hi <strong>${escapeHtml(username)}</strong>,</p>
-          <p>You have earned a partner commission of <strong>${commission} coins</strong> for referring <strong>${escapeHtml(referredUser)}</strong>.</p>
-          <div style="background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
-            <p style="margin: 0; color: #5b21b6; font-size: 24px; font-weight: bold;">+${commission} Coins</p>
-          </div>
-          <p>Keep sharing your partner link to earn more commissions!</p>
-          <p style="color: #6b7280; font-size: 12px;">If you have any questions, please contact support.</p>
-        </div>
-      `,
+      subject: `Partner Commission — +${commission} Coins — Zyphron Cloud`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#0a0f1a;color:#e2e8f0;">
+        <h2 style="color:#3b82f6;">💰 Commission Earned!</h2>
+        <p>Hey ${escapeHtml(username)},</p>
+        <p>You earned <strong>${commission} coins</strong> for referring <strong>${escapeHtml(referredUser)}</strong>.</p>
+        <p>Keep sharing your partner link to earn more!</p>
+        <p style="color:#6b7280;font-size:12px;margin-top:20px;">© 2026 Zyphron Cloud</p>
+      </div>`,
     });
   }
 }
