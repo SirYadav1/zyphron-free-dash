@@ -407,11 +407,14 @@ export class AdminService {
       throw new BadRequestException('This setting cannot be modified via this endpoint');
     }
 
+    // Ensure value is always a string
+    const stringValue = String(value ?? '');
+
     const existing = await this.settingRepo.findOne({ where: { key } });
     if (existing) {
-      await this.settingRepo.update(existing.id, { value });
+      await this.settingRepo.update(existing.id, { value: stringValue });
     } else {
-      await this.settingRepo.save(this.settingRepo.create({ key, value }));
+      await this.settingRepo.save(this.settingRepo.create({ key, value: stringValue }));
     }
 
     return { message: `Setting "${key}" updated`, key, value };
