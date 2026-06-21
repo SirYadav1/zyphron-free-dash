@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-1.2.1-blue?style=flat-square" alt="Version" />
+  <img src="https://img.shields.io/badge/Version-1.3.0-blue?style=flat-square" alt="Version" />
   <img src="https://img.shields.io/badge/NestJS-10-red?style=flat-square&logo=nestjs" alt="NestJS" />
   <img src="https://img.shields.io/badge/Vue-3-green?style=flat-square&logo=vuedotjs" alt="Vue 3" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-blue?style=flat-square&logo=tailwindcss" alt="Tailwind" />
@@ -440,6 +440,9 @@ Pterodactyl API ----> Game Servers
 - JWT authentication with 7-day expiry
 - 2FA (TOTP) support
 - Discord OAuth integration
+- AES-256-GCM reversible encryption for sensitive data (SMTP passwords, OTPs, tokens)
+- Forgot password with encrypted OTP verification
+- Backup & migration system (one-click deploy to new VPS)
 - Rate limiting (100/60s global)
 - Account lockout (5 attempts → 15min)
 - Optimistic locking for coin operations
@@ -473,6 +476,7 @@ Pterodactyl API ----> Game Servers
 
 ## Security
 
+- **AES-256-GCM encryption** for SMTP passwords, OTPs, and tokens (reversible with ENCRYPTION_KEY)
 - **30 security issues** identified and fixed
 - **Rate limiting** on all endpoints
 - **Account lockout** after 5 failed attempts
@@ -484,6 +488,38 @@ Pterodactyl API ----> Game Servers
 - **Password hashing** with bcrypt (10 rounds)
 
 *Full security report: [SECURITY_AUDIT_FULL.md](SECURITY_AUDIT_FULL.md)*
+
+---
+
+## Backup & Migration
+
+### One-Click Backup
+```bash
+bash scripts/backup.sh
+```
+Creates a complete backup (2.5MB) with: database, .env, source code, client build, nginx config, PM2 config.
+
+### Restore on New VPS
+```bash
+# Upload backup to new VPS, then:
+bash scripts/migrate.sh zyphron-backup-XXXXXXXX_XXXXXX
+```
+Auto-installs Node.js, PM2, npm deps, restores DB, configures nginx, starts PM2.
+
+### One-Click Deploy (Old VPS → New VPS)
+```bash
+bash scripts/deploy-to-vps.sh <new_vps_ip>
+```
+Uploads backup + auto-restores on remote VPS in one command.
+
+### Backup Contents
+```
+zyphron-backup-XXXXXXXX/
+├── database/       (SQLite DB + WAL)
+├── configs/        (.env, nginx, PM2, package.json)
+├── source/         (NestJS backend + Vue frontend)
+└── client-build/   (Vite dist/ — ready to serve)
+```
 
 ---
 
