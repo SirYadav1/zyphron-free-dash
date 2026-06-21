@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { User } from '../entities/user.entity';
+import { UserRole } from '../entities/user-role.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { Setting } from '../entities/setting.entity';
 import { AfkSession } from '../entities/afk-session.entity';
@@ -36,6 +37,7 @@ export class AuthService {
 
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(UserRole) private userRoleRepo: Repository<UserRole>,
     @InjectRepository(Transaction)
     private transactionRepo: Repository<Transaction>,
     @InjectRepository(Setting) private settingRepo: Repository<Setting>,
@@ -77,6 +79,12 @@ export class AuthService {
 
   private clearFailedLogins(identifier: string): void {
     this.failedLogins.delete(identifier);
+  }
+
+  private async isUserAdmin(userId: string, is_admin: number): Promise<boolean> {
+    if (is_admin) return true;
+    const hasRole = await this.userRoleRepo.findOne({ where: { user_id: userId } });
+    return !!hasRole;
   }
 
   async register(dto: RegisterDto, ipAddress?: string) {
@@ -306,6 +314,7 @@ export class AuthService {
     const updatedUser = await this.userRepo.findOne({ where: { id: user.id } });
 
     const token = this.signToken(user.id);
+    const userIsAdmin = await this.isUserAdmin(user.id, user.is_admin);
 
     return {
       access_token: token,
@@ -316,7 +325,7 @@ export class AuthService {
         last_name: user.last_name,
         email: user.email,
         emailVerified: !!user.email_verified,
-        isAdmin: !!user.is_admin,
+        isAdmin: userIsAdmin,
         coins: updatedUser?.coins ?? (user.coins + dailyBonus),
         profilePhoto: user.profile_photo,
         language: user.language || 'en',
@@ -377,6 +386,7 @@ export class AuthService {
     const updatedUser2FA = await this.userRepo.findOne({ where: { id: user.id } });
 
     const token = this.signToken(user.id);
+    const userIsAdmin2FA = await this.isUserAdmin(user.id, user.is_admin);
 
     return {
       access_token: token,
@@ -387,7 +397,7 @@ export class AuthService {
         last_name: user.last_name,
         email: user.email,
         emailVerified: !!user.email_verified,
-        isAdmin: !!user.is_admin,
+        isAdmin: userIsAdmin2FA,
         coins: updatedUser2FA?.coins ?? (user.coins + dailyBonus),
         profilePhoto: user.profile_photo,
         language: user.language || 'en',
@@ -412,6 +422,8 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
+    const userIsAdminProfile = await this.isUserAdmin(user.id, user.is_admin);
+
     return {
       id: user.id,
       username: user.username,
@@ -419,7 +431,7 @@ export class AuthService {
       last_name: user.last_name,
       email: user.email,
       emailVerified: !!user.email_verified,
-      isAdmin: !!user.is_admin,
+      isAdmin: userIsAdminProfile,
       coins: user.coins,
       profilePhoto: user.profile_photo,
       language: user.language || 'en',
