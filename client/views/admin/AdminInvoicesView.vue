@@ -119,7 +119,7 @@
               <label class="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1">Currency</label>
               <select v-model="createForm.currency"
                 class="w-full bg-base border border-border rounded-lg px-4 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/30">
-                <option value="EUR">EUR</option>
+                <option value="INR">INR</option>
                 <option value="USD">USD</option>
                 <option value="GBP">GBP</option>
                 <option value="INR">INR</option>
@@ -169,7 +169,7 @@ const createForm = ref({
   user_id: '',
   amount: 0,
   tax_amount: 0,
-  currency: 'EUR',
+currency: 'INR',
   status: 'pending',
   due_date: '',
 })
@@ -216,7 +216,7 @@ async function createInvoice() {
     }
     await client.post('/invoices', payload)
     showCreateModal.value = false
-    createForm.value = { user_id: '', amount: 0, currency: 'EUR', status: 'pending', due_date: '' }
+    createForm.value = { user_id: '', amount: 0, currency: 'INR', status: 'pending', due_date: '' }
     await fetchInvoices()
   } catch { /* ignore */ }
   creating.value = false

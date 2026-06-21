@@ -97,7 +97,7 @@ async function main() {
     CREATE TABLE IF NOT EXISTS shop_products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       type TEXT NOT NULL,
-      currency_code TEXT DEFAULT 'EUR',
+      currency_code TEXT DEFAULT 'INR',
       price INTEGER NOT NULL,
       quantity INTEGER NOT NULL,
       description TEXT NOT NULL,

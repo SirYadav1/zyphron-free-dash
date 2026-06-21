@@ -41,7 +41,7 @@ export class Invoice {
   @Column({ type: 'integer', default: 0 })
   total_amount: number;
 
-  @Column({ type: 'text', default: 'EUR' })
+  @Column({ type: 'text', default: 'INR' })
   currency: string;
 
   @Column({ type: 'text', default: 'pending' })

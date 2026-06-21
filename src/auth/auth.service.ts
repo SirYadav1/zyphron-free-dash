@@ -245,12 +245,7 @@ export class AuthService {
       user = await this.userRepo.findOne({ where: { username: identifier } });
     }
     if (!user) {
-      // User not found - give specific error based on input type
-      if (identifier.includes('@')) {
-        throw new UnauthorizedException('No account found with this email address');
-      } else {
-        throw new UnauthorizedException('No account found with this username');
-      }
+      throw new UnauthorizedException('Invalid credentials. Please try again.');
     }
     if (!user.password_hash) {
       throw new UnauthorizedException('This account uses social login. Please sign in with Discord.');
@@ -362,7 +357,7 @@ export class AuthService {
       user = await this.userRepo.findOne({ where: { username: identifier } });
     }
     if (!user || !user.password_hash) {
-      throw new UnauthorizedException('No account found with this email');
+      throw new UnauthorizedException('Invalid credentials. Please try again.');
     }
 
     if (!user.two_factor_enabled || !user.two_factor_secret) {
@@ -684,7 +679,7 @@ export class AuthService {
     }
 
     // generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 999999).toString();
     const encryptedOtp = EncryptionUtil.encrypt(otp);
 
     // expires in 10 minutes
@@ -842,10 +837,9 @@ export class AuthService {
         </td></tr>
         <tr><td style="padding:36px 40px;background:#0f1729;border-left:1px solid rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.04);">
           <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Hey <strong style="color:#e2e8f0;">${user.first_name || user.username}</strong>,</p>
-          <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Your password has been changed. Here are your new login details:</p>
+          <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Your password has been changed successfully.</p>
           <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:20px;margin:20px 0;">
             <p style="margin:4px 0;font-size:13px;color:#94a3b8;">📧 Email: <strong style="color:#e2e8f0;">${email}</strong></p>
-            <p style="margin:4px 0;font-size:13px;color:#94a3b8;">🔑 New Password: <strong style="color:#e2e8f0;">${newPassword}</strong></p>
           </div>
           <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:12px;padding:16px;margin:20px 0;">
             <p style="margin:0;font-size:13px;color:#ef4444;">⚠️ <strong>If you did NOT request this password change, contact our support team immediately</strong> — your account may be compromised.</p>

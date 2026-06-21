@@ -14,7 +14,7 @@ export class ShopProduct {
   @Column({ type: 'text' })
   type: string;
 
-  @Column({ type: 'text', default: 'EUR' })
+  @Column({ type: 'text', default: 'INR' })
   currency_code: string;
 
   @Column({ type: 'integer' })
