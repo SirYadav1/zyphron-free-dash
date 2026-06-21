@@ -163,7 +163,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, watch } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import {
   RefreshCw,
@@ -198,6 +198,8 @@ const animatedStats = reactive({
   discordLinked: 0,
 })
 
+let rafId = null
+
 function animateCounter(key, target) {
   const duration = 800
   const start = animatedStats[key] || 0
@@ -209,9 +211,11 @@ function animateCounter(key, target) {
     const progress = Math.min(elapsed / duration, 1)
     const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
     animatedStats[key] = Math.round(start + diff * eased)
-    if (progress < 1) requestAnimationFrame(step)
+    if (progress < 1) {
+      rafId = requestAnimationFrame(step)
+    }
   }
-  requestAnimationFrame(step)
+  rafId = requestAnimationFrame(step)
 }
 
 watch(() => store.stats, (newStats) => {
@@ -233,6 +237,13 @@ const systemInfo = computed(() => [
 
 onMounted(() => {
   store.fetchStats()
+})
+
+onUnmounted(() => {
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
 })
 
 function refresh() {

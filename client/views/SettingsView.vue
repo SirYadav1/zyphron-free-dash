@@ -48,7 +48,7 @@
         </div>
 
         <div v-else class="space-y-6 pt-2">
-          <a :href="`/api/discord/link?token=${jwtToken}`" class="btn-primary inline-flex items-center gap-2 bg-[#5865F2] hover:bg-[#4752C4] border-none text-white px-6">
+          <a href="/api/discord/link" class="btn-primary inline-flex items-center gap-2 bg-[#5865F2] hover:bg-[#4752C4] border-none text-white px-6">
             Connect Discord
           </a>
           <p class="text-[11px] text-text-muted font-medium">Must be a member of the official Zyphron server. You'll be redirected back after linking.</p>
@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
@@ -154,8 +154,6 @@ const unlinking = ref(false)
 const discordError = ref('')
 const discordSuccess = ref('')
 const pteroUrl = ref('')
-
-const jwtToken = computed(() => sessionStorage.getItem('access_token') || '')  // BUG-H5 FIX
 
 onMounted(async () => {
   try {

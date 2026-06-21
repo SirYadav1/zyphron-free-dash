@@ -156,4 +156,10 @@ router.beforeEach(async (to, from, next) => {
   next()
 })
 
+router.onError((error) => {
+  if (/Failed to fetch dynamically imported module|Loading chunk \d+ failed/.test(error.message)) {
+    window.location.reload();
+  }
+});
+
 export default router

@@ -237,7 +237,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { useServersStore } from '../stores/servers'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
@@ -272,6 +272,8 @@ const animatedStats = reactive({
   credits: 0,
 })
 
+let rafId = null
+
 function animateCounter(key, target) {
   const duration = 800
   const start = animatedStats[key] || 0
@@ -283,9 +285,11 @@ function animateCounter(key, target) {
     const progress = Math.min(elapsed / duration, 1)
     const eased = 1 - Math.pow(1 - progress, 3)
     animatedStats[key] = Math.round(start + diff * eased)
-    if (progress < 1) requestAnimationFrame(step)
+    if (progress < 1) {
+      rafId = requestAnimationFrame(step)
+    }
   }
-  requestAnimationFrame(step)
+  rafId = requestAnimationFrame(step)
 }
 
 // count servers expiring within 3 days
@@ -315,6 +319,13 @@ onMounted(async () => {
   ]
   await Promise.allSettled(fetches)
   linksLoading.value = false
+})
+
+onUnmounted(() => {
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
 })
 
 // animate when data changes
@@ -348,7 +359,8 @@ function statusTextClass(status) {
 }
 
 function formatDate(dateStr) {
+  if (!dateStr) return 'N/A'
   const d = new Date(dateStr)
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 </script>

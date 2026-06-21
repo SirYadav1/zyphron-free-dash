@@ -344,6 +344,16 @@ function triggerFileInput() {
 function handleFileSelect(e) {
   const file = e.target.files?.[0]
   if (!file) return
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    alert('Sirf JPG, PNG, GIF, WebP files allowed hain')
+    return
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    alert('File size 5MB se zyada nahi ho sakta')
+    return
+  }
   processFile(file)
 }
 
@@ -352,6 +362,16 @@ function handleDrop(e) {
   const file = e.dataTransfer?.files?.[0]
   if (!file) return
   if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) return
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    alert('Sirf JPG, PNG, GIF, WebP files allowed hain')
+    return
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    alert('File size 5MB se zyada nahi ho sakta')
+    return
+  }
   processFile(file)
 }
 
@@ -362,6 +382,16 @@ function processFile(file) {
 
 async function uploadPhoto() {
   if (!selectedFile.value) return
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  if (!ALLOWED_TYPES.includes(selectedFile.value.type)) {
+    alert('Sirf JPG, PNG, GIF, WebP files allowed hain')
+    return
+  }
+  if (selectedFile.value.size > MAX_FILE_SIZE) {
+    alert('File size 5MB se zyada nahi ho sakta')
+    return
+  }
   uploading.value = true
   updateError.value = ''
   successMsg.value = ''
@@ -405,6 +435,7 @@ async function handleUpdate() {
 
 function formatDate(dateStr) {
   if (!dateStr) return 'N/A'
-  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 </script>

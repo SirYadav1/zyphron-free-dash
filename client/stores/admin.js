@@ -9,13 +9,22 @@ export const useAdminStore = defineStore('admin', {
     templates: [],
     settings: {},
     roles: [],
-    loading: false,
     error: null,
+    loadingStates: {
+      fetchUsers: false,
+      fetchServers: false,
+      updateSettings: false,
+      fetchStats: false,
+    },
   }),
+
+  getters: {
+    loading: (state) => Object.values(state.loadingStates).some(v => v),
+  },
 
   actions: {
     async fetchStats() {
-      this.loading = true
+      this.loadingStates.fetchStats = true
       this.error = null
       try {
         const { data } = await client.get('/admin/stats')
@@ -23,19 +32,19 @@ export const useAdminStore = defineStore('admin', {
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to load stats'
       } finally {
-        this.loading = false
+        this.loadingStates.fetchStats = false
       }
     },
 
     async fetchUsers() {
-      this.loading = true
+      this.loadingStates.fetchUsers = true
       try {
         const { data } = await client.get('/admin/users')
         this.users = data
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to load users'
       } finally {
-        this.loading = false
+        this.loadingStates.fetchUsers = false
       }
     },
 
@@ -60,14 +69,14 @@ export const useAdminStore = defineStore('admin', {
     },
 
     async fetchServers() {
-      this.loading = true
+      this.loadingStates.fetchServers = true
       try {
         const { data } = await client.get('/admin/servers')
         this.servers = data
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to load servers'
       } finally {
-        this.loading = false
+        this.loadingStates.fetchServers = false
       }
     },
 
