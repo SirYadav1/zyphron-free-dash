@@ -5,10 +5,10 @@
 > **Panel:** https://console.zyphron.cloud
 > **GitHub:** https://github.com/SirYadav1/zyphron-free-dash
 > **Developer:** SirYadav + Hermes Agent (AI Assistant)
-> **Report Period:** June 15 – June 20, 2026
-> **Total Commits:** 54+
-> **Total Files Modified:** 100+
-> **Total Bugs Fixed:** 62+
+> **Report Period:** June 15 – June 21, 2026
+> **Total Commits:** 55+
+> **Total Files Modified:** 105+
+> **Total Bugs Fixed:** 63+
 > **Total Features Added:** 40+
 
 ---
@@ -17,19 +17,19 @@
 
 | Metric | Value |
 |--------|-------|
-| **Development Days** | 6 (June 15–20, 2026) |
-| **Total Commits** | 54+ |
-| **Files Modified** | 100+ |
+| **Development Days** | 7 (June 15–21, 2026) |
+| **Total Commits** | 55+ |
+| **Files Modified** | 105+ |
 | **Lines of Code Added** | 15,000+ |
 | **Features Implemented** | 40+ |
-| **Bugs Fixed** | 62+ |
+| **Bugs Fixed** | 63+ |
 | **Security Issues Fixed** | 20+ |
 | **Security Issues Open** | 15 (mostly medium/low) |
 | **Backend** | NestJS (TypeScript) |
 | **Frontend** | Vue.js 3 (Vite) |
 | **Database** | SQLite (auto-sync in dev) |
 | **Panel** | Pterodactyl (via API) |
-| **Current Version** | v1.2.1 |
+| **Current Version** | v1.2.2 |
 
 ---
 
@@ -333,6 +333,29 @@ f416079 feat: services page redesign - professional card layout like Pterodactyl
 0e69c49 fix: SMTP setup guide, blue theme for services, node save button fix
 89b508c fix: remove duplicate info from admin servers, add allocation/ID/pterodactyl columns
 b5eec79 fix: standardize alignment, fonts, spacing across all pages + global CSS cleanup
+```
+
+---
+
+### 🗓️ Day 7 — June 21, 2026 (Saturday)
+
+**Focus:** DTO-Entity Mismatch Fix, Roles System Completion
+
+#### What Was Done:
+- ✅ Fixed roles controller DTO-entity mismatch (missing `level` field)
+- ✅ Added `level` field to `CreateRoleDto` and `UpdateRoleDto`
+- ✅ Added `Level` column to admin roles table with color coding
+- ✅ Added hierarchy level dropdown to role create/edit forms
+- ✅ Verified all 5 controllers match their entities (coupons, partners, useful-links, api-keys, roles)
+
+#### Bugs Fixed:
+| # | Bug | Fix |
+|---|-----|-----|
+| 1 | Roles DTO missing `level` field | Added level to CreateRoleDto + UpdateRoleDto |
+
+#### Git Commits:
+```
+9706d71 fix: add level field to roles DTOs for entity alignment
 ```
 
 ---

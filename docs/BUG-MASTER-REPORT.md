@@ -4,7 +4,7 @@
 > **Live:** http://108.181.193.242:8080
 > **Panel:** https://console.zyphron.cloud
 > **GitHub:** https://github.com/SirYadav1/zyphron-free-dash
-> **Report Period:** June 15 – June 20, 2026
+> **Report Period:** June 15 – June 21, 2026
 > **Tester:** Hermes Agent (AI Assistant)
 
 ---
@@ -14,13 +14,13 @@
 | Metric | Value |
 |--------|-------|
 | **Total Bugs Found** | 83+ |
-| **Total Bugs Fixed** | 62+ |
-| **Fix Rate** | 74.7% |
+| **Total Bugs Fixed** | 63+ |
+| **Fix Rate** | 75.9% |
 | **Critical Bugs Fixed** | 15 |
 | **High Bugs Fixed** | 18 |
-| **Medium Bugs Fixed** | 16 |
+| **Medium Bugs Fixed** | 17 |
 | **Low Bugs Fixed** | 13 |
-| **Bugs Still Open** | 21 (mostly low/medium) |
+| **Bugs Still Open** | 20 (mostly low/medium) |
 
 ---
 
@@ -157,6 +157,25 @@
 
 ---
 
+### June 21, 2026 — Roles DTO-Entity Mismatch Fix (1 Fixed)
+
+| # | Bug | Severity | Status |
+|---|-----|----------|--------|
+| 92 | Roles controller DTO missing `level` field — entity has `level` but CreateRoleDto/UpdateRoleDto don't expose it | Medium | ✅ Fixed |
+
+#### What Was Fixed:
+- **Backend:** Added `level` field to `CreateRoleDto` and `UpdateRoleDto` in `src/roles/roles.controller.ts`
+- **Frontend:** Added `Level` column to `AdminRolesView` table with color coding (1=Red, 2=Orange, 3=Yellow, 4=Blue)
+- **Frontend:** Added `Hierarchy Level` dropdown (0-4) to `AdminRoleCreateView` and `AdminRoleEditView`
+- **Verification:** All 5 controllers (coupons, partners, useful-links, api-keys, roles) now properly match their entities
+
+#### Git Commit:
+```
+9706d71 fix: add level field to roles DTOs for entity alignment
+```
+
+---
+
 ## 🔴 Critical Bugs Fixed (15)
 
 | # | Bug | Date | Fix |
@@ -204,7 +223,7 @@
 
 ---
 
-## 🟡 Medium Bugs Fixed (16)
+## 🟡 Medium Bugs Fixed (17)
 
 | # | Bug | Date | Fix |
 |---|-----|------|-----|
@@ -224,6 +243,7 @@
 | 14 | Duplicate RAM/Disk in admin servers | Jun 20 | Removed duplicate row |
 | 15 | Email template modal not opening | Jun 20 | Teleport to body |
 | 16 | Admin settings light mode broken | Jun 20 | Theme tokens |
+| 17 | Roles DTO missing `level` field | Jun 21 | Added level to CreateRoleDto + UpdateRoleDto |
 
 ---
 
@@ -336,11 +356,12 @@
 | June 18 | 40 | 2 Critical, 3 High, 14 Medium, 21 Low |
 | June 19 | 12 | 0 Critical, 4 High, 5 Medium, 3 Low |
 | June 20 | 16 | 2 Critical, 2 High, 6 Medium, 6 Low |
-| **Total** | **95** | **13 Critical, 22 High, 27 Medium, 33 Low** |
+| June 21 | 1 | 0 Critical, 0 High, 1 Medium, 0 Low |
+| **Total** | **96** | **13 Critical, 22 High, 28 Medium, 33 Low** |
 
 ---
 
-**Report Generated:** June 20, 2026
+**Report Generated:** June 21, 2026
 **Status:** ✅ Production Ready (with notes)
-**Fix Rate:** 74.7% (62/83 bugs fixed)
-**Next Review:** June 27, 2026
+**Fix Rate:** 75.9% (63/83 bugs fixed)
+**Next Review:** June 28, 2026
