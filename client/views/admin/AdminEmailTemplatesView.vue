@@ -56,6 +56,10 @@
               </td>
               <td class="px-5 py-3 text-right">
                 <div class="flex gap-3 justify-end">
+                  <button
+                    @click="openTestModal(template)"
+                    class="text-xs font-bold text-green-400 hover:text-green-300 transition-colors"
+                  >Test</button>
                   <router-link
                     :to="`/admin/email-templates/${template.id}/edit`"
                     class="text-xs font-bold text-accent hover:text-white transition-colors"
@@ -139,13 +143,65 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Test Email Modal -->
+    <Teleport to="body">
+      <div v-if="showTestModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4" @click.self="closeTestModal">
+        <div class="bg-base border border-border rounded-2xl shadow-2xl w-full max-w-md">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <div>
+              <h3 class="text-lg font-bold text-text-primary">Test Email Template</h3>
+              <p class="text-xs text-text-muted mt-0.5">Send a test email to verify the template</p>
+            </div>
+            <button @click="closeTestModal" class="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center text-text-muted hover:text-text-primary transition-colors">
+              <X :size="18" :stroke-width="2" />
+            </button>
+          </div>
+          <div class="p-6 space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-text-muted mb-1.5">Template</label>
+              <div class="bg-surface border border-border rounded-lg px-4 py-2.5 text-sm text-text-primary font-bold">
+                {{ testTemplateName }}
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-muted mb-1.5">Send Test To</label>
+              <input
+                v-model="testEmail"
+                type="email"
+                placeholder="receiver@example.com"
+                class="w-full bg-surface border border-border rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder-text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+              />
+            </div>
+            <div v-if="testError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-bold text-red-400">
+              {{ testError }}
+            </div>
+            <div v-if="testSuccess" class="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-xs font-bold text-green-400">
+              {{ testSuccess }}
+            </div>
+          </div>
+          <div class="px-6 py-4 border-t border-border flex gap-3">
+            <button @click="closeTestModal" class="btn-secondary px-4 py-2 text-xs flex-1">Cancel</button>
+            <button
+              @click="sendTestEmail"
+              :disabled="!testEmail || testSending"
+              class="btn-primary px-4 py-2 text-xs flex-1 inline-flex items-center justify-center gap-2"
+            >
+              <div v-if="testSending" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <Send v-else :size="14" :stroke-width="2" />
+              {{ testSending ? 'Sending...' : 'Send Test' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import client from '../../api/client'
-import { AlertTriangle, CheckCircle, Layers, Plus, X } from 'lucide-vue-next'
+import { AlertTriangle, CheckCircle, Layers, Plus, X, Send } from 'lucide-vue-next'
 
 const templates = ref([])
 const loading = ref(true)
@@ -153,6 +209,15 @@ const error = ref('')
 const success = ref('')
 const showPrebuiltModal = ref(false)
 const installing = ref(false)
+
+// Test email state
+const showTestModal = ref(false)
+const testTemplateId = ref(null)
+const testTemplateName = ref('')
+const testEmail = ref('')
+const testSending = ref(false)
+const testError = ref('')
+const testSuccess = ref('')
 
 const templateTypes = [
   'welcome',
@@ -431,6 +496,45 @@ async function handleDelete(template) {
     await loadTemplates()
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to delete template'
+  }
+}
+
+function openTestModal(template) {
+  testTemplateId.value = template.id
+  testTemplateName.value = template.name
+  testEmail.value = ''
+  testError.value = ''
+  testSuccess.value = ''
+  showTestModal.value = true
+}
+
+function closeTestModal() {
+  showTestModal.value = false
+  testTemplateId.value = null
+  testTemplateName.value = ''
+  testEmail.value = ''
+  testError.value = ''
+  testSuccess.value = ''
+}
+
+async function sendTestEmail() {
+  if (!testEmail.value || !testTemplateId.value) return
+  testSending.value = true
+  testError.value = ''
+  testSuccess.value = ''
+  try {
+    const { data } = await client.post(`/admin/email-templates/${testTemplateId.value}/test`, {
+      email: testEmail.value,
+    })
+    if (data.error) {
+      testError.value = data.message
+    } else {
+      testSuccess.value = data.message
+    }
+  } catch (err) {
+    testError.value = err.response?.data?.message || 'Failed to send test email'
+  } finally {
+    testSending.value = false
   }
 }
 
