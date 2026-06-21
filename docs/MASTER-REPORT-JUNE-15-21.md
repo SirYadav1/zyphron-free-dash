@@ -294,7 +294,7 @@ All 40 bugs from the scan report were fixed in a single session.
 **Commits:** 13 commits
 **Files Changed:** 50+ files, 3,000+ lines
 
-#### 🐛 Bug Fixes (5)
+#### 🐛 Bug Fixes (6)
 | # | Bug | Severity | Fix |
 |---|-----|----------|-----|
 | 1 | Settings emojis | Low | Removed all emojis from settings tabs |
@@ -302,6 +302,7 @@ All 40 bugs from the scan report were fixed in a single session.
 | 3 | Specific login errors | Medium | "No account found", "Incorrect password", etc. |
 | 4 | Power button confusion | Medium | Removed power button, kept Edit only |
 | 5 | Duplicate RAM/Disk in admin servers | Medium | Removed duplicate info, added allocation column |
+| 6 | Roles DTO missing `level` field | Medium | Added level to CreateRoleDto + UpdateRoleDto |
 
 #### 🔧 Features Added (8)
 | # | Feature | Description |
@@ -365,7 +366,7 @@ All 40 bugs from the scan report were fixed in a single session.
 | June 18 | 0 | 5 |
 | June 19 | 40 | 45 |
 | June 20 | 12 | 57 |
-| June 21 | 5 | **62** |
+| June 21 | 6 | **63** |
 
 ### Security Fixes by Day
 | Date | Fixes | Running Total |
@@ -446,7 +447,7 @@ All 40 bugs from the scan report were fixed in a single session.
 
 ## 🐛 Bugs Summary
 
-### Found: 83+ | Fixed: 62+ | Fix Rate: 74.7%
+### Found: 83+ | Fixed: 63+ | Fix Rate: 75.9%
 
 | Severity | Found | Fixed | Remaining |
 |----------|-------|-------|-----------|
@@ -454,7 +455,7 @@ All 40 bugs from the scan report were fixed in a single session.
 | High | 20 | 15 | 5 |
 | Medium | 30 | 22 | 8 |
 | Low | 18 | 13 | 5 |
-| **Total** | **83** | **62** | **21** |
+| **Total** | **83** | **63** | **20** |
 
 ---
 
@@ -560,7 +561,7 @@ client/
 
 **Report Generated:** 2026-06-21
 **Total Development Time:** 7 days (June 15-21, 2026)
-**Status:** ✅ Active development — 62 bugs fixed, 64 features added, 22 security fixes applied
+**Status:** ✅ Active development — 63 bugs fixed, 64 features added, 22 security fixes applied
 
 **GitHub:** https://github.com/SirYadav1/zyphron-free-dash
 **Commits:** 72 total
