@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: A4; margin: 18mm 12mm; background: #0a0f1a; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #e2e8f0; background: #0a0f1a; font-size: 10px; line-height: 1.5; }
+  
+  .cover { page-break-after: always; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .cover-line { width: 200px; height: 3px; background: #3b82f6; margin: 20px auto; }
+  .cover h1 { font-size: 38px; font-weight: 800; color: #fff; letter-spacing: 3px; }
+  .cover .tagline { font-size: 13px; color: #94a3b8; letter-spacing: 5px; text-transform: uppercase; }
+  .cover .title { font-size: 24px; font-weight: 700; color: #fff; margin-top: 25px; }
+  .cover .subtitle { font-size: 14px; color: #60a5fa; margin-top: 6px; }
+  .cover-info { margin-top: 35px; text-align: left; }
+  .cover-info td { padding: 3px 10px; font-size: 10px; }
+  .cover-info td:first-child { color: #94a3b8; text-align: right; }
+  .cover-info td:last-child { color: #fff; font-weight: 600; }
+  
+  h1 { font-size: 20px; color: #fff; border-bottom: 2px solid #1e293b; padding-bottom: 6px; margin: 25px 0 12px; page-break-after: avoid; }
+  h1 .num { color: #3b82f6; }
+  h2 { font-size: 14px; color: #60a5fa; margin: 18px 0 8px; page-break-after: avoid; }
+  h3 { font-size: 11px; color: #93c5fd; margin: 10px 0 5px; }
+  
+  p { margin: 4px 0; color: #cbd5e1; }
+  ul { margin: 4px 0 4px 18px; }
+  li { margin: 2px 0; color: #cbd5e1; }
+  li::marker { color: #3b82f6; }
+  
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  th { background: #0f1729; color: #fff; font-size: 9px; font-weight: 700; padding: 6px 8px; text-align: left; border: 1px solid #1e293b; }
+  td { padding: 5px 8px; font-size: 9px; color: #cbd5e1; border: 1px solid #1e293b; }
+  tr:nth-child(even) td { background: #0f1729; }
+  tr:nth-child(odd) td { background: #0d1321; }
+  
+  pre { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 10px 14px; margin: 8px 0; font-family: 'Courier New', monospace; font-size: 8px; color: #4ade80; white-space: pre-wrap; }
+  
+  .method { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 700; font-family: monospace; }
+  .get { background: rgba(34,197,94,0.2); color: #4ade80; }
+  .post { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .put { background: rgba(234,179,8,0.2); color: #fbbf24; }
+  .patch { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .delete { background: rgba(239,68,68,0.2); color: #f87171; }
+  
+  .auth { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 7px; font-weight: 700; }
+  .auth-public { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .auth-user { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .auth-admin { background: rgba(239,68,68,0.15); color: #f87171; }
+  
+  .endpoint { background: #0f1729; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 14px; margin: 8px 0; page-break-inside: avoid; }
+  .endpoint-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .endpoint-path { font-family: monospace; font-size: 10px; color: #fff; font-weight: 600; }
+  .endpoint-desc { font-size: 9px; color: #94a3b8; margin-top: 4px; }
+  .endpoint-body { font-size: 9px; color: #cbd5e1; }
+  
+  .page-break { page-break-before: always; }
+  .toc-item { display: flex; padding: 5px 0; border-bottom: 1px solid #1e293b; }
+  .toc-num { color: #3b82f6; font-weight: 700; width: 25px; }
+  .toc-title { color: #e2e8f0; flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1>ZYPHRON CLOUD</h1>
+  <div class="tagline">INFRASTRUCTURE & HOSTING SOLUTIONS</div>
+  <div class="cover-line"></div>
+  <div class="title">API DOCUMENTATION</div>
+  <div class="subtitle">Zyphron Free Dashboard - Complete Endpoint Reference</div>
+  <div class="cover-info">
+    <table>
+      <tr><td>Document Ref:</td><td>ZC-API-DOC-2026</td></tr>
+      <tr><td>Base URL:</td><td>http://108.181.193.242:8080/api</td></tr>
+      <tr><td>Version:</td><td>1.0</td></tr>
+      <tr><td>Date:</td><td>June 21, 2026</td></tr>
+      <tr><td>Total Endpoints:</td><td>130+</td></tr>
+      <tr><td>Auth:</td><td>JWT Bearer Token</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<h1><span class="num"></span> TABLE OF CONTENTS</h1>
+<div class="toc-item"><span class="toc-num">1</span><span class="toc-title">Authentication & Overview</span></div>
+<div class="toc-item"><span class="toc-num">2</span><span class="toc-title">Auth Module (12 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">3</span><span class="toc-title">Servers Module (10 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">4</span><span class="toc-title">Tickets Module (12 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">5</span><span class="toc-title">Credits & Store (10 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">6</span><span class="toc-title">Products & Categories (10 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">7</span><span class="toc-title">Admin Module (30+ endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">8</span><span class="toc-title">Coin Orders (9 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">9</span><span class="toc-title">Email Templates (7 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">10</span><span class="toc-title">Invoices, Roles, AFK (15 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">11</span><span class="toc-title">Discord, Vouchers, Partners (15 endpoints)</span></div>
+<div class="toc-item"><span class="toc-num">12</span><span class="toc-title">Misc (Useful Links, Preferences, etc.)</span></div>
+
+<!-- 1. AUTH OVERVIEW -->
+<div class="page-break"></div>
+<h1><span class="num">1.</span> AUTHENTICATION & OVERVIEW</h1>
+
+<h2>Base URL</h2>
+<pre>http://108.181.193.242:8080/api</pre>
+
+<h2>Authentication</h2>
+<p>All protected endpoints require a JWT Bearer token in the Authorization header:</p>
+<pre>Authorization: Bearer &lt;access_token&gt;</pre>
+
+<h2>Getting a Token</h2>
+<pre>POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+Response:
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "uuid",
+    "username": "user",
+    "email": "user@example.com",
+    "isAdmin": false,
+    "coins": 100
+  }
+}</pre>
+
+<h2>Rate Limiting</h2>
+<table>
+  <tr><th>Endpoint</th><th>Limit</th></tr>
+  <tr><td>Global</td><td>100 requests / 60 seconds</td></tr>
+  <tr><td>POST /auth/register</td><td>3 requests / hour</td></tr>
+  <tr><td>POST /auth/login</td><td>5 requests / minute</td></tr>
+  <tr><td>POST /auth/2fa/*</td><td>3 requests / minute</td></tr>
+</table>
+
+<h2>Error Response Format</h2>
+<pre>{
+  "statusCode": 401,
+  "message": "Invalid credentials",
+  "error": "Unauthorized"
+}</pre>
+
+<h2>Auth Levels</h2>
+<table>
+  <tr><th>Level</th><th>Description</th></tr>
+  <tr><td><span class="auth auth-public">PUBLIC</span></td><td>No authentication required</td></tr>
+  <tr><td><span class="auth auth-user">USER</span></td><td>Valid JWT token required</td></tr>
+  <tr><td><span class="auth auth-admin">ADMIN</span></td><td>Valid JWT + is_admin=true required</td></tr>
+</table>
+
+<!-- 2. AUTH MODULE -->
+<div class="page-break"></div>
+<h1><span class="num">2.</span> AUTH MODULE</h1>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/register</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Register a new user account</div>
+  <div class="endpoint-body">
+    <strong>Body:</strong> { email, username, password, first_name?, last_name? }
+    <br><strong>Response:</strong> { message, userId }
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/login</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Login with email/username and password</div>
+  <div class="endpoint-body">
+    <strong>Body:</strong> { email, password }
+    <br><strong>Response:</strong> { access_token, user } OR { requires2FA, email } OR { requiresEmailVerification, email }
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/login-2fa</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Complete login with 2FA code</div>
+  <div class="endpoint-body">
+    <strong>Body:</strong> { email, code }
+    <br><strong>Response:</strong> { access_token, user }
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/auth/me</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get current user profile</div>
+  <div class="endpoint-body">
+    <strong>Response:</strong> { id, username, email, coins, isAdmin, profilePhoto, ... }
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/auth/me</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Update current user profile</div>
+  <div class="endpoint-body">
+    <strong>Body:</strong> { username?, email?, first_name?, last_name? }
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/profile/photo</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Upload profile photo (multipart/form-data)</div>
+  <div class="endpoint-body">
+    <strong>Body:</strong> file (image/jpeg, image/png, max 5MB)
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/setup-admin</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Create first admin account (requires setup key)</div>
+  <div class="endpoint-body">
+    <strong>Body:</strong> { setupKey, username, email, password }
+  </div>
+</div>
+
+<h2>2FA Endpoints</h2>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/2fa/generate</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Generate 2FA secret and QR code</div>
+  <div class="endpoint-body"><strong>Response:</strong> { secret, qrCodeUrl }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/2fa/enable</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Enable 2FA with verification code</div>
+  <div class="endpoint-body"><strong>Body:</strong> { code }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/2fa/disable</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Disable 2FA</div>
+  <div class="endpoint-body"><strong>Body:</strong> { code }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/2fa/check</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Check if email has 2FA enabled</div>
+  <div class="endpoint-body"><strong>Body:</strong> { email } <br><strong>Response:</strong> { requires2FA: boolean }</div>
+</div>
+
+<!-- 3. SERVERS MODULE -->
+<div class="page-break"></div>
+<h1><span class="num">3.</span> SERVERS MODULE</h1>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/servers</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">List all servers for current user</div>
+  <div class="endpoint-body"><strong>Response:</strong> Server[] with Pterodactyl data</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/servers</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Deploy a new server</div>
+  <div class="endpoint-body"><strong>Body:</strong> { serverName, productId, nestId, eggId }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/servers/:id</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get server details</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/servers/:id</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Update server name</div>
+  <div class="endpoint-body"><strong>Body:</strong> { serverName }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method delete">DELETE</span>
+    <span class="endpoint-path">/api/servers/:id</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Delete a server</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/servers/stats</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get user server statistics</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/servers/blueprint</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get server deployment blueprint</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/servers/plans</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get available server plans</div>
+</div>
+
+<h2>Server Renewal</h2>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/servers/:id/renewal-info</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get server renewal cost info</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/servers/:id/renew</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Renew server (costs coins)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/servers/:id/auto-renew-toggle</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Toggle auto-renewal</div>
+</div>
+
+<!-- 4. TICKETS MODULE -->
+<div class="page-break"></div>
+<h1><span class="num">4.</span> TICKETS MODULE</h1>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/tickets</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">List user's tickets</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/tickets</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Create a new ticket</div>
+  <div class="endpoint-body"><strong>Body:</strong> { subject, message, priority?, serverId? }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/tickets/:id</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get ticket with messages</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/tickets/:id/reply</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Reply to ticket</div>
+  <div class="endpoint-body"><strong>Body:</strong> { message }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/tickets/:id/close</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Close ticket</div>
+</div>
+
+<h2>Admin Tickets</h2>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/tickets</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all tickets</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/tickets/:id/reply</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Admin reply to ticket</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/tickets/:id/close</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Admin close ticket</div>
+</div>
+
+<!-- 5. CREDITS & STORE -->
+<div class="page-break"></div>
+<h1><span class="num">5.</span> CREDITS & STORE</h1>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/credits/packages</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get available coin packages</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/credits/buy</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Purchase coins (creates order)</div>
+  <div class="endpoint-body"><strong>Body:</strong> { packageId }</div>
+</div>
+
+<h2>Coin Orders</h2>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/coin-orders</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Create coin order</div>
+  <div class="endpoint-body"><strong>Body:</strong> { coins_amount, price }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/coin-orders/list</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">List user's coin orders</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/coin-orders/:id/screenshot</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Upload payment screenshot</div>
+</div>
+
+<h2>Store (Server Upgrade/Renew)</h2>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/store/:serverId</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get upgrade options for server</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/store/:serverId/upgrade</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Upgrade server (RAM/CPU/Disk)</div>
+  <div class="endpoint-body"><strong>Body:</strong> { ram?, cpu?, disk? }</div>
+</div>
+
+<!-- 6. PRODUCTS & CATEGORIES -->
+<div class="page-break"></div>
+<h1><span class="num">6.</span> PRODUCTS & CATEGORIES</h1>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/products</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">List all active products</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/products/nests/:nestId/eggs</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get eggs for a nest</div>
+</div>
+
+<h2>Categories (User)</h2>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/categories</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">List all service categories</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/categories/:id/products</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get products in a category</div>
+</div>
+
+<h2>Admin Products</h2>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/products</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all products (admin)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/products</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Create product</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/admin/products/:id</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Update product</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method delete">DELETE</span>
+    <span class="endpoint-path">/api/admin/products/:id</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Delete product</div>
+</div>
+
+<!-- 7. ADMIN MODULE -->
+<div class="page-break"></div>
+<h1><span class="num">7.</span> ADMIN MODULE (30+ Endpoints)</h1>
+
+<h2>Dashboard</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/stats</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get admin dashboard statistics</div>
+</div>
+
+<h2>User Management</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/users</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all users</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/users/:id</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get user details</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/admin/users/:id</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Update user</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method delete">DELETE</span>
+    <span class="endpoint-path">/api/admin/users/:id</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Delete user</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/users/:id/ban</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Ban user + suspend servers</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/users/:id/unban</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Unban user + unsuspend servers</div>
+</div>
+
+<h2>Server Management</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/servers</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all servers</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/servers/:id/suspend</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Suspend server</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/servers/:id/unsuspend</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Unsuspend server</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/servers/:id/delete</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Delete server</div>
+</div>
+
+<h2>Settings</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/settings</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get all settings</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/admin/settings/:key</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Update setting</div>
+  <div class="endpoint-body"><strong>Body:</strong> { value: string }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/settings/smtp</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get SMTP configuration</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/admin/settings/smtp</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Update SMTP configuration</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/email/test</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Send test email</div>
+  <div class="endpoint-body"><strong>Body:</strong> { email: string }</div>
+</div>
+
+<h2>Pterodactyl Integration</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/pterodactyl/config</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get Pterodactyl config</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/admin/pterodactyl/config</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Update Pterodactyl config (API key, panel URL)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/pterodactyl/test</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Test Pterodactyl connection</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/pterodactyl/nodes</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get Pterodactyl nodes</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/pterodactyl/nests</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get Pterodactyl nests</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/pterodactyl/nests/:id/eggs</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get eggs for a nest</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/pterodactyl/users</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get all Pterodactyl users</div>
+</div>
+
+<!-- 8. COIN ORDERS ADMIN -->
+<div class="page-break"></div>
+<h1><span class="num">8.</span> COIN ORDERS (Admin)</h1>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/coin-orders</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all coin orders</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/coin-orders/pending-count</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get pending orders count</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/coin-orders/:id/approve</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Approve coin order (credits added to user)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/coin-orders/:id/decline</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Decline coin order</div>
+</div>
+
+<!-- 9. EMAIL TEMPLATES -->
+<div class="page-break"></div>
+<h1><span class="num">9.</span> EMAIL TEMPLATES</h1>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/email-templates</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all email templates</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/email-templates</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Create email template</div>
+  <div class="endpoint-body"><strong>Body:</strong> { name, subject, body, type, is_active? }</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method patch">PATCH</span>
+    <span class="endpoint-path">/api/admin/email-templates/:id</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Update email template</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method delete">DELETE</span>
+    <span class="endpoint-path">/api/admin/email-templates/:id</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Delete email template</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/email-templates/:id/test</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Send test email with template</div>
+  <div class="endpoint-body"><strong>Body:</strong> { email: string }<br><strong>Response:</strong> { message, template }</div>
+</div>
+
+<!-- 10. INVOICES, ROLES, AFK -->
+<div class="page-break"></div>
+<h1><span class="num">10.</span> INVOICES, ROLES, AFK</h1>
+
+<h2>Invoices</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/invoices</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get user's invoices</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/invoices/all</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Get all invoices (admin)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/invoices</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Create invoice (admin)</div>
+</div>
+
+<h2>Roles</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/roles</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all roles</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/roles</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Create role</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/roles/:id/assign</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Assign role to user</div>
+  <div class="endpoint-body"><strong>Body:</strong> { userId }</div>
+</div>
+
+<h2>AFK System</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/afk/start</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Start AFK earning session</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/afk/heartbeat</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Send heartbeat (keeps session alive)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/afk/stop</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Stop AFK session + claim coins</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/afk/stats</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get AFK earning stats</div>
+</div>
+
+<!-- 11. DISCORD, VOUCHERS, PARTNERS -->
+<div class="page-break"></div>
+<h1><span class="num">11.</span> DISCORD, VOUCHERS, PARTNERS</h1>
+
+<h2>Discord</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/discord/link</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get Discord OAuth link</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/discord/callback</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Discord OAuth callback</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/discord/status</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get Discord connection status</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/discord/unlink</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Unlink Discord account</div>
+</div>
+
+<h2>Vouchers</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/vouchers</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all vouchers</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/vouchers</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Create voucher</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/vouchers/redeem</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Redeem voucher code</div>
+  <div class="endpoint-body"><strong>Body:</strong> { code }</div>
+</div>
+
+<h2>Partners</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/partners</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all partners</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/partners</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Create partner</div>
+</div>
+
+<!-- 12. MISC -->
+<div class="page-break"></div>
+<h1><span class="num">12.</span> MISC ENDPOINTS</h1>
+
+<h2>Useful Links</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/useful-links</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get active useful links</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/admin/useful-links</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">List all useful links (admin)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/admin/useful-links</span>
+    <span class="auth auth-admin">ADMIN</span>
+  </div>
+  <div class="endpoint-desc">Create useful link</div>
+</div>
+
+<h2>Preferences</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/preferences</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get user preferences</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method put">PUT</span>
+    <span class="endpoint-path">/api/preferences</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Update user preferences</div>
+</div>
+
+<h2>Achievements</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/achievements</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get user achievements</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/achievements/available</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Get available achievements</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/achievements/check</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Check and unlock achievements</div>
+</div>
+
+<h2>App Config</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/config</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Get public app config (panel URL, etc.)</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/health</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Health check endpoint</div>
+</div>
+
+<h2>Email Verification</h2>
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method post">POST</span>
+    <span class="endpoint-path">/api/auth/send-verification-email</span>
+    <span class="auth auth-user">USER</span>
+  </div>
+  <div class="endpoint-desc">Send verification email to current user</div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header">
+    <span class="method get">GET</span>
+    <span class="endpoint-path">/api/auth/verify-email</span>
+    <span class="auth auth-public">PUBLIC</span>
+  </div>
+  <div class="endpoint-desc">Verify email with token (query param: ?token=xxx)</div>
+</div>
+
+<!-- END -->
+<div class="page-break"></div>
+<h1><span class="num"></span> END OF DOCUMENTATION</h1>
+<div style="text-align: center; margin-top: 40px;">
+  <p style="color: #64748b;">Zyphron Cloud API Documentation</p>
+  <p style="color: #94a3b8;">Total Endpoints: 130+</p>
+  <p style="color: #60a5fa;">zyphron.cloud | github.com/SirYadav1</p>
+</div>
+
+</body>
+</html>
