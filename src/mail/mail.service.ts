@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import * as nodemailer from 'nodemailer';
 import { Setting } from '../entities/setting.entity';
 import { EmailTemplate } from '../entities/email-template.entity';
+import { EncryptionUtil } from '../common/utils/encryption.util';
 
 function escapeHtml(text: string): string {
   if (!text) return '';
@@ -39,7 +40,7 @@ export class MailService {
       const smtpHost = settingsMap.get('smtp_host') || process.env.MAIL_HOST || 'smtp.gmail.com';
       const smtpPort = settingsMap.get('smtp_port') || process.env.MAIL_PORT || '587';
       const smtpUser = settingsMap.get('smtp_user') || process.env.MAIL_USER;
-      const smtpPass = settingsMap.get('smtp_pass') || process.env.MAIL_PASS;
+      const smtpPass = EncryptionUtil.decrypt(settingsMap.get('smtp_pass') || process.env.MAIL_PASS || '');
       const smtpEncryption = settingsMap.get('smtp_encryption') || process.env.MAIL_ENCRYPTION || 'tls';
 
       if (smtpUser && smtpPass) {

@@ -13,6 +13,7 @@ import {
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
+import { EncryptionUtil } from '../common/utils/encryption.util';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import {
   IsString,
@@ -268,6 +269,16 @@ export class AdminController {
     @Body() dto: UpdateSettingDto,
   ) {
     return this.adminService.updateSetting(key, dto.value);
+  }
+
+  @Post('encrypt')
+  async encryptValue(@Body() body: { value: string }) {
+    return { encrypted: EncryptionUtil.encrypt(body.value) };
+  }
+
+  @Post('decrypt')
+  async decryptValue(@Body() body: { value: string }) {
+    return { decrypted: EncryptionUtil.decrypt(body.value) };
   }
 
   @Get('pterodactyl/nodes')

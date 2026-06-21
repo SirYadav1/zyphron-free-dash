@@ -13,6 +13,7 @@ import { Setting } from '../entities/setting.entity';
 import { ServerTemplate } from '../entities/server-template.entity';
 import { MailService } from '../mail/mail.service';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
+import { EncryptionUtil } from '../common/utils/encryption.util';
 import { ServerLifecycleService } from '../servers/server-lifecycle.service';
 
 @Injectable()
@@ -408,7 +409,13 @@ export class AdminService {
     }
 
     // Ensure value is always a string
-    const stringValue = String(value ?? '');
+    let stringValue = String(value ?? '');
+
+    // Encrypt sensitive values before storing
+    const encryptKeys = ['smtp_pass'];
+    if (encryptKeys.includes(key) && stringValue && !EncryptionUtil.isEncrypted(stringValue)) {
+      stringValue = EncryptionUtil.encrypt(stringValue);
+    }
 
     const existing = await this.settingRepo.findOne({ where: { key } });
     if (existing) {
@@ -585,7 +592,11 @@ export class AdminService {
 
     for (let i = 0; i < smtpKeys.length; i++) {
       const key = smtpKeys[i];
-      const value = smtpValues[i] || '';
+      let value = smtpValues[i] || '';
+      // Encrypt SMTP password before storing
+      if (key === 'smtp_pass' && value && !EncryptionUtil.isEncrypted(value)) {
+        value = EncryptionUtil.encrypt(value);
+      }
       const existing = await this.settingRepo.findOne({ where: { key } });
       if (existing) {
         await this.settingRepo.update(existing.id, { value });
