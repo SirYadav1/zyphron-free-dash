@@ -155,6 +155,11 @@ export class AdminService {
           if (isNaN(coins) || coins < 0) {
             throw new BadRequestException('Coins must be a non-negative number');
           }
+          // cap the balance, a bad edit otherwise overflows it
+          const MAX_COINS = 10_000_000;
+          if (coins > MAX_COINS) {
+            throw new BadRequestException(`Coins cannot exceed ${MAX_COINS.toLocaleString()}`);
+          }
           updateData[field] = coins;
         }
         else if (field === 'password') {

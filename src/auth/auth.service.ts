@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import * as fs from 'fs';
 import { User } from '../entities/user.entity';
 import { Transaction } from '../entities/transaction.entity';
 import { Setting } from '../entities/setting.entity';
@@ -506,6 +507,30 @@ export class AuthService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+
+    // check the file signature, mimetype is attacker controlled
+    const filePath = `/var/www/html/uploads/profiles/${file.filename}`;
+    try {
+      const buffer = fs.readFileSync(filePath);
+      const header = buffer.subarray(0, 8);
+      const validSignatures: Record<string, number[]> = {
+        'image/jpeg': [0xff, 0xd8, 0xff],
+        'image/png': [0x89, 0x50, 0x4e, 0x47],
+        'image/gif': [0x47, 0x49, 0x46, 0x38],
+        'image/webp': [0x52, 0x49, 0x46, 0x46],
+      };
+      const expectedSig = validSignatures[file.mimetype];
+      if (expectedSig) {
+        const matches = expectedSig.every((byte, i) => header[i] === byte);
+        if (!matches) {
+          fs.unlinkSync(filePath);
+          throw new BadRequestException('File content does not match declared type');
+        }
+      }
+    } catch (err) {
+      if (err instanceof BadRequestException) throw err;
+      // read failed, skip validation
     }
 
     const photoUrl = `/uploads/profiles/${file.filename}`;

@@ -16,6 +16,20 @@ import * as crypto from 'crypto';
 export class ServersService {
   private readonly logger = new Logger(ServersService.name);
 
+  // strip tags and control chars, keep it under 32 chars
+  private sanitizeServerName(name: string): string {
+    // strip HTML tags
+    let clean = name.replace(/<[^>]*>/g, '');
+    // strip control characters and null bytes
+    clean = clean.replace(/[\x00-\x1f\x7f]/g, '');
+    // only allow safe characters
+    clean = clean.replace(/[^a-zA-Z0-9._\-\s]/g, '');
+    // trim and limit length
+    clean = clean.trim().substring(0, 100);
+    if (!clean) throw new BadRequestException('Server name contains only invalid characters');
+    return clean;
+  }
+
   constructor(
     @InjectRepository(Server) private readonly serverRepo: Repository<Server>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
@@ -243,6 +257,9 @@ export class ServersService {
   }
 
   async createServer(userId: string, serverName: string, productId?: number, overrideNestId?: number, overrideEggId?: number): Promise<any> {
+    // same filter as create
+    serverName = this.sanitizeServerName(serverName);
+
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
     if (user.is_banned) throw new ForbiddenException('Your account is banned');
@@ -710,7 +727,7 @@ export class ServersService {
     if (!server) throw new NotFoundException('Server not found');
 
     const updateData: any = {};
-    if (data.serverName) updateData.server_name = data.serverName;
+    if (data.serverName) updateData.server_name = this.sanitizeServerName(data.serverName);
 
     if (Object.keys(updateData).length > 0) {
       await this.serverRepo.update(serverId, updateData);

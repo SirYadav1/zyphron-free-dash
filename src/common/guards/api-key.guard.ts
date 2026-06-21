@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
+import { createHash } from 'crypto';
 
 // available permissions
 export const PERMISSIONS = {
@@ -65,10 +66,13 @@ export class ApiKeyGuard implements CanActivate {
       );
     }
 
+    // incoming token is hashed before the lookup
+    const tokenHash = createHash('sha256').update(apiKey).digest('hex');
+
     // check if API key exists and is active
     const api = await this.dataSource.query(
       'SELECT id, token, is_active, permissions, ip_whitelist, rate_limit FROM application_apis WHERE token = ?',
-      [apiKey],
+      [tokenHash],
     );
 
     if (!api?.[0]) {

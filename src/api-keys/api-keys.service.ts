@@ -11,6 +11,11 @@ export class ApiKeysService {
     private readonly apiRepo: Repository<ApplicationApi>,
   ) {}
 
+  // store the hash only, the token is shown once on create
+  private hashToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
+
   async findAll(): Promise<ApplicationApi[]> {
     return this.apiRepo.find({ order: { created_at: 'DESC' } });
   }
@@ -22,17 +27,18 @@ export class ApiKeysService {
   }
 
   async create(dto: Partial<ApplicationApi>): Promise<{ api: ApplicationApi; token: string }> {
-    const token = this.generateToken(); // Always auto-generate
+    const token = this.generateToken();
+    const tokenHash = this.hashToken(token);
     
     const api = await this.apiRepo.save(
       this.apiRepo.create({
         ...dto,
-        token,
+        token: tokenHash,
         permissions: typeof dto.permissions === 'string' ? dto.permissions : JSON.stringify(dto.permissions || '[]'),
       }),
     );
 
-    // Return the plain token (not hashed) so user can copy it
+    // return plain token once (only time user sees it)
     return { api, token };
   }
 
@@ -56,8 +62,14 @@ export class ApiKeysService {
     if (result.affected === 0) throw new NotFoundException('API key not found');
   }
 
+  // compare hashes, never the raw token
+  async verifyToken(plainToken: string): Promise<ApplicationApi | null> {
+    const hash = this.hashToken(plainToken);
+    const api = await this.apiRepo.findOne({ where: { token: hash } });
+    return api || null;
+  }
+
   private generateToken(): string {
-    // Generate a token similar to Pterodactyl's ptla_ format
     const prefix = 'zya_';
     const randomPart = randomBytes(32).toString('hex');
     return `${prefix}${randomPart}`;
