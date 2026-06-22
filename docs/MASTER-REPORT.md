@@ -5,11 +5,11 @@
 > **Panel:** https://console.zyphron.cloud
 > **GitHub:** https://github.com/SirYadav1/zyphron-free-dash
 > **Developer:** SirYadav + Hermes Agent (AI Assistant)
-> **Report Period:** June 15 – June 21, 2026
-> **Total Commits:** 55+
-> **Total Files Modified:** 105+
-> **Total Bugs Fixed:** 63+
-> **Total Features Added:** 40+
+> **Report Period:** June 15 – June 22, 2026
+> **Total Commits:** 60+
+> **Total Files Modified:** 120+
+> **Total Bugs Fixed:** 65+
+> **Total Features Added:** 45+
 
 ---
 
@@ -17,19 +17,19 @@
 
 | Metric | Value |
 |--------|-------|
-| **Development Days** | 7 (June 15–21, 2026) |
-| **Total Commits** | 55+ |
-| **Files Modified** | 105+ |
-| **Lines of Code Added** | 15,000+ |
-| **Features Implemented** | 40+ |
-| **Bugs Fixed** | 63+ |
+| **Development Days** | 8 (June 15–22, 2026) |
+| **Total Commits** | 60+ |
+| **Files Modified** | 120+ |
+| **Lines of Code Added** | 17,000+ |
+| **Features Implemented** | 45+ |
+| **Bugs Fixed** | 65+ |
 | **Security Issues Fixed** | 20+ |
 | **Security Issues Open** | 15 (mostly medium/low) |
 | **Backend** | NestJS (TypeScript) |
 | **Frontend** | Vue.js 3 (Vite) |
 | **Database** | SQLite (auto-sync in dev) |
 | **Panel** | Pterodactyl (via API) |
-| **Current Version** | v1.2.2 |
+| **Current Version** | v1.3.0 |
 
 ---
 
@@ -651,6 +651,33 @@ client/
 
 ---
 
+### 🗓️ Day 8 — June 22, 2026 (Sunday)
+
+**Focus:** API Improvements, Permission System & Bug Fixes
+
+#### What Was Done:
+- ✅ **POST /api/v1/users** — User creation API for main site integration
+  - Same username + email + password → Dashboard DB + Pterodactyl auto-sync
+  - Validates: duplicate email/username, min length
+  - Returns: user object with pterodactyl_user_id
+- ✅ **Pterodactyl-style permission checkboxes** — API key creation
+  - Select All / individual action checkboxes
+  - Visual permission tags in sidebar
+  - Removed user-defined token option
+- ✅ **Auto token generation** — zya_ prefix + random hex
+  - Token always auto-generated, removed user input
+- ✅ **Activity Logs date fix** — 14 Vue components fixed
+  - Changed camelCase `createdAt` → snake_case `created_at`
+  - Added fallback: `created_at || createdAt` for compatibility
+  - Fixed in: Activity Logs, Users, Servers, Tickets, Payments, API, Partner Users
+
+#### Commits:
+- `5782f67` — feat: POST /api/v1/users endpoint
+- `63ee9b6` — feat: Pterodactyl-style permission checkboxes
+- `4723296` — fix: activity logs date display
+
+---
+
 ## 🔜 Remaining Work
 
 ### High Priority
@@ -676,6 +703,6 @@ client/
 
 ---
 
-**Report Generated:** June 20, 2026
+**Report Generated:** June 22, 2026
 **Status:** ✅ Production Ready (with notes)
 **Next Session:** Continue with security fixes and feature additions
