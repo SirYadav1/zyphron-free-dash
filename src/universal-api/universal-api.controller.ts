@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Param,
   Query,
@@ -9,9 +10,13 @@ import {
   Req,
   HttpCode,
   Headers,
+  BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { ApiKeyGuard, RequirePermission } from '../common/guards/api-key.guard';
 import { DataSource } from 'typeorm';
+import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 
 @Controller('v1')
 @UseGuards(ApiKeyGuard)
@@ -35,6 +40,133 @@ export class UniversalApiController {
   async getPermissions() {
     const { PERMISSIONS } = require('../common/guards/api-key.guard');
     return PERMISSIONS;
+  }
+
+  // ============================================================
+  // USER CREATION — called by main site
+  // ============================================================
+
+  @Post('users')
+  @RequirePermission('users', 'write')
+  @HttpCode(201)
+  async createUser(
+    @Body() body: {
+      username: string;
+      email: string;
+      password: string;
+      first_name?: string;
+      last_name?: string;
+    },
+  ) {
+    // Validate required fields
+    if (!body.username || !body.email || !body.password) {
+      throw new BadRequestException('username, email, and password are required');
+    }
+    if (body.username.length < 3) {
+      throw new BadRequestException('Username must be at least 3 characters');
+    }
+    if (body.password.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters');
+    }
+
+    // Check if email already exists
+    const existingEmail = await this.dataSource.query(
+      'SELECT id FROM users WHERE email = ?',
+      [body.email.toLowerCase()],
+    );
+    if (existingEmail?.[0]) {
+      throw new ConflictException('Email already registered');
+    }
+
+    // Check if username already exists
+    const existingUsername = await this.dataSource.query(
+      'SELECT id FROM users WHERE username = ?',
+      [body.username],
+    );
+    if (existingUsername?.[0]) {
+      throw new ConflictException('Username already taken');
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(body.password, 10);
+    const userId = crypto.randomUUID();
+
+    // Create user in dashboard DB
+    await this.dataSource.query(
+      `INSERT INTO users (id, username, email, first_name, last_name, password_hash, coins, email_verified, created_at, last_active)
+       VALUES (?, ?, ?, ?, ?, ?, 100, 1, datetime('now'), datetime('now'))`,
+      [
+        userId,
+        body.username,
+        body.email.toLowerCase(),
+        body.first_name || null,
+        body.last_name || null,
+        passwordHash,
+      ],
+    );
+
+    // Auto-sync to Pterodactyl (non-blocking, wrapped in try/catch)
+    let pterodactylUserId: number | null = null;
+    try {
+      const { PterodactylService } = require('../pterodactyl/pterodactyl.service');
+      // We need to use the existing service — import via DataSource approach
+      const pteroResult = await this.dataSource.query(
+        `SELECT value FROM settings WHERE key = 'pterodactyl_panel_url'`,
+      );
+      const pteroApiKey = await this.dataSource.query(
+        `SELECT value FROM settings WHERE key = 'pterodactyl_api_key'`,
+      );
+
+      if (pteroResult?.[0]?.value && pteroApiKey?.[0]?.value) {
+        const panelUrl = pteroResult[0].value.replace(/\/$/, '');
+        const apiKey = pteroApiKey[0].value;
+
+        const response = await fetch(`${panelUrl}/api/application/users`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/vnd.pterodactyl.v1+json',
+          },
+          body: JSON.stringify({
+            username: body.username,
+            email: body.email.toLowerCase(),
+            first_name: body.first_name || body.username,
+            last_name: body.last_name || 'User',
+            password: body.password,
+          }),
+        });
+
+        if (response.ok) {
+          const pteroData = await response.json();
+          pterodactylUserId = pteroData?.attributes?.id || pteroData?.id;
+          if (pterodactylUserId) {
+            await this.dataSource.query(
+              'UPDATE users SET pterodactyl_user_id = ?, pterodactyl_username = ? WHERE id = ?',
+              [pterodactylUserId, body.username, userId],
+            );
+          }
+        }
+      }
+    } catch (err) {
+      // Pterodactyl sync failed — user still created on dashboard
+      // Will sync on first login via existing syncPterodactylAccount()
+    }
+
+    return {
+      object: 'user',
+      attributes: {
+        id: userId,
+        username: body.username,
+        email: body.email.toLowerCase(),
+        first_name: body.first_name || null,
+        last_name: body.last_name || null,
+        coins: 100,
+        pterodactyl_user_id: pterodactylUserId,
+        email_verified: true,
+        created_at: new Date().toISOString(),
+      },
+    };
   }
 
   // ============================================================
