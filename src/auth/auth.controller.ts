@@ -21,13 +21,14 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { SetupAdminDto } from './dto/setup-admin.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { AdminGuard } from '../common/guards/admin.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Throttle({ default: { limit: 10, ttl: 600000 } }) // 10 per 10 min
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post('register')
   async register(@Body() dto: RegisterDto, @Ip() ip: string) {
     return this.authService.register(dto, ip);
