@@ -50,6 +50,10 @@ export class StoreService {
     const diskPerMb = parseInt(await this.getSetting('disk_cost_per_mb', '1'));
     const renewalCost = parseInt(await this.getSetting('renewal_coins', '50'));
 
+    const maxRam = parseInt(await this.getSetting('max_ram_per_server', '16384'));
+    const maxCpu = parseInt(await this.getSetting('max_cpu_per_server', '400'));
+    const maxDisk = parseInt(await this.getSetting('max_disk_per_server', '51200'));
+
     return {
       server: {
         id: server.id,
@@ -59,14 +63,17 @@ export class StoreService {
         ram: {
           current: server.ram_mb,
           base: template?.ram_mb || server.ram_mb,
+          max: maxRam,
         },
         cpu: {
           current: server.cpu_percent,
           base: template?.cpu_percent || server.cpu_percent,
+          max: maxCpu,
         },
         disk: {
           current: server.disk_mb,
           base: template?.disk_mb || server.disk_mb,
+          max: maxDisk,
         },
       },
       pricing: {
@@ -103,6 +110,48 @@ export class StoreService {
       throw new BadRequestException('Amount must be positive');
     }
 
+    // Check resource limits
+    const maxRam = parseInt(await this.getSetting('max_ram_per_server', '16384'));
+    const maxCpu = parseInt(await this.getSetting('max_cpu_per_server', '400'));
+    const maxDisk = parseInt(await this.getSetting('max_disk_per_server', '51200'));
+
+    let currentValue: number;
+    let field: 'ram_mb' | 'cpu_percent' | 'disk_mb';
+    let maxLimit: number;
+    let unit: string;
+
+    switch (type) {
+      case 'ram':
+        currentValue = server.ram_mb;
+        field = 'ram_mb';
+        maxLimit = maxRam;
+        unit = 'MB';
+        break;
+      case 'cpu':
+        currentValue = server.cpu_percent;
+        field = 'cpu_percent';
+        maxLimit = maxCpu;
+        unit = '%';
+        break;
+      case 'disk':
+        currentValue = server.disk_mb;
+        field = 'disk_mb';
+        maxLimit = maxDisk;
+        unit = 'MB';
+        break;
+      default:
+        throw new BadRequestException(
+          'Invalid upgrade type. Use ram, cpu, or disk.',
+        );
+    }
+
+    const newValue = currentValue + amount;
+    if (newValue > maxLimit) {
+      throw new BadRequestException(
+        `Cannot upgrade ${type.toUpperCase()} beyond ${maxLimit}${unit} limit. Current: ${currentValue}${unit}, Requested: +${amount}${unit} = ${newValue}${unit}`,
+      );
+    }
+
     const costPerUnit = parseInt(
       type === 'ram'
         ? await this.getSetting('ram_cost_per_mb', '2')
@@ -110,28 +159,6 @@ export class StoreService {
           ? await this.getSetting('cpu_cost_per_percent', '5')
           : await this.getSetting('disk_cost_per_mb', '1'),
     );
-
-    let currentValue: number;
-    let field: 'ram_mb' | 'cpu_percent' | 'disk_mb';
-
-    switch (type) {
-      case 'ram':
-        currentValue = server.ram_mb;
-        field = 'ram_mb';
-        break;
-      case 'cpu':
-        currentValue = server.cpu_percent;
-        field = 'cpu_percent';
-        break;
-      case 'disk':
-        currentValue = server.disk_mb;
-        field = 'disk_mb';
-        break;
-      default:
-        throw new BadRequestException(
-          'Invalid upgrade type. Use ram, cpu, or disk.',
-        );
-    }
 
     const totalCost = amount * costPerUnit;
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -155,8 +182,6 @@ export class StoreService {
         'Failed to deduct coins. Please try again.',
       );
     }
-
-    const newValue = currentValue + amount;
 
     try {
       await this.pterodactylService.updateServerBuild(

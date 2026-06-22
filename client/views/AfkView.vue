@@ -23,6 +23,24 @@
       </div>
     </div>
 
+    <!-- AFK Disabled State -->
+    <div v-if="!afkEnabled && !loadingAfkStatus" class="card-surface p-8 border-amber-500/20 bg-amber-500/5">
+      <div class="flex flex-col items-center text-center space-y-4">
+        <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+          <Lock :size="28" :stroke-width="1.5" class="text-amber-400" />
+        </div>
+        <div class="space-y-2">
+          <h3 class="text-lg font-bold text-text-primary">AFK Earning Disabled</h3>
+          <p class="text-sm text-text-muted max-w-md">
+            The AFK earning feature is currently locked by the administrator. You cannot start new earning sessions at this time.
+          </p>
+        </div>
+        <div class="px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p class="text-xs font-bold text-amber-400">Contact admin to unlock this feature</p>
+        </div>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
       <!-- Main Generation Area -->
       <div class="flex flex-col justify-center min-h-[350px]">
@@ -41,7 +59,7 @@
 
           <button
             @click="startEarning"
-            :disabled="starting"
+            :disabled="starting || !afkEnabled"
             class="btn-primary px-12 py-3 text-sm"
           >
             {{ starting ? 'Authenticating...' : 'Start Session' }}
@@ -82,7 +100,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="space-y-1">
               <p class="text-label opacity-40">Earned</p>
               <p class="text-2xl font-bold text-accent tabular-nums">{{ store.totalEarned }}</p>
@@ -146,11 +164,13 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAfkStore } from '../stores/afk'
 import client from '../api/client'
-import { Zap, Diamond, Info, ShieldOff } from 'lucide-vue-next'
+import { Zap, Diamond, Info, ShieldOff, Lock } from 'lucide-vue-next'
 
 const store = useAfkStore()
 
 const starting = ref(false)
+const afkEnabled = ref(true)
+const loadingAfkStatus = ref(true)
 const pageVisible = ref(document.hasFocus() && document.visibilityState === 'visible')
 const pageStatus = ref(getPageStatus())
 
@@ -174,6 +194,16 @@ let broadcastChannel = null
 let statsInterval = null
 
 onMounted(async () => {
+  // Check if AFK earning is enabled
+  try {
+    const { data } = await client.get('/afk/status')
+    afkEnabled.value = data.enabled
+  } catch {
+    // If check fails, assume enabled (backend will enforce)
+  } finally {
+    loadingAfkStatus.value = false
+  }
+
   await store.fetchStats()
 
   visibilityHandler = () => {

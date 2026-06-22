@@ -170,7 +170,7 @@
           </div>
 
           <!-- Resource Cards -->
-          <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <!-- CPU -->
             <div class="bg-base/50 rounded-lg p-3 border border-border">
               <div class="flex items-center gap-1.5 mb-1.5">

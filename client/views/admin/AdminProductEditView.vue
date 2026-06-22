@@ -17,7 +17,7 @@
       </div>
 
       <template v-else>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1 col-span-2">
             <label class="text-label">Name</label>
             <input v-model="form.name" type="text" class="input-field w-full" />
@@ -25,9 +25,15 @@
           <div class="space-y-1 col-span-2">
             <label class="text-label">Description</label>
             <textarea v-model="form.description" class="input-field w-full" rows="3"></textarea>
-          </div>
+            </div>
 
-          <!-- Category -->
+            <div class="space-y-1 col-span-2">
+            <label class="text-label">Plan Background Image URL</label>
+            <input v-model="form.image_url" type="text" class="input-field w-full" placeholder="https://example.com/plan-bg.png" />
+            <p class="text-[10px] text-text-muted">Background image displayed on the plan card</p>
+            </div>
+
+            <!-- Category -->
           <div class="space-y-1 col-span-2">
             <label class="text-label">Category</label>
             <select v-model="form.category_id" class="input-field w-full">
@@ -156,7 +162,8 @@ const form = ref({
   egg_name: '',
   nest_name: '',
   coin_price: 1000,
-  category_id: null
+  category_id: null,
+  image_url: ''
 })
 
 // Helper functions for Pterodactyl API response format
@@ -205,7 +212,8 @@ onMounted(async () => {
       egg_name: p.egg_name || '',
       nest_name: p.nest_name || '',
       coin_price: p.coin_price || 1000,
-      category_id: p.category_id || null
+      category_id: p.category_id || null,
+      image_url: p.image_url || ''
     }
 
     // Set selected IDs for dropdowns

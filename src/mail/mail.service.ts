@@ -128,6 +128,24 @@ export class MailService {
   }
 
   /**
+   * Get the configured sender email from database settings
+   */
+  private async getFromAddress(): Promise<string> {
+    const settings = await this.settingRepo.find();
+    const sm = new Map(settings.map(s => [s.key, s.value]));
+    return sm.get('smtp_from') || process.env.MAIL_FROM || 'noreply@zyphron.com';
+  }
+
+  /**
+   * Get the configured sender name from database settings
+   */
+  private async getFromName(): Promise<string> {
+    const settings = await this.settingRepo.find();
+    const sm = new Map(settings.map(s => [s.key, s.value]));
+    return sm.get('smtp_from_name') || 'Zyphron';
+  }
+
+  /**
    * Send a generic email with custom subject and HTML body
    */
   async sendEmail(to: string, subject: string, htmlBody: string, fromAddress?: string): Promise<boolean> {
@@ -216,7 +234,7 @@ export class MailService {
       expiry_hours: '24',
     });
     if (!html) return false;
-    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
+    return this.safeSendMail({ from: await this.getFromAddress(), to, subject, html });
   }
 
   async sendBanNotification(to: string, reason: string, firstName?: string) {
@@ -226,7 +244,7 @@ export class MailService {
       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
     });
     if (!html) return false;
-    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
+    return this.safeSendMail({ from: await this.getFromAddress(), to, subject, html });
   }
 
   async sendUnbanNotification(to: string, firstName?: string) {
@@ -237,7 +255,7 @@ export class MailService {
       ${this.templateHelper.button('Login Now', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#10b981')}
     `;
     return this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from: await this.getFromAddress(),
       to,
       subject: 'Account Unbanned — Zyphron Cloud',
       html: await this.templateHelper.wrap(content, 'linear-gradient(135deg,#10b981 0%,#059669 100%)'),
@@ -253,7 +271,7 @@ export class MailService {
       dashboard_url: process.env.FRONTEND_URL || 'https://zyphron.cloud',
     });
     if (!html) return false;
-    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
+    return this.safeSendMail({ from: await this.getFromAddress(), to, subject, html });
   }
 
   async sendServerUnsuspension(to: string, serverName: string, firstName?: string) {
@@ -264,7 +282,7 @@ export class MailService {
       ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#10b981')}
     `;
     return this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from: await this.getFromAddress(),
       to,
       subject: `Server Unsuspended — ${serverName}`,
       html: await this.templateHelper.wrap(content, 'linear-gradient(135deg,#10b981 0%,#059669 100%)'),
@@ -280,7 +298,7 @@ export class MailService {
       ${this.templateHelper.p('All data associated with this server has been permanently removed.', { color: '#64748b', size: '13px' })}
     `;
     return this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from: await this.getFromAddress(),
       to,
       subject: `Server Deleted — ${serverName}`,
       html: await this.templateHelper.wrap(content, 'linear-gradient(135deg,#ef4444 0%,#dc2626 100%)'),
@@ -299,7 +317,7 @@ export class MailService {
       dashboard_url: process.env.FRONTEND_URL || 'https://zyphron.cloud',
     });
     if (!html) return false;
-    return this.safeSendMail({ from: process.env.MAIL_FROM || 'noreply@zyphron.com', to, subject, html });
+    return this.safeSendMail({ from: await this.getFromAddress(), to, subject, html });
   }
 
   async sendPaymentDeclined(to: string, username: string, orderId: number, reason?: string) {
@@ -311,7 +329,7 @@ export class MailService {
       ${this.templateHelper.p('Please try again or contact support.')}
     `;
     return this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from: await this.getFromAddress(),
       to,
       subject: `Payment Declined — Order #${orderId} — Zyphron Cloud`,
       html: await this.templateHelper.wrap(content, 'linear-gradient(135deg,#ef4444 0%,#dc2626 100%)'),
@@ -326,7 +344,7 @@ export class MailService {
       ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#10b981')}
     `;
     return this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from: await this.getFromAddress(),
       to,
       subject: `Voucher Redeemed — +${credits} Coins — Zyphron Cloud`,
       html: await this.templateHelper.wrap(content, 'linear-gradient(135deg,#10b981 0%,#059669 100%)'),
@@ -342,7 +360,7 @@ export class MailService {
       ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#3b82f6')}
     `;
     return this.safeSendMail({
-      from: process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from: await this.getFromAddress(),
       to,
       subject: `Partner Commission — +${commission} Coins — Zyphron Cloud`,
       html: await this.templateHelper.wrap(content, 'linear-gradient(135deg,#3b82f6 0%,#2563eb 100%)'),

@@ -66,6 +66,9 @@ export class AdminService {
     return users.map((user) => ({
       id: user.id,
       username: user.username,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
       isBanned: user.is_banned,
       bannedAt: user.banned_at,
       banReason: user.ban_reason,
@@ -381,6 +384,9 @@ export class AdminService {
       ram_cost_per_mb: '2',
       cpu_cost_per_percent: '5',
       disk_cost_per_mb: '1',
+      max_ram_per_server: '16384',
+      max_cpu_per_server: '400',
+      max_disk_per_server: '51200',
       login_image_url: '',
       favicon_url: '',
     };

@@ -53,10 +53,11 @@
           <!-- Status Badge + Active -->
           <div class="flex items-center justify-between">
             <span
-              :class="p.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'"
-              class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full"
+              :class="p.disabled ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'"
+              class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+              @click.stop="toggleProduct(p)"
             >
-              {{ p.isActive ? 'Active' : 'Inactive' }}
+              {{ p.disabled ? 'Inactive' : 'Active' }}
             </span>
             <span class="text-[10px] font-bold text-text-muted uppercase tracking-wider">ID: {{ p.id }}</span>
           </div>
@@ -77,7 +78,7 @@
           </div>
 
           <!-- Specs -->
-          <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div class="flex items-center gap-2">
               <div class="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <HardDrive :size="13" :stroke-width="2" class="text-blue-400" />
@@ -196,6 +197,16 @@ const filteredProducts = computed(() => {
 const getCategoryName = (catId) => {
   const cat = categories.value.find(c => c.id === catId)
   return cat ? cat.name : 'Uncategorized'
+}
+
+async function toggleProduct(p) {
+  const newDisabled = p.disabled ? 0 : 1
+  try {
+    await client.put(`/admin/products/${p.id}`, { disabled: newDisabled })
+    p.disabled = newDisabled
+  } catch (err) {
+    console.error('Failed to toggle product:', err)
+  }
 }
 
 const fetchProducts = async () => {

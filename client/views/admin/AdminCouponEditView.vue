@@ -21,7 +21,7 @@
           <label class="text-label">Code</label>
           <input v-model="form.code" type="text" class="input-field w-full" />
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
             <label class="text-label">Value</label>
             <input v-model.number="form.value" type="number" class="input-field w-full" />

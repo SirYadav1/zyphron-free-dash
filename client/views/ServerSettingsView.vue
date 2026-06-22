@@ -102,7 +102,7 @@
             <p class="text-sm text-text-muted">Current resource limits for this server.</p>
           </div>
 
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="p-5 bg-base/50 rounded-xl text-center space-y-1 border border-border">
               <p class="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-40">Memory</p>
               <p class="text-base font-bold text-text-primary tabular-nums">{{ server.ramMb }} MB</p>

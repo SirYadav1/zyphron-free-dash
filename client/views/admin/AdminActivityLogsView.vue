@@ -6,7 +6,7 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <input v-model="searchQuery" type="text" placeholder="Search logs..." class="input-field w-64" />
+      <input v-model="searchQuery" type="text" placeholder="Search logs..." class="input-field w-full sm:w-64" />
     </div>
 
     <div class="card-surface overflow-hidden">

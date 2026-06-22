@@ -128,19 +128,6 @@
             </div>
           </div>
           <div class="space-y-2">
-            <label class="text-[10px] font-bold text-text-muted uppercase">Email Logo URL</label>
-            <div class="flex gap-2">
-              <input v-model="emailLogoUrl" type="text" placeholder="https://example.com/logo.png" class="input-field py-2 flex-1" />
-              <button @click="saveEmailLogo" :disabled="savingEmailLogo" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-                {{ savingEmailLogo ? '...' : 'Save' }}
-              </button>
-            </div>
-            <div v-if="emailLogoUrl" class="mt-2 rounded-lg overflow-hidden border border-border max-w-[180px]">
-              <img :src="emailLogoUrl" @error="emailLogoError = true" @load="emailLogoError = false" class="w-full h-20 object-cover" />
-            </div>
-            <p class="text-[10px] text-text-muted">Logo displayed in all email headers (forgot password, notifications, etc.)</p>
-          </div>
-          <div class="space-y-2">
             <label class="text-[10px] font-bold text-text-muted uppercase">Brand Name</label>
             <div class="flex gap-2">
               <input v-model="brandName" type="text" placeholder="Zyphron Cloud" class="input-field py-2 flex-1" />
@@ -150,6 +137,71 @@
             </div>
             <p class="text-[10px] text-text-muted">Brand name displayed in email headers and footers</p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== FEATURES TAB ==================== -->
+    <div v-if="activeTab === 'features'" class="space-y-6">
+      <!-- Maintenance Mode -->
+      <div class="card-surface p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <AlertTriangle :size="16" class="text-red-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">Maintenance Mode</h3>
+              <p class="text-[11px] text-text-muted">Block normal users from logging in</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" v-model="maintenanceMode" @change="saveMaintenanceMode" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+            </label>
+            <span class="text-[11px] font-bold" :class="maintenanceMode ? 'text-red-400' : 'text-text-muted'">
+              {{ maintenanceMode ? 'ON' : 'OFF' }}
+            </span>
+          </div>
+        </div>
+        <div class="bg-surface/50 px-3 py-2 rounded-lg border border-border">
+          <p class="text-[11px] text-text-muted">
+            <span v-if="maintenanceMode" class="text-red-400 font-bold">⚠️ Active:</span>
+            <span v-else class="text-emerald-400 font-bold">✓ Inactive:</span>
+            Normal users will see a maintenance message and cannot login. Admins can still access the dashboard.
+          </p>
+        </div>
+      </div>
+
+      <!-- AFK Earn Feature -->
+      <div class="card-surface p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <Zap :size="16" class="text-amber-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">AFK Earn Feature</h3>
+              <p class="text-[11px] text-text-muted">Allow users to earn credits via AFK sessions</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" v-model="afkEnabled" @change="saveAfkEnabled" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+            </label>
+            <span class="text-[11px] font-bold" :class="afkEnabled ? 'text-amber-400' : 'text-text-muted'">
+              {{ afkEnabled ? 'UNLOCKED' : 'LOCKED' }}
+            </span>
+          </div>
+        </div>
+        <div class="bg-surface/50 px-3 py-2 rounded-lg border border-border">
+          <p class="text-[11px] text-text-muted">
+            <span v-if="afkEnabled" class="text-amber-400 font-bold">✓ Unlocked:</span>
+            <span v-else class="text-red-400 font-bold">🔒 Locked:</span>
+            {{ afkEnabled ? 'Users can start AFK sessions and earn credits.' : 'AFK earning is disabled. Users cannot start new sessions.' }}
+          </p>
         </div>
       </div>
     </div>
@@ -278,10 +330,10 @@
         </div>
 
         <div v-else class="space-y-3">
-          <select v-model="selectedNodeId" class="input-field py-2" @change="selectedNodeId = Number($event.target.value)">
+          <select v-model="selectedNodeId" class="input-field py-2">
             <option :value="null" disabled>Select a node...</option>
-            <option v-for="node in nodes" :key="node.id" :value="Number(node.id)">
-              {{ node.name || 'Node #' + node.id }} — {{ node.fqdn || 'unknown' }} ({{ formatRam(node.memory || node.ram) }}, {{ formatDisk(node.disk || node.diskSpace) }})
+            <option v-for="node in nodes" :key="node.attributes?.id || node.id" :value="Number(node.attributes?.id || node.id)">
+              {{ node.attributes?.name || node.name || 'Node #' + (node.attributes?.id || node.id) }} — {{ node.attributes?.fqdn || node.fqdn || 'unknown' }} ({{ formatRam(node.attributes?.memory || node.memory || node.ram) }}, {{ formatDisk(node.attributes?.disk || node.disk || node.diskSpace) }})
             </option>
           </select>
 
@@ -552,6 +604,72 @@
         <p v-if="allocationSuccess" class="text-xs font-bold text-emerald-400">✓ {{ allocationSuccess }}</p>
         <p v-if="allocationError" class="text-xs font-bold text-red-400">✕ {{ allocationError }}</p>
       </div>
+
+      <!-- Max Resource Limits (Upgrade Limits) -->
+      <div class="card-surface p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <ShieldAlert :size="16" class="text-red-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">Max Resource Limits</h3>
+              <p class="text-[11px] text-text-muted">Maximum RAM/CPU/Disk a server can be upgraded to</p>
+            </div>
+          </div>
+          <button @click="saveMaxResourceLimits" :disabled="savingMaxLimits" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+            {{ savingMaxLimits ? 'Saving...' : 'Save Limits' }}
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Max RAM (MB)</label>
+            <input v-model.number="maxResourceSettings.max_ram_per_server" type="number" class="input-field py-2" placeholder="16384" />
+            <p class="text-[10px] text-text-muted">{{ formatRam(maxResourceSettings.max_ram_per_server || 0) }}</p>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Max CPU (%)</label>
+            <input v-model.number="maxResourceSettings.max_cpu_per_server" type="number" class="input-field py-2" placeholder="400" />
+            <p class="text-[10px] text-text-muted">{{ maxResourceSettings.max_cpu_per_server || 0 }}%</p>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold text-text-muted uppercase">Max Disk (MB)</label>
+            <input v-model.number="maxResourceSettings.max_disk_per_server" type="number" class="input-field py-2" placeholder="51200" />
+            <p class="text-[10px] text-text-muted">{{ formatDisk(maxResourceSettings.max_disk_per_server || 0) }}</p>
+          </div>
+        </div>
+
+        <p v-if="maxLimitsSuccess" class="text-xs font-bold text-emerald-400">✓ {{ maxLimitsSuccess }}</p>
+        <p v-if="maxLimitsError" class="text-xs font-bold text-red-400">✕ {{ maxLimitsError }}</p>
+      </div>
+
+      <!-- Server Expiry Transfer -->
+      <div class="card-surface p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <UserCog :size="16" class="text-amber-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-text-primary">Expiry Transfer</h3>
+              <p class="text-[11px] text-text-muted">Transfer expired servers to this admin account</p>
+            </div>
+          </div>
+          <button @click="saveTransferEmail" :disabled="savingTransferEmail" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
+            {{ savingTransferEmail ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-bold text-text-muted uppercase">Transfer To Email</label>
+          <input v-model="transferEmail" type="email" class="input-field py-2 w-full" placeholder="admin@zyphron.cloud" />
+          <p class="text-[10px] text-text-muted">When a server expires, ownership transfers to this admin account on Pterodactyl panel</p>
+        </div>
+
+        <p v-if="transferSuccess" class="text-xs font-bold text-emerald-400">✓ {{ transferSuccess }}</p>
+        <p v-if="transferError" class="text-xs font-bold text-red-400">✕ {{ transferError }}</p>
+      </div>
     </div>
 
     <!-- ==================== SECURITY TAB ==================== -->
@@ -597,10 +715,10 @@
         <div
           v-for="(value, key) in store.settings"
           :key="key"
-          class="px-5 py-3 flex items-center gap-4 hover:bg-white/[0.02] transition-colors group"
+          class="px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 hover:bg-white/[0.02] transition-colors group"
         >
           <!-- Key -->
-          <div class="w-64 flex-shrink-0">
+          <div class="w-full sm:w-64 flex-shrink-0">
             <span class="text-xs font-mono text-accent/80 bg-accent/5 px-2 py-0.5 rounded">{{ key }}</span>
           </div>
           <!-- Value -->
@@ -638,7 +756,7 @@ import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
 import {
   AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive,
-  Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck, MessageSquare,
+  Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck, MessageSquare, UserCog, ShieldAlert,
 } from 'lucide-vue-next'
 
 const store = useAdminStore()
@@ -651,6 +769,7 @@ const success = ref('')
 const activeTab = ref('general')
 const tabs = [
   { id: 'general', label: 'General', icon: 'Settings' },
+  { id: 'features', label: 'Features', icon: 'Power' },
   { id: 'pterodactyl', label: 'Pterodactyl', icon: 'Monitor' },
   { id: 'email', label: 'Email / SMTP', icon: 'Mail' },
   { id: 'server', label: 'Server Defaults', icon: 'Server' },
@@ -660,6 +779,9 @@ const tabs = [
 const savingAfk = ref(false)
 const afkCoins = ref(10)
 const afkInterval = ref(1)
+
+const maintenanceMode = ref(false)
+const afkEnabled = ref(true)
 
 const motdMessage = ref('')
 const motdEnabled = ref(false)
@@ -700,6 +822,20 @@ const allocationSettings = ref({
 const allocationSuccess = ref('')
 const allocationError = ref('')
 
+const savingMaxLimits = ref(false)
+const maxResourceSettings = ref({
+  max_ram_per_server: 16384,
+  max_cpu_per_server: 400,
+  max_disk_per_server: 51200,
+})
+const maxLimitsSuccess = ref('')
+const maxLimitsError = ref('')
+
+const transferEmail = ref('')
+const savingTransferEmail = ref(false)
+const transferSuccess = ref('')
+const transferError = ref('')
+
 const savingPtero = ref(false)
 const testingPtero = ref(false)
 const pteroConfig = ref({ panelType: 'pterodactyl', panelUrl: '', apiKey: '' })
@@ -728,7 +864,7 @@ const showSmtpPass = ref(false)
 
 const selectedNode = computed(() => {
   if (!selectedNodeId.value || !nodes.value.length) return null
-  return nodes.value.find(n => Number(n.id) === Number(selectedNodeId.value))
+  return nodes.value.find(n => Number(n.attributes?.id || n.id) === Number(selectedNodeId.value))
 })
 
 function formatRam(mb) {
@@ -754,7 +890,7 @@ async function loadNodes() {
 }
 
 async function saveDefaultNode() {
-  if (!selectedNodeId.value) return
+  if (!selectedNodeId.value || isNaN(selectedNodeId.value)) { nodeError.value = 'Please select a node first'; return }
   savingNode.value = true; nodeError.value = ''; nodeSuccess.value = ''
   try {
     await store.updateSetting('default_node_id', selectedNodeId.value.toString())
@@ -775,6 +911,27 @@ async function saveAllocationSettings() {
   finally { savingAllocation.value = false }
 }
 
+async function saveMaxResourceLimits() {
+  savingMaxLimits.value = true; maxLimitsError.value = ''; maxLimitsSuccess.value = ''
+  try {
+    const promises = Object.entries(maxResourceSettings.value).map(([key, val]) =>
+      store.updateSetting(key, val.toString())
+    )
+    await Promise.all(promises)
+    maxLimitsSuccess.value = 'Max resource limits saved!'
+  } catch (err) { maxLimitsError.value = err.response?.data?.message || 'Failed' }
+  finally { savingMaxLimits.value = false }
+}
+
+async function saveTransferEmail() {
+  savingTransferEmail.value = true; transferError.value = ''; transferSuccess.value = ''
+  try {
+    await store.updateSetting('server_owner_transfer_email', transferEmail.value)
+    transferSuccess.value = 'Transfer email updated!'
+  } catch (err) { transferError.value = err.response?.data?.message || 'Failed' }
+  finally { savingTransferEmail.value = false }
+}
+
 onMounted(async () => {
   await store.fetchSettings()
   if (store.settings['afk_coins_per_minute']) afkCoins.value = parseInt(store.settings['afk_coins_per_minute']) || 10
@@ -786,6 +943,10 @@ onMounted(async () => {
   if (store.settings['email_logo_url']) emailLogoUrl.value = store.settings['email_logo_url']
   if (store.settings['brand_name']) brandName.value = store.settings['brand_name']
   if (store.settings['default_node_id']) selectedNodeId.value = parseInt(store.settings['default_node_id']) || null
+  
+  // Load feature toggles
+  if (store.settings['maintenance_mode']) maintenanceMode.value = store.settings['maintenance_mode'] === 'true'
+  if (store.settings['afk_enabled']) afkEnabled.value = store.settings['afk_enabled'] === 'true'
 
   const getSettingNum = (key, fallback) => store.settings[`default_${key}`] ? parseInt(store.settings[`default_${key}`]) : fallback
   const getSettingStr = (key, fallback) => store.settings[`default_${key}`] || fallback
@@ -802,6 +963,17 @@ onMounted(async () => {
     startup_command: getSettingStr('startup_command', ''),
     auto_start: getSettingNum('auto_start', 1),
   }
+
+  // Load max resource limits
+  const getMaxSetting = (key, fallback) => store.settings[key] ? parseInt(store.settings[key]) : fallback
+  maxResourceSettings.value = {
+    max_ram_per_server: getMaxSetting('max_ram_per_server', 16384),
+    max_cpu_per_server: getMaxSetting('max_cpu_per_server', 400),
+    max_disk_per_server: getMaxSetting('max_disk_per_server', 51200),
+  }
+
+  // Load transfer email
+  if (store.settings['server_owner_transfer_email']) transferEmail.value = store.settings['server_owner_transfer_email']
 
   // Load SMTP settings from store
   smtpForm.value = {
@@ -872,6 +1044,28 @@ async function saveAfkRates() {
     success.value = `AFK rates: ${afkCoins.value} CR / ${Math.max(1, afkInterval.value)} MIN`
   } catch (err) { error.value = err.response?.data?.message || 'Failed' }
   finally { savingAfk.value = false }
+}
+
+async function saveMaintenanceMode() {
+  error.value = ''; success.value = ''
+  try {
+    await store.updateSetting('maintenance_mode', maintenanceMode.value.toString())
+    success.value = `Maintenance mode ${maintenanceMode.value ? 'enabled' : 'disabled'}`
+  } catch (err) { 
+    maintenanceMode.value = !maintenanceMode.value
+    error.value = err.response?.data?.message || 'Failed' 
+  }
+}
+
+async function saveAfkEnabled() {
+  error.value = ''; success.value = ''
+  try {
+    await store.updateSetting('afk_enabled', afkEnabled.value.toString())
+    success.value = `AFK earning ${afkEnabled.value ? 'unlocked' : 'locked'}`
+  } catch (err) { 
+    afkEnabled.value = !afkEnabled.value
+    error.value = err.response?.data?.message || 'Failed' 
+  }
 }
 
 async function updateSetting(key, value) {

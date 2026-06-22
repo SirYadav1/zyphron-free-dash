@@ -74,6 +74,9 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   nest_name: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  image_url: string | null;
+
   @Column({ type: 'integer', default: 1000 })
   coin_price: number;
 

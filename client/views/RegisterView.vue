@@ -19,7 +19,7 @@
             <span>✅</span> {{ success }}
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-1.5">
               <label for="firstName" class="text-label ml-0.5">First Name</label>
               <input

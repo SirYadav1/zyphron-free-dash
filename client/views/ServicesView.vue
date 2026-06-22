@@ -53,6 +53,8 @@
                 <Package :size="48" class="text-blue-400/40" />
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-[#0f1729] via-[#0f1729]/20 to-transparent"></div>
+              <!-- Sub Image Badge -->
+              <img v-if="cat.sub_image_url" :src="cat.sub_image_url" alt="badge" class="absolute top-3 left-3 w-10 h-10 rounded-lg object-cover border border-blue-500/30 shadow-lg" />
               <!-- Plan Count Badge -->
               <div class="absolute top-4 right-4 bg-blue-900/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-blue-500/20">
                 <span class="text-[10px] font-bold text-gray-400 uppercase">{{ cat.product_count || 0 }} Plans</span>

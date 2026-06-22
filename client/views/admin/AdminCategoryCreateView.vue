@@ -12,7 +12,7 @@
     <div v-if="success" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">{{ success }}</div>
 
     <div class="card-surface p-6 space-y-6">
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="space-y-1 col-span-2">
           <label class="text-label">Name</label>
           <input v-model="form.name" type="text" class="input-field w-full" placeholder="e.g. Minecraft Servers" />

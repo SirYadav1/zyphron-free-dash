@@ -17,7 +17,7 @@
       </div>
 
       <template v-else>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-base/50 border border-border rounded-xl p-4">
             <span class="text-label block mb-1">Name</span>
             <span class="text-text-primary text-sm font-bold">{{ server.serverName }}</span>

@@ -80,6 +80,8 @@ export class ServiceCategoriesService {
       nest_id: p.nest_id,
       egg_id: p.egg_id,
       category_id: p.category_id,
+      image_url: p.image_url,
+      disabled: p.disabled,
     }));
   }
 
