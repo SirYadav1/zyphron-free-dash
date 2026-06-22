@@ -71,8 +71,26 @@
 | JS Bundle (no secrets) | ✅ No API keys, tokens, or credentials in client bundle |
 | .env Not Exposed via Web | ✅ SPA catch-all returns HTML, not .env content |
 | Directory Listing (port 8080) | ✅ `autoindex off` |
-| SQLite DB Not Exposed | ✅ Not accessible via web |
+| SQLite DB Not Exposed | ✅ Not accessible via web (SPA catch-all) |
 | Admin Guard | ✅ All admin endpoints protected with AdminGuard |
+| JWT Validation | ✅ Empty/random/None-algorithm tokens rejected |
+| IDOR Protection | ✅ All endpoints verify user_id ownership |
+| SQL Injection | ✅ Parameterized queries + input validation |
+| Mass Assignment | ✅ is_admin, coins rejected by ValidationPipe |
+| Race Condition | ✅ Duplicate email registration blocked |
+| Source Maps | ✅ Not exposed (404) |
+| Error Handling | ✅ No stack traces or internal details leaked |
+| File Upload | ✅ Mimetype validation (image only) |
+| Path Traversal | ✅ Blocked (404) |
+| HTTP Methods | ✅ TRACE disabled, OPTIONS works for CORS |
+| Health Endpoint | ✅ Minimal info (status + service name) |
+| Config Endpoint | ✅ Only site name + panel URL (no secrets) |
+| .env Permissions | ✅ 600 (root only) |
+| .env Not in Git | ✅ Listed in .gitignore |
+| console.log in Production | ✅ Zero statements |
+| No eval/exec | ✅ No dynamic code execution |
+| No process.exit | ✅ Clean shutdown |
+| v-html Safety | ✅ Icons are hardcoded SVGs, not user input |
 
 ---
 
@@ -98,7 +116,8 @@
 - Business logic flaws (requires domain-specific knowledge)
 - Subdomain takeover (no subdomains configured)
 - Source map exposure (Vite production build — no .map files)
+- DoS flooding (intentionally not tested)
 
 ---
 
-**Overall Score: 7/10** — Good security posture with a few critical fixes needed.
+**Overall Score: 8/10** — Strong security posture. Only SSL and port 80 hardening needed.
