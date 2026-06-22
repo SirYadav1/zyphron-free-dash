@@ -1,122 +1,151 @@
 <template>
-  <div class="space-y-10 max-w-3xl">
-    <div class="space-y-1">
-      <div class="flex items-center gap-3">
-        <router-link to="/admin/api" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to API Keys</router-link>
+  <div class="min-h-screen bg-[#0d1117]">
+    <!-- Header -->
+    <div class="bg-[#161b22] border-b border-[#30363d] px-6 py-4">
+      <div class="flex items-center justify-between max-w-6xl mx-auto">
+        <div class="flex items-center gap-3">
+          <router-link to="/admin/api" class="text-[#8b949e] hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </router-link>
+          <div>
+            <h1 class="text-xl font-bold text-white">Application API</h1>
+            <p class="text-sm text-[#8b949e]">Create a new application API key.</p>
+          </div>
+        </div>
+        <div class="text-sm text-[#8b949e]">
+          <span class="text-[#58a6ff]">Admin</span>
+          <span class="mx-2">&gt;</span>
+          <span class="text-[#58a6ff]">Application API</span>
+          <span class="mx-2">&gt;</span>
+          <span class="text-white">New Credentials</span>
+        </div>
       </div>
-      <h2 class="text-2xl font-bold text-text-primary tracking-tight">Create API Key</h2>
-      <p class="text-sm text-text-muted">Generate a new API access key with permissions</p>
     </div>
 
-    <div v-if="error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500">{{ error }}</div>
-    <div v-if="success" class="p-3 bg-accent/10 border border-accent/20 rounded-md text-xs font-bold text-accent">{{ success }}</div>
-
-    <div class="card-surface p-6 space-y-6">
-      <!-- Basic Info -->
-      <div class="space-y-1">
-        <label class="text-label">Memo</label>
-        <input v-model="form.memo" type="text" class="input-field w-full" placeholder="e.g. My API Key" />
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-label">Token (optional)</label>
-        <input v-model="form.token" type="text" class="input-field w-full font-mono" placeholder="Leave empty to auto-generate" />
-        <p class="text-[11px] text-text-muted mt-1">Paste your own token or leave blank to generate one automatically.</p>
-      </div>
-
-      <!-- Permissions -->
-      <div class="space-y-3">
-        <label class="text-label">Permissions</label>
-        <p class="text-[11px] text-text-muted">Select what this API key can access</p>
-        
-        <div class="space-y-4">
-          <div v-for="(perm, resource) in permissions" :key="resource" class="border border-border rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  :id="`perm-${resource}`"
-                  :checked="isAllSelected(resource)"
-                  @change="toggleAll(resource)"
-                  class="rounded border-border text-accent focus:ring-accent"
-                />
-                <label :for="`perm-${resource}`" class="text-sm font-bold text-text-primary">{{ perm.label }}</label>
-              </div>
-              <span class="text-[10px] text-text-muted">
-                {{ getSelectedCount(resource) }}/{{ perm.actions.length }} selected
-              </span>
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-6 py-8">
+      <div class="flex gap-8">
+        <!-- Left: Permissions -->
+        <div class="flex-1">
+          <div class="bg-[#161b22] rounded-lg border border-[#30363d] overflow-hidden">
+            <div class="bg-[#1c2128] px-6 py-4 border-b border-[#30363d]">
+              <h2 class="text-lg font-bold text-white">Select Permissions</h2>
             </div>
-            <div class="flex flex-wrap gap-2 ml-6">
-              <label 
-                v-for="action in perm.actions" 
-                :key="`${resource}:${action}`"
-                class="flex items-center gap-1.5 text-xs text-text-secondary cursor-pointer hover:text-text-primary"
+            
+            <div class="divide-y divide-[#30363d]">
+              <div 
+                v-for="(perm, resource) in permissions" 
+                :key="resource"
+                class="flex items-center px-6 py-4 hover:bg-[#1c2128] transition-colors"
               >
-                <input 
-                  type="checkbox" 
-                  :value="`${resource}:${action}`"
-                  v-model="form.permissions"
-                  class="rounded border-border text-accent focus:ring-accent"
-                />
-                {{ action }}
-              </label>
+                <div class="w-48 text-sm font-medium text-white">{{ perm.label }}</div>
+                <div class="flex-1 flex items-center gap-12">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      :name="`perm-${resource}`"
+                      value="read"
+                      v-model="form.permissions[resource]"
+                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] focus:ring-[#238636]"
+                    />
+                    <span class="text-sm text-[#c9d1d9]">Read</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      :name="`perm-${resource}`"
+                      value="write"
+                      v-model="form.permissions[resource]"
+                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] focus:ring-[#238636]"
+                    />
+                    <span class="text-sm text-[#c9d1d9]">Read & Write</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      :name="`perm-${resource}`"
+                      value="none"
+                      v-model="form.permissions[resource]"
+                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] focus:ring-[#238636]"
+                    />
+                    <span class="text-sm text-[#c9d1d9]">None</span>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Quick Select -->
-        <div class="flex gap-2 pt-2">
-          <button @click="selectAll" class="text-[11px] text-accent hover:text-accent/80">Select All</button>
-          <span class="text-text-muted">|</span>
-          <button @click="selectReadOnly" class="text-[11px] text-accent hover:text-accent/80">Read Only</button>
-          <span class="text-text-muted">|</span>
-          <button @click="selectWriteOnly" class="text-[11px] text-accent hover:text-accent/80">Write Only</button>
-          <span class="text-text-muted">|</span>
-          <button @click="clearAll" class="text-[11px] text-red-400 hover:text-red-300">Clear All</button>
+        <!-- Right: Description & Create -->
+        <div class="w-80">
+          <div class="bg-[#161b22] rounded-lg border border-[#30363d] p-6 sticky top-8">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-white mb-2">
+                  Description <span class="text-[#f85149]">*required</span>
+                </label>
+                <input 
+                  v-model="form.memo" 
+                  type="text" 
+                  class="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-sm text-white placeholder-[#484f58] focus:outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff]"
+                  placeholder="e.g. My API Key"
+                />
+              </div>
+
+              <div class="bg-[#0d1117] rounded p-4 border border-[#30363d]">
+                <p class="text-xs text-[#8b949e] leading-relaxed">
+                  Once you have assigned permissions and created this set of credentials you will be 
+                  unable to come back and edit it. If you need to make changes down the road you will 
+                  need to create a new set of credentials.
+                </p>
+              </div>
+
+              <button 
+                @click="handleSubmit" 
+                :disabled="saving || !form.memo"
+                class="w-full bg-[#238636] hover:bg-[#2ea043] disabled:bg-[#21262d] disabled:text-[#484f58] text-white font-bold py-2.5 px-4 rounded transition-colors text-sm"
+              >
+                {{ saving ? 'Creating...' : 'Create Credentials' }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Advanced Settings -->
-      <div class="border-t border-border pt-4 space-y-4">
-        <h3 class="text-sm font-bold text-text-primary">Advanced Settings</h3>
-        
-        <div class="space-y-1">
-          <label class="text-label">IP Whitelist (optional)</label>
-          <input v-model="form.ip_whitelist" type="text" class="input-field w-full" placeholder="192.168.1.1, 10.0.0.1 (comma separated, empty = allow all)" />
-        </div>
-
-        <div class="space-y-1">
-          <label class="text-label">Rate Limit (requests per minute)</label>
-          <input v-model.number="form.rate_limit" type="number" class="input-field w-32" min="1" max="1000" />
-        </div>
+      <!-- Error/Success Messages -->
+      <div v-if="error" class="mt-6 p-4 bg-[#f85149]/10 border border-[#f85149]/30 rounded-lg text-sm text-[#f85149]">
+        {{ error }}
       </div>
-
-      <!-- Preview -->
-      <div class="bg-base/50 rounded-lg p-4 space-y-2">
-        <h4 class="text-xs font-bold text-text-muted uppercase">Preview</h4>
-        <div class="text-xs text-text-secondary">
-          <p><span class="text-text-primary">Memo:</span> {{ form.memo || 'Not set' }}</p>
-          <p><span class="text-text-primary">Permissions:</span> {{ form.permissions.length }} selected</p>
-          <p><span class="text-text-primary">IP Whitelist:</span> {{ form.ip_whitelist || 'All IPs' }}</p>
-          <p><span class="text-text-primary">Rate Limit:</span> {{ form.rate_limit }} req/min</p>
-        </div>
+      <div v-if="success" class="mt-6 p-4 bg-[#238636]/10 border border-[#238636]/30 rounded-lg text-sm text-[#238636]">
+        {{ success }}
       </div>
 
       <!-- New Token Display -->
-      <div v-if="newToken" class="p-4 bg-accent/10 border border-accent/20 rounded-lg">
-        <p class="text-xs font-bold text-accent mb-2">Your API Key (copy it now, it won't be shown again)</p>
-        <div class="flex items-center gap-3">
-          <code class="flex-1 p-2 bg-base rounded text-accent font-mono text-sm break-all">{{ newToken }}</code>
-          <button @click="copyToken" class="btn-primary px-3 py-1 text-xs">Copy</button>
+      <div v-if="newToken" class="mt-6 bg-[#161b22] border border-[#238636] rounded-lg p-6">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-[#238636]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-sm font-bold text-[#238636]">API Key Created Successfully</span>
         </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex gap-3 pt-4 border-t border-border">
-        <button @click="handleSubmit" :disabled="saving" class="btn-primary px-6 py-2">
-          {{ saving ? 'Creating...' : 'Create API Key' }}
-        </button>
-        <router-link to="/admin/api" class="btn-secondary px-6 py-2 text-center">Cancel</router-link>
+        <p class="text-xs text-[#8b949e] mb-3">Copy this token now. It won't be shown again.</p>
+        <div class="flex items-center gap-3">
+          <code class="flex-1 p-3 bg-[#0d1117] rounded text-[#238636] font-mono text-sm break-all border border-[#30363d]">{{ newToken }}</code>
+          <button @click="copyToken" class="bg-[#21262d] hover:bg-[#30363d] text-white px-4 py-2 rounded text-sm transition-colors">
+            Copy
+          </button>
+        </div>
+        
+        <!-- Token Info -->
+        <div class="mt-4 p-3 bg-[#0d1117] rounded border border-[#30363d]">
+          <h4 class="text-xs font-bold text-[#8b949e] uppercase mb-2">How to use this token</h4>
+          <div class="space-y-2 text-xs text-[#c9d1d9]">
+            <p><span class="text-[#58a6ff]">Header:</span> Authorization: Bearer <span class="font-mono text-[#238636]">{{ newToken }}</span></p>
+            <p><span class="text-[#58a6ff]">Accept:</span> Application/vnd.zyphron.v1+json</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -133,85 +162,55 @@ const error = ref('')
 const success = ref('')
 const newToken = ref('')
 const permissions = ref({})
+
 const form = ref({
   memo: '',
-  token: '',
-  permissions: [],
-  ip_whitelist: '',
-  rate_limit: 60
+  permissions: {}
 })
 
 onMounted(async () => {
   try {
     const { data } = await client.get('/admin/api/permissions/list')
     permissions.value = data
+    // Initialize all permissions to 'none'
+    for (const resource of Object.keys(data)) {
+      form.value.permissions[resource] = 'none'
+    }
   } catch (err) {
     console.error('Failed to load permissions:', err)
   }
 })
 
-function isAllSelected(resource) {
-  const actions = permissions.value[resource]?.actions || []
-  return actions.every(action => form.value.permissions.includes(`${resource}:${action}`))
-}
-
-function toggleAll(resource) {
-  const actions = permissions.value[resource]?.actions || []
-  if (isAllSelected(resource)) {
-    form.value.permissions = form.value.permissions.filter(p => !p.startsWith(`${resource}:`))
-  } else {
-    const newPerms = actions.map(action => `${resource}:${action}`)
-    form.value.permissions = [...new Set([...form.value.permissions, ...newPerms])]
-  }
-}
-
-function getSelectedCount(resource) {
-  return form.value.permissions.filter(p => p.startsWith(`${resource}:`)).length
-}
-
-function selectAll() {
-  const allPerms = []
-  for (const [resource, perm] of Object.entries(permissions.value)) {
-    for (const action of perm.actions) {
-      allPerms.push(`${resource}:${action}`)
-    }
-  }
-  form.value.permissions = allPerms
-}
-
-function selectReadOnly() {
-  const readPerms = []
-  for (const [resource, perm] of Object.entries(permissions.value)) {
-    if (perm.actions.includes('read')) {
-      readPerms.push(`${resource}:read`)
-    }
-  }
-  form.value.permissions = readPerms
-}
-
-function selectWriteOnly() {
-  const writePerms = []
-  for (const [resource, perm] of Object.entries(permissions.value)) {
-    if (perm.actions.includes('write')) {
-      writePerms.push(`${resource}:write`)
-    }
-  }
-  form.value.permissions = writePerms
-}
-
-function clearAll() {
-  form.value.permissions = []
-}
-
 async function handleSubmit() {
+  if (!form.value.memo) {
+    error.value = 'Description is required'
+    return
+  }
+
   saving.value = true
   error.value = ''
   success.value = ''
   newToken.value = ''
+
   try {
-    const { data } = await client.post('/admin/api', form.value)
+    // Convert permissions object to array format
+    const permissionsArray = []
+    for (const [resource, action] of Object.entries(form.value.permissions)) {
+      if (action === 'read') {
+        permissionsArray.push(`${resource}:read`)
+      } else if (action === 'write') {
+        permissionsArray.push(`${resource}:read`)
+        permissionsArray.push(`${resource}:write`)
+      }
+      // 'none' = no permissions added
+    }
+
+    const { data } = await client.post('/admin/api', {
+      memo: form.value.memo,
+      permissions: permissionsArray
+    })
     newToken.value = data.token || ''
-    success.value = 'API key created'
+    success.value = 'API key created successfully'
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to create API key'
   } finally {

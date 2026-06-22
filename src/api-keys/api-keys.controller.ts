@@ -9,7 +9,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { IsString, IsOptional, MinLength, IsArray, IsNumber, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, MinLength, IsArray, IsNumber } from 'class-validator';
 import { ApiKeysService } from './api-keys.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
@@ -55,7 +55,19 @@ export class ApiKeysController {
   @Post()
   async create(@Body() dto: CreateApiKeyDto) {
     const permissions = dto.permissions ? JSON.stringify(dto.permissions) : '[]';
-    return this.apiKeysService.create({ ...dto, permissions } as any);
+    const result = await this.apiKeysService.create({ ...dto, permissions } as any);
+    
+    // Return the API key with the plain token (not hashed)
+    return {
+      id: result.api.id,
+      memo: result.api.memo,
+      token: result.token, // Plain token, not hashed
+      permissions: result.api.permissions,
+      ip_whitelist: result.api.ip_whitelist,
+      rate_limit: result.api.rate_limit,
+      is_active: result.api.is_active,
+      created_at: result.api.created_at,
+    };
   }
 
   @Put(':id')
