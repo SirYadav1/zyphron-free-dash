@@ -33,7 +33,7 @@
                   {{ p.status }}
                 </span>
               </td>
-              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(p.createdAt) }}</td>
+              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(p.created_at || p.createdAt) }}</td>
             </tr>
           </tbody>
         </table>

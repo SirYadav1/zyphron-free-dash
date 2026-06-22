@@ -24,7 +24,7 @@
     <template v-else>
       <div class="card-surface p-6 space-y-4">
         <p class="text-text-primary text-sm whitespace-pre-wrap">{{ ticket.description || ticket.message }}</p>
-        <p class="text-xs text-text-muted">{{ formatDate(ticket.createdAt) }}</p>
+        <p class="text-xs text-text-muted">{{ formatDate(ticket.created_at || ticket.createdAt) }}</p>
       </div>
 
       <div class="space-y-4">
@@ -32,7 +32,7 @@
         <div v-for="r in replies" :key="r.id" class="card-surface p-4 space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-text-primary">{{ r.user?.username || 'System' }}</span>
-            <span class="text-xs text-text-muted">{{ formatDate(r.createdAt) }}</span>
+            <span class="text-xs text-text-muted">{{ formatDate(r.created_at || r.createdAt) }}</span>
           </div>
           <p class="text-sm text-text-muted whitespace-pre-wrap">{{ r.comment }}</p>
         </div>

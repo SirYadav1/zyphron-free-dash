@@ -24,7 +24,7 @@
               <td class="px-5 py-3 text-text-muted text-xs">{{ u.id }}</td>
               <td class="px-5 py-3 text-text-primary font-bold text-sm">{{ u.username }}</td>
               <td class="px-5 py-3 text-text-muted text-sm">{{ u.email }}</td>
-              <td class="px-5 py-3 text-text-muted text-sm">{{ formatDate(u.createdAt) }}</td>
+              <td class="px-5 py-3 text-text-muted text-sm">{{ formatDate(u.created_at || u.createdAt) }}</td>
             </tr>
           </tbody>
         </table>

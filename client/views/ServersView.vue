@@ -203,7 +203,7 @@
           <div class="flex items-center gap-4 text-[11px] text-text-muted">
             <div class="flex items-center gap-1.5">
               <Calendar :size="12" />
-              <span>Created {{ formatDate(server.createdAt) }}</span>
+              <span>Created {{ formatDate(server.created_at || server.createdAt) }}</span>
             </div>
             <div v-if="server.expiresAt" class="flex items-center gap-1.5">
               <Clock :size="12" />

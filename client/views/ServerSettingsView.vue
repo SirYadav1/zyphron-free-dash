@@ -81,7 +81,7 @@
             </div>
             <div class="space-y-1.5">
               <label class="text-label">Created At</label>
-              <input :value="formatDate(server.createdAt)" type="text" class="input-field opacity-50" disabled />
+              <input :value="formatDate(server.created_at || server.createdAt)" type="text" class="input-field opacity-50" disabled />
             </div>
             <div class="space-y-1.5">
               <label class="text-label">Expires At</label>

@@ -27,7 +27,7 @@
                 <span class="text-accent font-mono text-sm">{{ maskToken(k.token) }}</span>
               </td>
               <td class="px-5 py-3 text-text-primary text-sm">{{ k.memo }}</td>
-              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(k.createdAt) }}</td>
+              <td class="px-5 py-3 text-text-muted text-xs">{{ formatDate(k.created_at || k.createdAt) }}</td>
               <td class="px-5 py-3 text-right">
                 <div class="flex items-center justify-end gap-3">
                   <router-link :to="`/admin/api/${k.id}/edit`" class="text-xs font-bold text-accent hover:text-white transition-colors">Edit</router-link>

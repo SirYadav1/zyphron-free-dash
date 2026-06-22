@@ -48,7 +48,7 @@
           </div>
           <div class="bg-base/50 border border-border rounded-xl p-4">
             <span class="text-label block mb-1">Created</span>
-            <span class="text-text-primary text-sm">{{ formatDate(server.createdAt) }}</span>
+            <span class="text-text-primary text-sm">{{ formatDate(server.created_at || server.createdAt) }}</span>
           </div>
         </div>
 

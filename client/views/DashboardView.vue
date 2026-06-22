@@ -178,7 +178,7 @@
           </div>
 
           <div class="pt-4 border-t border-border flex items-center justify-between">
-            <span class="text-[11px] font-medium text-text-muted">{{ formatDate(server.createdAt) }}</span>
+            <span class="text-[11px] font-medium text-text-muted">{{ formatDate(server.created_at || server.createdAt) }}</span>
             <div class="flex items-center gap-4">
               <router-link :to="`/servers/${server.id}/renew`" class="text-xs font-bold text-text-muted hover:text-accent transition-colors">Renew</router-link>
               <router-link :to="`/servers/${server.id}/settings`" class="text-xs font-bold text-text-muted hover:text-accent transition-colors">Settings</router-link>
