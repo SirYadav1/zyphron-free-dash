@@ -32,6 +32,7 @@ import { CreditsModule } from './credits/credits.module';
 import { ServiceCategoriesModule } from './service-categories/service-categories.module';
 import { CoinOrdersModule } from './coin-orders/coin-orders.module';
 import { EmailVerificationModule } from './email-verification/email-verification.module';
+import { UniversalApiModule } from './universal-api/universal-api.module';
 import { Setting } from './entities/setting.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -100,6 +101,7 @@ import { GuardsModule } from './common/guards/guards.module';
     ServiceCategoriesModule,
     CoinOrdersModule,
     EmailVerificationModule,
+    UniversalApiModule,
     GuardsModule,
     TypeOrmModule.forFeature([Setting]),
   ],

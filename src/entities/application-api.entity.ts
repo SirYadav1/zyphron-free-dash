@@ -17,6 +17,9 @@ export class ApplicationApi {
   @Column({ type: 'text', unique: true })
   token: string;
 
+  @Column({ type: 'integer', default: 1 })
+  is_active: number;
+
   @CreateDateColumn({ type: 'text' })
   created_at: string;
 
