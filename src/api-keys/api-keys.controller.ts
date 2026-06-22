@@ -9,7 +9,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { IsString, IsOptional, MinLength } from 'class-validator';
+import { IsString, IsOptional, MinLength, IsArray, IsNumber, IsBoolean } from 'class-validator';
 import { ApiKeysService } from './api-keys.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
@@ -23,6 +23,18 @@ class CreateApiKeyDto {
   @IsString()
   @MinLength(1)
   token?: string;
+
+  @IsOptional()
+  @IsArray()
+  permissions?: string[];
+
+  @IsOptional()
+  @IsString()
+  ip_whitelist?: string;
+
+  @IsOptional()
+  @IsNumber()
+  rate_limit?: number;
 }
 
 @Controller('admin/api')
@@ -42,7 +54,8 @@ export class ApiKeysController {
 
   @Post()
   async create(@Body() dto: CreateApiKeyDto) {
-    return this.apiKeysService.create(dto);
+    const permissions = dto.permissions ? JSON.stringify(dto.permissions) : '[]';
+    return this.apiKeysService.create({ ...dto, permissions } as any);
   }
 
   @Put(':id')
@@ -50,11 +63,18 @@ export class ApiKeysController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateApiKeyDto,
   ) {
-    return this.apiKeysService.update(id, dto);
+    const permissions = dto.permissions ? JSON.stringify(dto.permissions) : undefined;
+    return this.apiKeysService.update(id, { ...dto, permissions } as any);
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.apiKeysService.remove(id);
+  }
+
+  @Get('permissions/list')
+  async getPermissions() {
+    const { PERMISSIONS } = require('../common/guards/api-key.guard');
+    return PERMISSIONS;
   }
 }
