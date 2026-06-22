@@ -41,6 +41,15 @@ export default {
     preferences: 'Preferences',
     logout: 'Logout',
     admin: 'Admin Panel',
+    earnCredits: 'Earn Credits',
+    buyCoins: 'Buy Coins',
+    pendingPayments: 'Pending Payments',
+    successfulPayments: 'Successful Payments',
+    transactions: 'Transactions',
+    invoices: 'Invoices',
+    general: 'General',
+    earning: 'Earning',
+    account: 'Account',
   },
 
   // Auth
