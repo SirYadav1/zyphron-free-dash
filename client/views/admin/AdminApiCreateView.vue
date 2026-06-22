@@ -31,46 +31,48 @@
         <div class="flex-1">
           <div class="bg-[#161b22] rounded-lg border border-[#30363d] overflow-hidden">
             <div class="bg-[#1c2128] px-6 py-4 border-b border-[#30363d]">
-              <h2 class="text-lg font-bold text-white">Select Permissions</h2>
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-white">Select Permissions</h2>
+                <button 
+                  @click="selectAll"
+                  class="text-xs text-[#58a6ff] hover:text-[#79c0ff] transition-colors"
+                >
+                  Select All
+                </button>
+              </div>
             </div>
             
             <div class="divide-y divide-[#30363d]">
               <div 
                 v-for="(perm, resource) in permissions" 
                 :key="resource"
-                class="flex items-center px-6 py-4 hover:bg-[#1c2128] transition-colors"
+                class="px-6 py-4 hover:bg-[#1c2128] transition-colors"
               >
-                <div class="w-48 text-sm font-medium text-white">{{ perm.label }}</div>
-                <div class="flex-1 flex items-center gap-12">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="text-sm font-bold text-white">{{ perm.label }}</div>
                   <label class="flex items-center gap-2 cursor-pointer">
                     <input 
-                      type="radio" 
-                      :name="`perm-${resource}`"
-                      value="read"
-                      v-model="form.permissions[resource]"
-                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] focus:ring-[#238636]"
+                      type="checkbox"
+                      :checked="isResourceSelected(resource)"
+                      @change="toggleResource(resource)"
+                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] rounded focus:ring-[#238636]"
                     />
-                    <span class="text-sm text-[#c9d1d9]">Read</span>
+                    <span class="text-xs text-[#8b949e]">Select All</span>
                   </label>
-                  <label class="flex items-center gap-2 cursor-pointer">
+                </div>
+                <div class="flex flex-wrap gap-3">
+                  <label 
+                    v-for="action in perm.actions" 
+                    :key="`${resource}:${action}`"
+                    class="flex items-center gap-2 cursor-pointer bg-[#0d1117] px-3 py-2 rounded border border-[#30363d] hover:border-[#58a6ff] transition-colors"
+                  >
                     <input 
-                      type="radio" 
-                      :name="`perm-${resource}`"
-                      value="write"
-                      v-model="form.permissions[resource]"
-                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] focus:ring-[#238636]"
+                      type="checkbox"
+                      :value="`${resource}:${action}`"
+                      v-model="selectedPermissions"
+                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] rounded focus:ring-[#238636]"
                     />
-                    <span class="text-sm text-[#c9d1d9]">Read & Write</span>
-                  </label>
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="radio" 
-                      :name="`perm-${resource}`"
-                      value="none"
-                      v-model="form.permissions[resource]"
-                      class="w-4 h-4 text-[#238636] bg-[#0d1117] border-[#30363d] focus:ring-[#238636]"
-                    />
-                    <span class="text-sm text-[#c9d1d9]">None</span>
+                    <span class="text-sm text-[#c9d1d9]">{{ formatAction(action) }}</span>
                   </label>
                 </div>
               </div>
@@ -94,17 +96,42 @@
                 />
               </div>
 
+              <div>
+                <label class="block text-sm font-medium text-white mb-2">
+                  Selected Permissions
+                </label>
+                <div class="bg-[#0d1117] rounded p-3 border border-[#30363d] max-h-40 overflow-y-auto">
+                  <div v-if="selectedPermissions.length === 0" class="text-xs text-[#484f58]">
+                    No permissions selected
+                  </div>
+                  <div v-else class="flex flex-wrap gap-1">
+                    <span 
+                      v-for="perm in selectedPermissions" 
+                      :key="perm"
+                      class="inline-flex items-center gap-1 bg-[#238636]/20 text-[#3fb950] px-2 py-1 rounded text-xs"
+                    >
+                      {{ perm }}
+                      <button 
+                        @click="removePermission(perm)"
+                        class="hover:text-white transition-colors"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div class="bg-[#0d1117] rounded p-4 border border-[#30363d]">
                 <p class="text-xs text-[#8b949e] leading-relaxed">
-                  Once you have assigned permissions and created this set of credentials you will be 
-                  unable to come back and edit it. If you need to make changes down the road you will 
-                  need to create a new set of credentials.
+                  Token will be auto-generated with <code class="text-[#58a6ff]">zya_</code> prefix. 
+                  Copy it immediately after creation — it won't be shown again.
                 </p>
               </div>
 
               <button 
                 @click="handleSubmit" 
-                :disabled="saving || !form.memo"
+                :disabled="saving || !form.memo || selectedPermissions.length === 0"
                 class="w-full bg-[#238636] hover:bg-[#2ea043] disabled:bg-[#21262d] disabled:text-[#484f58] text-white font-bold py-2.5 px-4 rounded transition-colors text-sm"
               >
                 {{ saving ? 'Creating...' : 'Create Credentials' }}
@@ -142,7 +169,7 @@
         <div class="mt-4 p-3 bg-[#0d1117] rounded border border-[#30363d]">
           <h4 class="text-xs font-bold text-[#8b949e] uppercase mb-2">How to use this token</h4>
           <div class="space-y-2 text-xs text-[#c9d1d9]">
-            <p><span class="text-[#58a6ff]">Header:</span> Authorization: Bearer <span class="font-mono text-[#238636]">{{ newToken }}</span></p>
+            <p><span class="text-[#58a6ff]">Header:</span> <code class="font-mono text-[#238636]">X-API-Key: {{ newToken }}</code></p>
             <p><span class="text-[#58a6ff]">Accept:</span> Application/vnd.zyphron.v1+json</p>
           </div>
         </div>
@@ -162,28 +189,71 @@ const error = ref('')
 const success = ref('')
 const newToken = ref('')
 const permissions = ref({})
+const selectedPermissions = ref([])
 
 const form = ref({
-  memo: '',
-  permissions: {}
+  memo: ''
 })
 
 onMounted(async () => {
   try {
     const { data } = await client.get('/admin/api/permissions/list')
     permissions.value = data
-    // Initialize all permissions to 'none'
-    for (const resource of Object.keys(data)) {
-      form.value.permissions[resource] = 'none'
-    }
   } catch (err) {
     console.error('Failed to load permissions:', err)
   }
 })
 
+function formatAction(action) {
+  return action.charAt(0).toUpperCase() + action.slice(1)
+}
+
+function isResourceSelected(resource) {
+  const perm = permissions.value[resource]
+  if (!perm) return false
+  return perm.actions.every(action => 
+    selectedPermissions.value.includes(`${resource}:${action}`)
+  )
+}
+
+function toggleResource(resource) {
+  const perm = permissions.value[resource]
+  if (!perm) return
+  
+  if (isResourceSelected(resource)) {
+    // Remove all permissions for this resource
+    selectedPermissions.value = selectedPermissions.value.filter(
+      p => !p.startsWith(`${resource}:`)
+    )
+  } else {
+    // Add all permissions for this resource
+    const newPerms = perm.actions
+      .map(action => `${resource}:${action}`)
+      .filter(p => !selectedPermissions.value.includes(p))
+    selectedPermissions.value.push(...newPerms)
+  }
+}
+
+function removePermission(perm) {
+  selectedPermissions.value = selectedPermissions.value.filter(p => p !== perm)
+}
+
+function selectAll() {
+  selectedPermissions.value = []
+  for (const [resource, perm] of Object.entries(permissions.value)) {
+    for (const action of perm.actions) {
+      selectedPermissions.value.push(`${resource}:${action}`)
+    }
+  }
+}
+
 async function handleSubmit() {
   if (!form.value.memo) {
     error.value = 'Description is required'
+    return
+  }
+  if (selectedPermissions.value.length === 0) {
+    error.value = 'Select at least one permission'
     return
   }
 
@@ -193,21 +263,9 @@ async function handleSubmit() {
   newToken.value = ''
 
   try {
-    // Convert permissions object to array format
-    const permissionsArray = []
-    for (const [resource, action] of Object.entries(form.value.permissions)) {
-      if (action === 'read') {
-        permissionsArray.push(`${resource}:read`)
-      } else if (action === 'write') {
-        permissionsArray.push(`${resource}:read`)
-        permissionsArray.push(`${resource}:write`)
-      }
-      // 'none' = no permissions added
-    }
-
     const { data } = await client.post('/admin/api', {
       memo: form.value.memo,
-      permissions: permissionsArray
+      permissions: selectedPermissions.value
     })
     newToken.value = data.token || ''
     success.value = 'API key created successfully'
