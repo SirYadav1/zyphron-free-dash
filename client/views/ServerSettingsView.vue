@@ -403,9 +403,10 @@ async function handleUpgrade(type) {
 }
 
 async function handleDelete() {
-  if (!confirm('Are you sure you want to delete this server? This action cannot be undone.')) return
-  deleting.value = true
   try {
+    const confirmed = window.confirm('Are you sure you want to delete this server? This action cannot be undone.')
+    if (!confirmed) return
+    deleting.value = true
     await client.delete(`/servers/${serverId.value}`)
     router.push('/servers')
   } catch (err) {

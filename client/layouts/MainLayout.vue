@@ -57,11 +57,12 @@
               ></div>
               
               <!-- Icon with subtle background -->
+              <!-- SECURITY NOTE: v-html used for inline SVG icons. Icons are hardcoded in navSections (not user input), so XSS risk is minimal. -->
               <span 
                 :class="[
                   'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 [&>svg]:w-4 [&>svg]:h-4',
                   isActive(item.path) ? 'bg-accent/15' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
-                ]" 
+                ]"
                 v-html="item.icon"
               ></span>
               
@@ -125,7 +126,7 @@
       <!-- Top Navigation Bar -->
       <header class="h-14 lg:h-16 bg-surface/80 backdrop-blur-md border-b border-border flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
         <div class="flex items-center gap-4 flex-1">
-          <button @click="sidebarOpen = true" class="p-2 -ml-2 text-text-muted hover:text-text-primary lg:hidden transition-colors">
+          <button @click="sidebarOpen = true" aria-label="Toggle menu" class="p-2 -ml-2 text-text-muted hover:text-text-primary lg:hidden transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
@@ -166,7 +167,7 @@
               <img v-if="authStore.user?.profilePhoto" :src="authStore.user.profilePhoto" alt="Profile" class="w-full h-full object-cover" />
               <span v-else>{{ authStore.user?.username?.charAt(0).toUpperCase() }}</span>
             </div>
-            <button @click="handleLogout" class="p-1.5 text-text-muted hover:text-red-400 transition-colors" title="Logout">
+            <button @click="handleLogout" aria-label="Logout" class="p-1.5 text-text-muted hover:text-red-400 transition-colors" title="Logout">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
               </svg>

@@ -257,27 +257,34 @@ function getStatusLabel(server) {
 }
 
 async function handleSuspend(server) {
-  const reason = prompt(`Suspend "${server.serverName}"?\n\nEnter reason (optional):`)
-  if (reason === null) return // cancelled
   try {
+    const reason = window.prompt(`Suspend "${server.serverName}"?\n\nEnter reason (optional):`)
+    if (reason === null) return // cancelled
     await client.post(`/admin/servers/${server.id}/suspend`, { reason: reason || 'Suspended by admin' })
     await store.fetchServers()
   } catch (err) {
-    alert(err.response?.data?.message || 'Failed to suspend')
+    console.error('Failed to suspend server:', err)
   }
 }
 
 async function handleUnsuspend(server) {
-  if (!confirm(`Unban "${server.serverName}"?`)) return
-  try { await store.unsuspendServer(server.id) } catch (err) {
-    alert(err.response?.data?.message || 'Failed to unsuspend')
+  try {
+    const confirmed = window.confirm(`Unban "${server.serverName}"?`)
+    if (!confirmed) return
+    await store.unsuspendServer(server.id)
+  } catch (err) {
+    console.error('Failed to unsuspend server:', err)
   }
 }
 
 async function handleDelete(server) {
-  if (!confirm(`Delete "${server.serverName}"? This is permanent.`)) return
-  try { await client.post(`/admin/servers/${server.id}/delete`); await store.fetchServers() } catch (err) {
-    alert(err.response?.data?.message || 'Failed to delete')
+  try {
+    const confirmed = window.confirm(`Delete "${server.serverName}"? This is permanent.`)
+    if (!confirmed) return
+    await client.post(`/admin/servers/${server.id}/delete`)
+    await store.fetchServers()
+  } catch (err) {
+    console.error('Failed to delete server:', err)
   }
 }
 </script>

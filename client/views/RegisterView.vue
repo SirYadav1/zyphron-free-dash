@@ -6,7 +6,7 @@
           <ZyphronLogo size="lg" />
         </div>
         <h1 class="text-2xl font-bold text-text-primary tracking-tight">Create your account</h1>
-        <p class="text-sm text-text-muted">Get free server hosting on Zyphron Cloud.</p>
+        <p class="text-sm text-text-muted">Get free server hosting on {{ BRAND_NAME }}.</p>
       </div>
 
       <div class="auth-card">
@@ -142,7 +142,7 @@
       </div>
       
       <div class="text-center">
-        <p class="text-[10px] font-bold text-text-muted/40 uppercase tracking-[0.3em]">Zyphron Cloud • Client Area</p>
+        <p class="text-[10px] font-bold text-text-muted/40 uppercase tracking-[0.3em]">{{ BRAND_NAME }} • Client Area</p>
       </div>
     </div>
   </div>
@@ -156,6 +156,8 @@ import ZyphronLogo from '../components/ZyphronLogo.vue'
 
 const router = useRouter()
 const store = useAuthStore()
+
+const BRAND_NAME = 'Zyphron Cloud'
 
 const firstName = ref('')
 const lastName = ref('')
@@ -176,7 +178,8 @@ async function handleRegister() {
   try {
     const result = await store.register(username.value, email.value, password.value, firstName.value, lastName.value)
     // After registration, redirect to email verification pending page
-    router.push({ path: '/verify', query: { email: email.value } })
+    sessionStorage.setItem('verify_email', email.value)
+    router.push({ path: '/verify' })
   } catch {
     // Error is handled in the store
   }

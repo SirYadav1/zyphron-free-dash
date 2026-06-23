@@ -129,7 +129,7 @@
       </div>
 
       <div class="text-center" style="animation: fadeIn 0.6s ease-out 0.5s both;">
-        <p class="text-[10px] font-bold text-text-muted/40 uppercase tracking-[0.3em]">Zyphron Cloud • Client Area</p>
+        <p class="text-[10px] font-bold text-text-muted/40 uppercase tracking-[0.3em]">{{ BRAND_NAME }} • Client Area</p>
       </div>
     </div>
   </div>
@@ -153,6 +153,8 @@ import {
 const { t } = useI18n()
 const router = useRouter()
 const store = useAuthStore()
+
+const BRAND_NAME = 'Zyphron Cloud'
 
 const email = ref('')
 const password = ref('')
@@ -182,7 +184,8 @@ async function handleLogin() {
       twoFAError.value = ''
     } else if (result.requiresEmailVerification) {
       // Redirect to verification pending page with email
-      router.push({ path: '/verify', query: { email: result.email } })
+      sessionStorage.setItem('verify_email', result.email)
+      router.push({ path: '/verify' })
     } else {
       router.push('/home')
     }
@@ -200,6 +203,11 @@ async function handle2FALogin() {
       email: email.value,
       code: twoFACode.value,
     })
+    if (data.requiresEmailVerification) {
+      sessionStorage.setItem('verify_email', email.value)
+      router.push({ path: '/verify' })
+      return
+    }
     sessionStorage.setItem('access_token', data.access_token)
     store.user = data.user
     router.push('/home')

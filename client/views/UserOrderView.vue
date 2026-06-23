@@ -234,6 +234,16 @@ async function generateQR(text) {
 function handleFileSelect(e) {
   const file = e.target.files[0]
   if (!file) return
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    alert('Sirf JPG, PNG, GIF, WebP files allowed hain')
+    return
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    alert('File size 5MB se zyada nahi ho sakta')
+    return
+  }
   selectedFile.value = file
   previewUrl.value = URL.createObjectURL(file)
 }
@@ -246,6 +256,16 @@ function copyAddress() {
 
 async function uploadScreenshot() {
   if (!selectedFile.value || !order.value) return
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+  if (!ALLOWED_TYPES.includes(selectedFile.value.type)) {
+    alert('Sirf JPG, PNG, GIF, WebP files allowed hain')
+    return
+  }
+  if (selectedFile.value.size > MAX_FILE_SIZE) {
+    alert('File size 5MB se zyada nahi ho sakta')
+    return
+  }
   uploading.value = true
   error.value = ''
   success.value = ''
@@ -304,10 +324,23 @@ onMounted(async () => {
       loading.value = false
     }
   } else {
-    const pkgName = route.query.name || 'Coin Package'
-    const coins = parseInt(route.query.coins || '100')
-    const price = parseInt(route.query.price || '5')
-    const currency = route.query.currency || 'USD'
+    // Read package details from sessionStorage instead of URL query params
+    const stored = sessionStorage.getItem('order_package')
+    let pkgName = 'Coin Package'
+    let coins = 100
+    let price = 5
+    let currency = 'USD'
+
+    if (stored) {
+      try {
+        const pkg = JSON.parse(stored)
+        pkgName = pkg.name || pkgName
+        coins = pkg.coins || coins
+        price = pkg.price || price
+        currency = pkg.currency || currency
+        sessionStorage.removeItem('order_package')
+      } catch {}
+    }
 
     try {
       const { data } = await client.post('/coin-orders', {

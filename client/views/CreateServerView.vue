@@ -138,6 +138,7 @@
               type="text"
               required
               maxlength="100"
+              pattern="[a-zA-Z0-9\- ]+"
               class="input-field text-lg font-semibold py-3 pr-32"
               placeholder="e.g. production-api-01"
             />
@@ -254,6 +255,7 @@ async function onNestChange() {
 
 async function handleCreate() {
   if (!serverName.value || !selectedPlanId.value) return
+  serverName.value = serverName.value.replace(/[^a-zA-Z0-9\- ]/g, '').substring(0, 100)
   try {
     const payload = {
       serverName: serverName.value,

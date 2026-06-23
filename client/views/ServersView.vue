@@ -335,9 +335,12 @@ function formatDate(dateStr) {
 }
 
 async function handleDelete(id) {
-  if (!confirm('Are you sure you want to delete this server? This action cannot be undone.')) return
   try {
+    const confirmed = window.confirm('Are you sure you want to delete this server? This action cannot be undone.')
+    if (!confirmed) return
     await store.deleteServer(id)
-  } catch {}
+  } catch (err) {
+    console.error('Failed to delete server:', err)
+  }
 }
 </script>

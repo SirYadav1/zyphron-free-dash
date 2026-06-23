@@ -145,15 +145,13 @@ onMounted(async () => {
 })
 
 async function buyPackage(pkg) {
-  // Navigate to order page with package info
-  router.push({
-    path: '/store/order',
-    query: {
-      name: pkg.display,
-      coins: pkg.quantity,
-      price: pkg.price,
-      currency: pkg.currency_code,
-    },
-  })
+  // Store order details in sessionStorage instead of URL query params
+  sessionStorage.setItem('order_package', JSON.stringify({
+    name: pkg.display,
+    coins: pkg.quantity,
+    price: pkg.price,
+    currency: pkg.currency_code,
+  }))
+  router.push({ path: '/store/order' })
 }
 </script>

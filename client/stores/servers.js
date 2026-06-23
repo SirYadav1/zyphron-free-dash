@@ -7,13 +7,23 @@ export const useServersStore = defineStore('servers', {
     blueprint: null,
     plans: [],
     stats: { active: 0, suspended: 0, expired: 0, total: 0, panelUrl: '' },
-    loading: false,
     error: null,
+    loadingStates: {
+      fetch: false,
+      create: false,
+      delete: false,
+      update: false,
+      renew: false,
+    },
   }),
+
+  getters: {
+    loading: (state) => Object.values(state.loadingStates).some(v => v),
+  },
 
   actions: {
     async fetchServers() {
-      this.loading = true
+      this.loadingStates.fetch = true
       this.error = null
       try {
         const { data } = await client.get('/servers')
@@ -21,12 +31,12 @@ export const useServersStore = defineStore('servers', {
       } catch (error) {
         this.error = error.response?.data?.message || 'Failed to fetch servers'
       } finally {
-        this.loading = false
+        this.loadingStates.fetch = false
       }
     },
 
     async fetchBlueprint() {
-      this.loading = true
+      this.loadingStates.fetch = true
       this.error = null
       try {
         const { data } = await client.get('/servers/blueprint')
@@ -34,12 +44,12 @@ export const useServersStore = defineStore('servers', {
       } catch (error) {
         this.error = error.response?.data?.message || 'Failed to fetch blueprint'
       } finally {
-        this.loading = false
+        this.loadingStates.fetch = false
       }
     },
 
     async fetchPlans() {
-      this.loading = true
+      this.loadingStates.fetch = true
       this.error = null
       try {
         const { data } = await client.get('/products')
@@ -47,7 +57,7 @@ export const useServersStore = defineStore('servers', {
       } catch (error) {
         this.error = error.response?.data?.message || 'Failed to fetch plans'
       } finally {
-        this.loading = false
+        this.loadingStates.fetch = false
       }
     },
 
@@ -61,7 +71,7 @@ export const useServersStore = defineStore('servers', {
     },
 
     async createServer(serverName, productId, extraPayload = {}) {
-      this.loading = true
+      this.loadingStates.create = true
       this.error = null
       try {
         const payload = { serverName, ...extraPayload }
@@ -73,12 +83,12 @@ export const useServersStore = defineStore('servers', {
         this.error = error.response?.data?.message || 'Failed to create server'
         throw error
       } finally {
-        this.loading = false
+        this.loadingStates.create = false
       }
     },
 
     async deleteServer(id) {
-      this.loading = true
+      this.loadingStates.delete = true
       this.error = null
       try {
         await client.delete(`/servers/${id}`)
@@ -87,11 +97,11 @@ export const useServersStore = defineStore('servers', {
         this.error = error.response?.data?.message || 'Failed to delete server'
         throw error
       } finally {
-        this.loading = false
+        this.loadingStates.delete = false
       }
     },
     async renewServer(id) {
-      this.loading = true
+      this.loadingStates.renew = true
       this.error = null
       try {
         const { data } = await client.post(`/servers/${id}/renew`)
@@ -109,7 +119,7 @@ export const useServersStore = defineStore('servers', {
         this.error = error.response?.data?.message || 'Failed to renew server'
         throw error
       } finally {
-        this.loading = false
+        this.loadingStates.renew = false
       }
     },
     async toggleAutoRenew(serverId) {

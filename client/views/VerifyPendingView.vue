@@ -90,7 +90,7 @@ import { useRoute } from 'vue-router'
 import client from '../api/client'
 
 const route = useRoute()
-const store = { loading: ref(false) }
+
 const email = ref('')
 const loading = ref(false)
 const resent = ref(false)
@@ -103,6 +103,11 @@ let cooldownInterval = null
 onMounted(() => {
   if (route.query.email) {
     email.value = route.query.email
+  } else {
+    const storedEmail = sessionStorage.getItem('verify_email')
+    if (storedEmail) {
+      email.value = storedEmail
+    }
   }
 })
 
