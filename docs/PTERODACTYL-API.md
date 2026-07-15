@@ -27,29 +27,29 @@ Accept: application/vnd.pterodactyl.v1+json
 All list endpoints return data in this format:
 ```json
 {
-  "data": [
-    {
-      "object": "nest",
-      "attributes": {
-        "id": 1,
-        "name": "Minecraft",
-        ...
-      }
-    }
-  ],
-  "meta": { ... }
+ "data": [
+ {
+ "object": "nest",
+ "attributes": {
+ "id": 1,
+ "name": "Minecraft",
+ ...
+ }
+ }
+ ],
+ "meta": { ... }
 }
 ```
 
 Single resource endpoints:
 ```json
 {
-  "object": "egg",
-  "attributes": {
-    "id": 1,
-    "name": "Paper",
-    ...
-  }
+ "object": "egg",
+ "attributes": {
+ "id": 1,
+ "name": "Paper",
+ ...
+ }
 }
 ```
 
@@ -169,13 +169,13 @@ All admin routes require JWT authentication + AdminGuard.
 Pterodactyl returns errors in this format:
 ```json
 {
-  "errors": [
-    {
-      "code": "AuthenticationException",
-      "status": "401",
-      "detail": "Unauthenticated."
-    }
-  ]
+ "errors": [
+ {
+ "code": "AuthenticationException",
+ "status": "401",
+ "detail": "Unauthenticated."
+ }
+ ]
 }
 ```
 
