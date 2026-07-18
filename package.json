@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Free game server hosting panel with credits-based economy, Pterodactyl integration",
   "private": false,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "nest start --watch",
