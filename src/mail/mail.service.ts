@@ -106,7 +106,7 @@ export class MailService {
       host: settingsMap.get('smtp_host') || process.env.MAIL_HOST || 'smtp.gmail.com',
       port: parseInt(settingsMap.get('smtp_port') || process.env.MAIL_PORT || '587'),
       user: settingsMap.get('smtp_user') || process.env.MAIL_USER || '',
-      from: settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@zyphron.com',
+      from: settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@your-domain.com',
       from_name: settingsMap.get('smtp_from_name') || process.env.MAIL_FROM_NAME || 'Zyphron',
       encryption: settingsMap.get('smtp_encryption') || process.env.MAIL_ENCRYPTION || 'tls',
     };
@@ -133,7 +133,7 @@ export class MailService {
   private async getFromAddress(): Promise<string> {
     const settings = await this.settingRepo.find();
     const sm = new Map(settings.map(s => [s.key, s.value]));
-    return sm.get('smtp_from') || process.env.MAIL_FROM || 'noreply@zyphron.com';
+    return sm.get('smtp_from') || process.env.MAIL_FROM || 'noreply@your-domain.com';
   }
 
   /**
@@ -151,7 +151,7 @@ export class MailService {
   async sendEmail(to: string, subject: string, htmlBody: string, fromAddress?: string): Promise<boolean> {
     const settings = await this.settingRepo.find();
     const settingsMap = new Map(settings.map(s => [s.key, s.value]));
-    const from = fromAddress || settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@zyphron.com';
+    const from = fromAddress || settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@your-domain.com';
 
     return this.safeSendMail({
       from,
@@ -202,7 +202,7 @@ export class MailService {
   async sendTestEmail(to: string): Promise<boolean> {
     const settings = await this.settingRepo.find();
     const settingsMap = new Map(settings.map(s => [s.key, s.value]));
-    const from = settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@zyphron.com';
+    const from = settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@your-domain.com';
     const fromName = settingsMap.get('smtp_from_name') || 'ZyphronCloud';
 
     const content = `
@@ -249,7 +249,7 @@ export class MailService {
       <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">✅ Account Unbanned</h2>
       ${this.templateHelper.p(`Hey <strong style="color:#e2e8f0;">${escapeHtml(firstName || to.split('@')[0])}</strong>,`)}
       ${this.templateHelper.p('Your account has been unbanned. You may now log in and use our services again.')}
-      ${this.templateHelper.button('Login Now', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#10b981')}
+      ${this.templateHelper.button('Login Now', process.env.FRONTEND_URL || 'https://your-domain.com', '#10b981')}
     `;
     return this.safeSendMail({
       from: await this.getFromAddress(),
@@ -265,7 +265,7 @@ export class MailService {
       server_name: serverName,
       reason: reason || 'Policy violation',
       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      dashboard_url: process.env.FRONTEND_URL || 'https://zyphron.cloud',
+      dashboard_url: process.env.FRONTEND_URL || 'https://your-domain.com',
     });
     if (!html) return false;
     return this.safeSendMail({ from: await this.getFromAddress(), to, subject, html });
@@ -276,7 +276,7 @@ export class MailService {
       <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">✅ Server Unsuspended</h2>
       ${this.templateHelper.p(`Hey <strong style="color:#e2e8f0;">${escapeHtml(firstName || to.split('@')[0])}</strong>,`)}
       ${this.templateHelper.p(`Your server <strong style="color:#e2e8f0;">${escapeHtml(serverName)}</strong> has been unsuspended and is now active.`)}
-      ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#10b981')}
+      ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://your-domain.com', '#10b981')}
     `;
     return this.safeSendMail({
       from: await this.getFromAddress(),
@@ -311,7 +311,7 @@ export class MailService {
       username,
       amount: String(coins),
       order_id: String(orderId),
-      dashboard_url: process.env.FRONTEND_URL || 'https://zyphron.cloud',
+      dashboard_url: process.env.FRONTEND_URL || 'https://your-domain.com',
     });
     if (!html) return false;
     return this.safeSendMail({ from: await this.getFromAddress(), to, subject, html });
@@ -338,7 +338,7 @@ export class MailService {
       <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">🎟️ Voucher Redeemed!</h2>
       ${this.templateHelper.p(`Hey <strong style="color:#e2e8f0;">${escapeHtml(username)}</strong>,`)}
       ${this.templateHelper.p(`You redeemed <strong style="color:#e2e8f0;">${escapeHtml(voucherCode)}</strong> and received <strong style="color:#10b981;">${credits} coins</strong>.`)}
-      ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#10b981')}
+      ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://your-domain.com', '#10b981')}
     `;
     return this.safeSendMail({
       from: await this.getFromAddress(),
@@ -354,7 +354,7 @@ export class MailService {
       ${this.templateHelper.p(`Hey <strong style="color:#e2e8f0;">${escapeHtml(username)}</strong>,`)}
       ${this.templateHelper.p(`You earned <strong style="color:#3b82f6;">${commission} coins</strong> for referring <strong style="color:#e2e8f0;">${escapeHtml(referredUser)}</strong>.`)}
       ${this.templateHelper.p('Keep sharing your partner link to earn more!')}
-      ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://zyphron.cloud', '#3b82f6')}
+      ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://your-domain.com', '#3b82f6')}
     `;
     return this.safeSendMail({
       from: await this.getFromAddress(),

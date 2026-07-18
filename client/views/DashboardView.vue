@@ -108,7 +108,7 @@
           <!-- Fallback static links if no API links -->
           <template v-if="!linksLoading && usefulLinks.length === 0">
             <a
-              :href="serverStats.panelUrl || 'https://console.zyphron.cloud'"
+              :href="serverStats.panelUrl || 'https://your-panel.com'"
               target="_blank"
               rel="noopener"
               class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-text-muted hover:text-text-primary group"
@@ -151,7 +151,7 @@
             <div class="space-y-1 min-w-0 flex-1">
               <div class="flex items-center gap-2">
                 <h4 class="font-bold text-text-primary group-hover:text-accent transition-colors truncate">{{ server.serverName }}</h4>
-                <a v-if="server.identifier" :href="`${serverStats.panelUrl || 'https://console.zyphron.cloud'}/server/${server.identifier}`" target="_blank" class="p-1 rounded bg-white/5 hover:bg-white/10 text-text-muted hover:text-accent transition-colors flex-shrink-0">
+                <a v-if="server.identifier" :href="`${serverStats.panelUrl || 'https://your-panel.com'}/server/${server.identifier}`" target="_blank" class="p-1 rounded bg-white/5 hover:bg-white/10 text-text-muted hover:text-accent transition-colors flex-shrink-0">
                   <ExternalLink :size="14" :stroke-width="2" />
                 </a>
               </div>

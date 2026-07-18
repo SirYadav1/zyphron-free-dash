@@ -16,7 +16,7 @@ export class AppController {
     return {
       siteName: 'Zyphron Cloud',
       pterodactylPanelUrl:
-        process.env.PTERODACTYL_PANEL_URL || 'https://panel.zyphron.cloud/',
+        process.env.PTERODACTYL_PANEL_URL || 'https://your-panel.com/',
     };
   }
 

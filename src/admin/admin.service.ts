@@ -379,7 +379,7 @@ export class AdminService {
 
     const defaults: Record<string, string> = {
       pterodactyl_panel_url:
-        process.env.PTERODACTYL_PANEL_URL || 'https://panel.zyphron.cloud/',
+        process.env.PTERODACTYL_PANEL_URL || 'https://your-panel.com/',
       max_servers_total: '100',
       max_servers_per_user: '3',
       afk_coins_per_minute: '10',

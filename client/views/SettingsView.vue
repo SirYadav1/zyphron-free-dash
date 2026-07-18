@@ -89,7 +89,7 @@
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
               Control Panel Details
-              <a :href="pteroUrl || 'https://console.zyphron.cloud'" target="_blank" class="text-label hover:text-white transition-colors opacity-60 hover:opacity-100" title="Open Control Panel">
+              <a :href="pteroUrl || 'https://your-panel.com'" target="_blank" class="text-label hover:text-white transition-colors opacity-60 hover:opacity-100" title="Open Control Panel">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                   <polyline points="15 3 21 3 21 9"></polyline>
@@ -186,7 +186,7 @@ onMounted(async () => {
 async function fetchSettings() {
   try {
     const { data } = await client.get('/config')
-    pteroUrl.value = data.pterodactylPanelUrl || 'https://panel.zyphron.cloud/'
+    pteroUrl.value = data.pterodactylPanelUrl || 'https://your-panel.com/'
   } catch { /* ignore */ }
 }
 

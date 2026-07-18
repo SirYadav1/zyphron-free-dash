@@ -186,7 +186,7 @@ import {
 const store = useAdminStore()
 
 const panelUrl = computed(() => {
-  return store.settings?.pterodactyl_panel_url || 'https://console.zyphron.cloud'
+  return store.settings?.pterodactyl_panel_url || 'https://your-panel.com'
 })
 
 // animated counter logic

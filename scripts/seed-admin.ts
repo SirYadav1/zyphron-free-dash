@@ -15,7 +15,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function seedAdmin() {
   const args = process.argv.slice(2);
-  const email = args[0] || 'admin@zyphron.cloud';
+  const email = args[0] || 'admin@your-domain.com';
   const password = args[1] || 'AdminPassword123!';
   const username = args[2] || 'admin';
 

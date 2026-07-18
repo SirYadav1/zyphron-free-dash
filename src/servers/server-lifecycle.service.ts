@@ -213,7 +213,7 @@ export class ServerLifecycleService {
       throw new Error('Server not found');
     }
 
-    const transferEmail = await this.getSetting('server_owner_transfer_email', 'admin@zyphron.cloud');
+    const transferEmail = await this.getSetting('server_owner_transfer_email', 'admin@your-domain.com');
     const adminUser = await this.userRepo.findOne({ where: { email: transferEmail } });
     if (!adminUser) {
       // fallback to any admin user

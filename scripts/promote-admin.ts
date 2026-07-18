@@ -15,7 +15,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function promoteToAdmin() {
   const args = process.argv.slice(2);
-  const email = args[0] || 'admin@zyphron.cloud';
+  const email = args[0] || 'admin@your-domain.com';
 
   console.log(`⏳ Looking up user: ${email}`);
   

@@ -300,7 +300,7 @@ INSERT INTO public.settings (key, value) VALUES
   ('default_backup_limit', '0'),
   ('default_dedicated_ip', 'false'),
   ('default_docker_image', 'ghcr.io/pterodactyl/yolks:java_25'),
-  ('pterodactyl_panel_url', 'https://panel.zyphron.cloud/')
+   ('pterodactyl_panel_url', 'https://your-panel.com/')
 ON CONFLICT (key) DO NOTHING;
 
 -- Done!

@@ -456,7 +456,7 @@
                   v-model="smtpForm.from"
                   type="email"
                   class="input-field py-2"
-                  placeholder="noreply@zyphron.cloud"
+                  placeholder="noreply@your-domain.com"
                 />
               </div>
               <div class="space-y-1">
@@ -663,7 +663,7 @@
 
         <div class="space-y-1">
           <label class="text-[10px] font-bold text-text-muted uppercase">Transfer To Email</label>
-          <input v-model="transferEmail" type="email" class="input-field py-2 w-full" placeholder="admin@zyphron.cloud" />
+          <input v-model="transferEmail" type="email" class="input-field py-2 w-full" placeholder="admin@your-domain.com" />
           <p class="text-[10px] text-text-muted">When a server expires, ownership transfers to this admin account on Pterodactyl panel</p>
         </div>
 

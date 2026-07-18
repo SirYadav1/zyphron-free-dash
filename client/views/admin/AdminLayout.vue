@@ -150,7 +150,7 @@ const showUserMenu = ref(false)
 const sidebarOpen = ref(false)
 
 const panelUrl = computed(() => {
-  return import.meta.env.VITE_PTERODACTYL_PANEL_URL || 'https://console.zyphron.cloud'
+  return import.meta.env.VITE_PTERODACTYL_PANEL_URL || 'https://your-panel.com'
 })
 
 const navGroups = [

@@ -64,7 +64,7 @@
               <li>Check your <strong>Spam/Junk</strong> folder</li>
               <li>Check your <strong>Promotions</strong> tab (Gmail)</li>
               <li>Make sure <strong>{{ email || 'your email' }}</strong> is correct</li>
-              <li>The email is sent from <strong>noreply@zyphron.cloud</strong></li>
+              <li>The email is sent from <strong>noreply@your-domain.com</strong></li>
             </ul>
           </div>
         </div>

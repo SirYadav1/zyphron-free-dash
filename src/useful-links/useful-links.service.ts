@@ -22,7 +22,7 @@ export class UsefulLinksService implements OnModuleInit {
 
     this.logger.log('Seeding default useful links...');
     const defaults = [
-      { title: 'Zyphron Console', link: 'https://console.zyphron.cloud', position: 'sidebar' },
+      { title: 'Zyphron Console', link: 'https://your-panel.com', position: 'sidebar' },
       { title: 'Discord Server', link: 'https://discord.gg/zyphron', position: 'sidebar' },
     ];
     for (const d of defaults) {

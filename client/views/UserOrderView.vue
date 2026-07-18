@@ -204,7 +204,7 @@ const fileInput = ref(null)
 const qrCanvas = ref(null)
 const showSuccessPopup = ref(false)
 
-const paymentAddress = ref('payment@zyphron.cloud')
+const paymentAddress = ref('payment@your-domain.com')
 
 const statusLabels = {
   pending: 'Awaiting Payment',
