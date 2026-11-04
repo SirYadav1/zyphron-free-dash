@@ -5,11 +5,13 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  Unique,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Voucher } from './voucher.entity';
 
 @Entity('user_vouchers')
+@Unique(['user_id', 'voucher_id'])
 export class UserVoucher {
   @PrimaryGeneratedColumn()
   id: number;

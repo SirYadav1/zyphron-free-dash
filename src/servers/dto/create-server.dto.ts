@@ -13,9 +13,8 @@ export class CreateServerDto {
   @IsNumber()
   productId?: number;
 
-  @IsOptional()
-  @IsNumber()
-  nestId?: number;
+  // nestId REMOVED (H5): users must never control the nest — it is resolved
+  // from the product (or blueprint) server-side.
 
   @IsOptional()
   @IsNumber()

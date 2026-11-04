@@ -7,7 +7,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { CoinOrdersService } from './coin-orders.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -16,10 +16,16 @@ class CreateCoinOrderDto {
   @IsString()
   package_name: string;
 
-  @IsNumber()
+  // server-side bounds: client-supplied amounts must be positive ints,
+  // never negative (a negative amount would SUBTRACT coins on approval)
+  @IsInt()
+  @Min(1)
+  @Max(1000000)
   coins_amount: number;
 
   @IsNumber()
+  @Min(0)
+  @Max(1000000)
   price: number;
 
   @IsOptional()

@@ -201,8 +201,8 @@ export class AdminController {
   }
 
   @Delete('users/:id')
-  async deleteUser(@Param('id') id: string) {
-    return this.adminService.deleteUser(id);
+  async deleteUser(@Param('id') id: string, @CurrentUser() admin: any) {
+    return this.adminService.deleteUser(id, admin?.id);
   }
 
   @Post('users/:id/ban')

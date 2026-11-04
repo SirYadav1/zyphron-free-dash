@@ -90,24 +90,50 @@ export class VouchersService {
       }
     }
 
-    // add credits
-    const newBalance = user.coins + voucher.credits;
-    await this.userRepo.update(userId, { coins: newBalance });
+    // atomic redeem: redemption row is inserted FIRST (unique constraint
+    // blocks double-redeem races), then coins via relative guarded update (C3)
+    const newBalance = await this.userRepo.manager.transaction(async (em) => {
+      try {
+        await em.getRepository(UserVoucher).insert({
+          user_id: userId,
+          voucher_id: voucher.id,
+        });
+      } catch {
+        throw new BadRequestException('You have already redeemed this voucher');
+      }
 
-    // record redemption
-    await this.userVoucherRepo.save(
-      this.userVoucherRepo.create({ user_id: userId, voucher_id: voucher.id }),
-    );
+      const credits = Number(voucher.credits) || 0;
+      if (!Number.isInteger(credits) || credits <= 0) {
+        throw new BadRequestException('Invalid voucher amount');
+      }
 
-    // record transaction
-    await this.transactionRepo.save(
-      this.transactionRepo.create({
-        user_id: userId,
-        type: 'voucher_redeem',
-        amount: voucher.credits,
-        description: `Redeemed voucher: ${voucher.code}`,
-      }),
-    );
+      const updateResult = await em
+        .getRepository(User)
+        .createQueryBuilder()
+        .update(User)
+        .set({ coins: () => `coins + ${credits}` })
+        .where('id = :id AND is_banned = 0', { id: userId })
+        .execute();
+
+      if (!updateResult.affected) {
+        throw new BadRequestException('Failed to apply voucher balance');
+      }
+
+      await em.getRepository(Transaction).save(
+        em.getRepository(Transaction).create({
+          user_id: userId,
+          type: 'voucher_redeem',
+          amount: credits,
+          description: `Redeemed voucher: ${voucher.code}`,
+        }),
+      );
+
+      const updated = await em.getRepository(User).findOne({
+        where: { id: userId },
+        select: { coins: true },
+      });
+      return updated?.coins ?? 0;
+    });
 
     this.logger.log(`User ${userId} redeemed voucher ${voucher.code} for ${voucher.credits} coins`);
 

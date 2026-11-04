@@ -256,7 +256,7 @@ export class ServersService {
     return enriched;
   }
 
-  async createServer(userId: string, serverName: string, productId?: number, overrideNestId?: number, overrideEggId?: number): Promise<any> {
+  async createServer(userId: string, serverName: string, productId?: number, overrideEggId?: number): Promise<any> {
     // same filter as create
     serverName = this.sanitizeServerName(serverName);
 
@@ -348,13 +348,29 @@ export class ServersService {
       costCoins = product.coin_price || 100;
       durationDays = product.duration_days || 7;
       productDisplay = product.name || `Product #${product.id}`;
-      nestId = overrideNestId || productNestId;
-      const resolvedEggId = overrideEggId || productEggId;
-      // validate egg is resolved (neutral egg requires user selection)
-      if (!resolvedEggId) {
-        throw new BadRequestException('Please select a software option for your server.');
+      // H5 fix: the nest ALWAYS comes from the product — client can no
+      // longer pick a different nest to reach unpriced eggs.
+      nestId = productNestId;
+
+      if (productEggId) {
+        eggId = productEggId;
+      } else {
+        // null egg_id means the user picks one — validate against the
+        // admin-configured whitelist (allowed_egg_ids, comma-separated).
+        // Empty/missing setting = allow any egg (legacy behavior).
+        if (!overrideEggId) {
+          throw new BadRequestException('Please select a software option for your server.');
+        }
+        const allowedRaw = await this.getSetting('allowed_egg_ids', '');
+        const allowed = allowedRaw
+          .split(',')
+          .map((s) => parseInt(s.trim(), 10))
+          .filter((n) => Number.isInteger(n) && n > 0);
+        if (allowed.length > 0 && !allowed.includes(overrideEggId)) {
+          throw new BadRequestException('Selected software is not allowed for this product.');
+        }
+        eggId = overrideEggId;
       }
-      eggId = resolvedEggId!;
     } else {
       // fallback to blueprint from settings (backward compatibility)
       const blueprint = await this.getBlueprint();
@@ -624,7 +640,7 @@ export class ServersService {
       try {
         await this.mailService.sendEmail(
           server.user.email,
-          'Server Suspended - Zyphron',
+          `Server Suspended - ${await this.mailService.getBrandName()}`,
           `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
             <h1 style="color:#f59e0b;">Server Suspended</h1>
             <p>Your server <strong>${server.server_name}</strong> has been suspended.</p>
@@ -662,7 +678,7 @@ export class ServersService {
       try {
         await this.mailService.sendEmail(
           server.user.email,
-          'Server Restored - Zyphron',
+          `Server Restored - ${await this.mailService.getBrandName()}`,
           `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
             <h1 style="color:#22c55e;">Server Restored</h1>
             <p>Your server <strong>${server.server_name}</strong> has been restored and is now active.</p>
@@ -706,7 +722,7 @@ export class ServersService {
       try {
         await this.mailService.sendEmail(
           userEmail,
-          'Server Deleted - Zyphron',
+          `Server Deleted - ${await this.mailService.getBrandName()}`,
           `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
             <h1 style="color:#ef4444;">Server Deleted</h1>
             <p>Your server <strong>${serverName}</strong> has been deleted.</p>

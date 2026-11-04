@@ -13,6 +13,11 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.disable('x-powered-by');
 
+  // trust exactly one proxy hop (nginx/caddy in front). Without this, req.ip
+  // is always the proxy IP — throttling and IP tracking break behind a
+  // reverse proxy. Direct (no-proxy) connections are unaffected.
+  app.set('trust proxy', 1);
+
   // 50mb was asking for trouble, 10mb is enough
   app.use(json({ limit: '5mb' }));
   app.use(urlencoded({ limit: '10mb', extended: true }));

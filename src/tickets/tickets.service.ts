@@ -206,19 +206,19 @@ export class TicketsService {
       return `
         <div style="margin-bottom:12px;padding:12px;border-radius:8px;background:${c.is_admin ? '#1e293b' : '#0f172a'};border:1px solid #334155;">
           <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-            <strong style="color:#e2e8f0;">${role}: ${author}</strong>
-            <span style="color:#64748b;font-size:12px;">${ts}</span>
+            <strong style="color:#e2e8f0;">${role}: ${this.escapeHtml(author)}</strong>
+            <span style="color:#64748b;font-size:12px;">${this.escapeHtml(ts)}</span>
           </div>
-          <div style="color:#cbd5e1;white-space:pre-wrap;">${c.comment}</div>
+          <div style="color:#cbd5e1;white-space:pre-wrap;">${this.escapeHtml(c.comment)}</div>
         </div>`;
     }).join('');
 
     const html = `<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>Ticket ${ticket.ticket_number || ticket.ticket_id}</title></head>
+<head><meta charset="utf-8"><title>Ticket ${this.escapeHtml(ticket.ticket_number || String(ticket.ticket_id))}</title></head>
 <body style="font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;max-width:800px;margin:0 auto;padding:20px;">
-  <h1 style="color:#7c3aed;">${ticket.title}</h1>
-  <p><strong>Ticket #:</strong> ${ticket.ticket_number || ticket.ticket_id}</p>
+  <h1 style="color:#2563eb;">${this.escapeHtml(ticket.title)}</h1>
+  <p><strong>Ticket #:</strong> ${this.escapeHtml(ticket.ticket_number || String(ticket.ticket_id))}</p>
   <p><strong>Priority:</strong> ${ticket.priority}</p>
   <p><strong>Status:</strong> Closed</p>
   <p><strong>Created:</strong> ${ticket.created_at}</p>
@@ -234,5 +234,16 @@ export class TicketsService {
       closed_html: html,
     });
     return { message: 'Ticket closed', ticketId: id };
+  }
+
+  // escape user-derived values before interpolating them into the stored
+  // HTML snapshot — prevents stored XSS when the snapshot is viewed (bug fix)
+  private escapeHtml(value: any): string {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

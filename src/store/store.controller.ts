@@ -10,15 +10,16 @@ import {
 import { StoreService } from './store.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { IsString, IsIn, IsNumber, IsPositive } from 'class-validator';
+import { IsString, IsInt, Min, IsIn } from 'class-validator';
 
 class UpgradeDto {
   @IsString()
   @IsIn(['ram', 'cpu', 'disk'])
   type: 'ram' | 'cpu' | 'disk';
 
-  @IsNumber()
-  @IsPositive()
+  // integer MB/% increments only — floats (1.5 MB) must never reach Pterodactyl
+  @IsInt()
+  @Min(1)
   amount: number;
 }
 

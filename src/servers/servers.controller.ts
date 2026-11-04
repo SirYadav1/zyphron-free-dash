@@ -54,7 +54,10 @@ export class ServersController {
 
   @Post()
   async createServer(@Body() dto: CreateServerDto, @CurrentUser() user: any) {
-    return this.serversService.createServer(user.id, dto.serverName, dto.productId, dto.nestId, dto.eggId);
+    // nestId is NEVER accepted from the client (H5): the nest comes from the
+    // product or blueprint. eggId is only honored when a product leaves it
+    // open for user choice, and is validated against allowed_egg_ids.
+    return this.serversService.createServer(user.id, dto.serverName, dto.productId, dto.eggId);
   }
 
   @Get(':id')

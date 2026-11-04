@@ -110,8 +110,6 @@ export class DiscordService {
       }
     }
 
-    const wasPreviouslyLinked = !!user.discord_id;
-
     await this.userRepo.update(userId, {
       discord_id: discordUser.id,
       discord_username: discordUser.username,
@@ -120,12 +118,25 @@ export class DiscordService {
       pterodactyl_username: pteroUsername,
     });
 
-    if (!wasPreviouslyLinked) {
+    // one-time link bonus: tracked with a persistent flag, NOT discord_id
+    // null-ness — otherwise unlink -> relink pays the bonus forever (C1)
+    const bonusFlagKey = `discord_bonus_paid_${userId}`;
+    const bonusAlreadyPaid = !!(await this.settingRepo.findOne({
+      where: { key: bonusFlagKey },
+    }));
+
+    if (!bonusAlreadyPaid) {
       await this.awardDiscordLinkBonus(userId, discordUser.username);
+      await this.settingRepo.upsert(
+        { key: bonusFlagKey, value: '1' },
+        ['key'],
+      );
     }
 
+    // only reactivate servers WE suspended for Discord reasons (H2) —
+    // admin/abuse/expiry suspensions stay suspended
     const suspendedServers = await this.serverRepo.find({
-      where: { user_id: userId, status: 'suspended' },
+      where: { user_id: userId, status: 'suspended', suspend_reason: 'Discord left' },
     });
 
     if (suspendedServers) {
@@ -142,7 +153,7 @@ export class DiscordService {
             );
           }
         }
-        await this.serverRepo.update(server.id, { status: 'active' });
+        await this.serverRepo.update(server.id, { status: 'active', suspend_reason: null });
       }
     }
 
@@ -232,7 +243,7 @@ export class DiscordService {
           `User ${user.username} (${user.discord_id}) rejoined Discord guild`,
         );
         await this.userRepo.update(user.id, { discord_left_at: null });
-        await this.unsuspendAllUserServers(user.id);
+        await this.unsuspendDiscordSuspendedServers(user.id);
       }
     }
   }
@@ -259,7 +270,11 @@ export class DiscordService {
             );
           }
         }
-        await this.serverRepo.update(server.id, { status: 'suspended' });
+        // tag the reason so ONLY discord-side suspensions are auto-unsuspended
+        await this.serverRepo.update(server.id, {
+          status: 'suspended',
+          suspend_reason: 'Discord left',
+        });
       }
     }
 
@@ -280,9 +295,11 @@ export class DiscordService {
     }
   }
 
-  private async unsuspendAllUserServers(userId: string): Promise<void> {
+  private async unsuspendDiscordSuspendedServers(userId: string): Promise<void> {
+    // ONLY servers we suspended for Discord reasons — admin/abuse/expiry
+    // suspensions must never be auto-unsuspended for free (H2)
     const suspendedServers = await this.serverRepo.find({
-      where: { user_id: userId, status: 'suspended' },
+      where: { user_id: userId, status: 'suspended', suspend_reason: 'Discord left' },
     });
 
     if (suspendedServers) {

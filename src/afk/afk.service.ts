@@ -109,6 +109,19 @@ export class AfkService {
 
     const saved = await this.afkSessionRepo.save(session);
 
+    // TOCTOU fix: two parallel starts could each create an active session and
+    // earn double. Last writer wins — deactivate every OTHER active session
+    // for this user after inserting ours.
+    await this.afkSessionRepo
+      .createQueryBuilder()
+      .update(AfkSession)
+      .set({ is_active: 0, ended_at: new Date().toISOString() })
+      .where('user_id = :userId AND is_active = 1 AND id != :id', {
+        userId,
+        id: saved.id,
+      })
+      .execute();
+
     this.logger.log(
       `Session started: id=${saved.id}, user=${userId}, tabId=${tabId}`,
     );
@@ -174,10 +187,19 @@ export class AfkService {
     let totalEarned = session.total_earned;
 
     if (visible) {
+      // credit only the time that actually elapsed, capped at 2 intervals —
+      // blocks heartbeat spam from minting coins faster than real time (C2)
+      const elapsedSeconds = Math.min(
+        timeSinceLastHeartbeat,
+        HEARTBEAT_INTERVAL_SECONDS * 2,
+      );
+      if (elapsedSeconds > 0) {
+        totalVisibleSeconds += Math.floor(elapsedSeconds);
+      }
+
       const oldIntervals = Math.floor(
         totalVisibleSeconds / (60 * rates.interval),
       );
-      totalVisibleSeconds += HEARTBEAT_INTERVAL_SECONDS;
       const newIntervals = Math.floor(
         totalVisibleSeconds / (60 * rates.interval),
       );
@@ -223,6 +245,48 @@ export class AfkService {
             }),
           );
           this.logger.log(`User ${userId} earned ${earnedThisHeartbeat} coins`);
+        } else {
+          // optimistic update lost the race — retry with a fresh balance
+          let credited = false;
+          for (let attempt = 0; attempt < 3 && !credited; attempt++) {
+            const retry = await this.userRepo.findOne({
+              where: { id: userId },
+              select: { coins: true },
+            });
+            if (!retry) break;
+            const retryResult = await this.userRepo
+              .createQueryBuilder()
+              .update(User)
+              .set({ coins: retry.coins + earnedThisHeartbeat })
+              .where('id = :id AND coins = :coins', {
+                id: userId,
+                coins: retry.coins,
+              })
+              .execute();
+            if (retryResult.affected) {
+              credited = true;
+              await this.transactionRepo.save(
+                this.transactionRepo.create({
+                  user_id: userId,
+                  type: 'earn',
+                  amount: earnedThisHeartbeat,
+                  description: `AFK earning - Session #${sessionId}`,
+                }),
+              );
+            }
+          }
+          if (!credited) {
+            // could not credit after retries — revert the session counter so
+            // the recorded earnings match what the user actually received
+            // (no silent user-side coin loss)
+            totalEarned -= earnedThisHeartbeat;
+            await this.afkSessionRepo.update(sessionId, {
+              total_earned: totalEarned,
+            });
+            this.logger.warn(
+              `AFK earn of ${earnedThisHeartbeat} coins dropped after retries for user ${userId} — session counter reverted`,
+            );
+          }
         }
       }
     }

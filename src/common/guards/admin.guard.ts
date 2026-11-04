@@ -7,6 +7,15 @@ import {
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
+/**
+ * Hard admin gate (H1 fix).
+ *
+ * Only the `is_admin` flag grants admin access. The previous fallback —
+ * "any row in user_roles = full admin" — gave every staff member access to
+ * user management, coin setting, and API-key decryption. Role rows
+ * (Owner/Staff/…) carry only ticket/coin-approve permissions and are checked
+ * by their own feature logic, never as an admin bypass.
+ */
 @Injectable()
 export class AdminGuard implements CanActivate {
   constructor(private readonly dataSource: DataSource) {}
@@ -19,21 +28,17 @@ export class AdminGuard implements CanActivate {
       throw new UnauthorizedException('Authentication required');
     }
 
-    // check is_admin flag
+    // JwtAuthGuard already loaded the live row — use it when present
+    if (user.is_admin === 1 || user.is_admin === true) {
+      return true;
+    }
+
+    // fallback: fetch the authoritative flag from the DB
     const dbUser = await this.dataSource.query(
       'SELECT is_admin FROM users WHERE id = ?',
       [user.id],
     );
     if (dbUser?.[0]?.is_admin) {
-      return true;
-    }
-
-    // check if user has any role assigned (Owner, Co-Founder, CEO, Staff = admin access)
-    const hasRole = await this.dataSource.query(
-      'SELECT id FROM user_roles WHERE user_id = ? LIMIT 1',
-      [user.id],
-    );
-    if (hasRole?.[0]) {
       return true;
     }
 

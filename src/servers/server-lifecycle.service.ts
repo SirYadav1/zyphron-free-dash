@@ -170,7 +170,20 @@ export class ServerLifecycleService {
     for (const server of servers) {
       try {
         await this.pterodactylService.getServer(server.pterodactyl_server_id!);
-      } catch (error) {
+      } catch (error: any) {
+        // ONLY delete when Pterodactyl confirms the server is gone (404).
+        // 5xx / network errors must never wipe live servers from the DB.
+        const status =
+          error?.status ??
+          error?.response?.status ??
+          error?.response?.data?.statusCode;
+        if (status !== 404) {
+          this.logger.warn(
+            `Skipping orphan check for server ${server.server_name} (ID: ${server.id}): panel did not return 404 (status: ${status ?? 'unknown'})`,
+          );
+          continue;
+        }
+
         this.logger.log(
           `Cleaning up orphaned server: ${server.server_name} (ID: ${server.id})`,
         );
@@ -266,7 +279,7 @@ export class ServerLifecycleService {
       try {
         await this.mailService.sendEmail(
           originalUser.email,
-          'Server Ownership Transferred - Zyphron',
+          `Server Ownership Transferred - ${await this.mailService.getBrandName()}`,
           `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
             <h1 style="color:#f59e0b;">Server Transferred</h1>
             <p>Your server <strong>${server.server_name}</strong> has been transferred to admin management.</p>

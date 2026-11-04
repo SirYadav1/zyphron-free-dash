@@ -49,12 +49,24 @@ export class DiscordController {
         }),
       }, ['key']);
 
-      // auto-cleanup old states (older than 10 min)
-      await this.settingRepo.createQueryBuilder()
-        .delete()
+      // auto-cleanup old states (older than 10 min) — JS-side filtering so
+      // it works on every supported DB (SQLite/MySQL/Postgres) (H3)
+      const allStates = await this.settingRepo
+        .createQueryBuilder()
         .where("key LIKE 'oauth_state_%'")
-        .andWhere(`value::json->>'expiresAt' < :now`, { now: Date.now().toString() })
-        .execute();
+        .getMany();
+      const staleIds = allStates
+        .filter((r) => {
+          try {
+            return JSON.parse(r.value).expiresAt < Date.now();
+          } catch {
+            return true;
+          }
+        })
+        .map((r) => r.id);
+      if (staleIds.length > 0) {
+        await this.settingRepo.delete(staleIds);
+      }
 
       const url = this.discordService.getOAuthUrl(state, codeChallenge);
       return res.redirect(url);

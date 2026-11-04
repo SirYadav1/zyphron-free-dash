@@ -178,9 +178,13 @@ export class AdminService {
     return { message: 'User updated' };
   }
 
-  async deleteUser(id: string): Promise<void> {
+  async deleteUser(id: string, adminId?: string): Promise<void> {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
+    // same guards as banUser: an admin must never be deletable — this would
+    // otherwise let staff delete each other (or themselves) and lock out the panel
+    if (user.is_admin) throw new BadRequestException('Cannot delete an admin user');
+    if (adminId && id === adminId) throw new BadRequestException('You cannot delete yourself');
     await this.userRepo.remove(user);
   }
 

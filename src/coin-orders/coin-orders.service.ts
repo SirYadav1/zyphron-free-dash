@@ -89,31 +89,83 @@ export class CoinOrdersService {
       throw new BadRequestException('Order must have a screenshot uploaded before approval');
     }
 
-    // credit coins to user
-    const user = await this.userRepo.findOne({ where: { id: order.user_id } });
-    if (user) {
-      user.coins += order.coins_amount;
-      await this.userRepo.save(user);
+    const amount = Number(order.coins_amount) || 0;
 
-      // send payment approved email
-      try {
-        if (user.email) {
-          await this.mailService.sendPaymentApproved(
-            user.email,
-            user.username,
-            order.coins_amount,
-            order.id,
-            user.first_name || user.username,
-          );
+    // credit coins first with a guarded relative-style update, THEN flip the
+    // status atomically — closes the double-approve / lost-update race (C5).
+    // If another admin approved first, we roll our credit back.
+    let credited = false;
+    if (amount > 0) {
+      for (let attempt = 0; attempt < 3 && !credited; attempt++) {
+        const currentUser = await this.userRepo.findOne({
+          where: { id: order.user_id },
+          select: { id: true, coins: true },
+        });
+        if (!currentUser) break;
+
+        const creditResult = await this.userRepo
+          .createQueryBuilder()
+          .update(User)
+          .set({ coins: currentUser.coins + amount })
+          .where('id = :id AND coins = :coins', {
+            id: currentUser.id,
+            coins: currentUser.coins,
+          })
+          .execute();
+
+        if (creditResult.affected) {
+          credited = true;
         }
+      }
+
+      if (!credited) {
+        this.logger.error(
+          `Failed to credit ${amount} coins for order ${id} after 3 attempts — aborting approval`,
+        );
+        throw new BadRequestException('Could not credit coins, please try again');
+      }
+    }
+
+    const flip = await this.coinOrderRepo
+      .createQueryBuilder()
+      .update(CoinOrder)
+      .set({ status: 'approved', admin_message: message || null })
+      .where('id = :id AND status = :status', {
+        id,
+        status: 'awaiting_screenshot',
+      })
+      .execute();
+
+    if (!flip.affected) {
+      // lost the race — another admin already approved. undo our credit.
+      if (credited) {
+        await this.userRepo
+          .createQueryBuilder()
+          .update(User)
+          .set({ coins: () => `coins - ${amount}` })
+          .where('id = :id', { id: order.user_id })
+          .execute();
+      }
+      throw new BadRequestException('Order already processed');
+    }
+
+    // send payment approved email
+    const user = await this.userRepo.findOne({ where: { id: order.user_id } });
+    if (user?.email) {
+      try {
+        await this.mailService.sendPaymentApproved(
+          user.email,
+          user.username,
+          order.coins_amount,
+          order.id,
+          user.first_name || user.username,
+        );
       } catch (error) {
         this.logger.warn(`Failed to send payment approved email to ${user.email}:`, error.message);
       }
     }
 
-    order.status = 'approved';
-    order.admin_message = message || null;
-    return this.coinOrderRepo.save(order);
+    return this.getOrderById(id);
   }
 
   async declineOrder(id: number, message?: string) {

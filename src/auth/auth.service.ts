@@ -82,12 +82,20 @@ export class AuthService {
   }
 
   private async isUserAdmin(userId: string, is_admin: number): Promise<boolean> {
-    if (is_admin) return true;
-    const hasRole = await this.dataSource.query(
-      'SELECT id FROM user_roles WHERE user_id = ? LIMIT 1',
-      [userId],
-    );
-    return !!hasRole?.[0];
+    // H1 fix: only the is_admin flag grants admin access. The previous
+    // user_roles fallback made any staff role a full admin.
+    return is_admin === 1;
+  }
+
+  // white-label brand name: admin setting -> env -> default (never hardcode)
+  private async getBrandName(): Promise<string> {
+    try {
+      const setting = await this.settingRepo.findOne({ where: { key: 'brand_name' } });
+      if (setting?.value?.trim()) return setting.value.trim();
+    } catch {
+      // fall through
+    }
+    return (process.env.BRAND_NAME || '').trim() || 'Zyphron Cloud';
   }
 
   private async isMaintenanceMode(): Promise<boolean> {
@@ -101,6 +109,9 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto, ipAddress?: string) {
+    // normalize once — mixed-case emails break login/password-reset lookups
+    dto.email = dto.email.trim().toLowerCase();
+
     const existingEmail = await this.userRepo.findOne({
       where: { email: dto.email },
     });
@@ -288,8 +299,9 @@ export class AuthService {
     // auto-sync Pterodactyl account if not linked yet
     if (!user.pterodactyl_user_id) {
       await this.syncPterodactylAccount(user);
-      // re-fetch user to get updated pterodactyl_user_id
-      const refreshed = await this.userRepo.findOne({ where: { email: dto.email } });
+      // re-fetch by ID — refetching by dto.email fails when the user logged
+      // in with their username (bug fix)
+      const refreshed = await this.userRepo.findOne({ where: { id: user.id } });
       if (refreshed) user = refreshed;
     }
 
@@ -367,7 +379,7 @@ export class AuthService {
 
     const OTPAuth = await import('otpauth');
     const totp = new OTPAuth.TOTP({
-      issuer: 'Zyphron Cloud',
+      issuer: await this.getBrandName(),
       label: user.email || user.username,
       algorithm: 'SHA1',
       digits: 6,
@@ -653,7 +665,14 @@ export class AuthService {
       await this.dailyLoginRepo.save(dailyLogin);
     } catch (err) {
       this.logger.warn(`Failed to record daily login for user ${userId}, rolling back coins`);
-      await this.userRepo.update(userId, { coins: user.coins });
+      // relative rollback: writing the stale absolute balance here would
+      // clobber concurrent coin changes (bug fix)
+      await this.userRepo
+        .createQueryBuilder()
+        .update(User)
+        .set({ coins: () => `coins - ${bonusAmount}` })
+        .where('id = :id AND coins >= :bonus', { id: userId, bonus: bonusAmount })
+        .execute();
       return 0;
     }
 
@@ -721,9 +740,10 @@ export class AuthService {
 
     // send OTP email
     try {
+      const brand = await this.getBrandName();
       await this.mailService.sendEmail(
         email,
-        'Password Reset Code — Zyphron Cloud',
+        `Password Reset Code — ${brand}`,
         `<div style="margin:0;padding:0;background:#0a0f1a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1a;">
     <tr><td align="center" style="padding:40px 20px;">
@@ -746,8 +766,8 @@ export class AuthService {
           </div>
         </td></tr>
         <tr><td style="padding:24px 40px;background:#080c15;border-radius:0 0 16px 16px;border-top:1px solid rgba(255,255,255,0.04);text-align:center;">
-          <p style="margin:0 0 6px;font-size:11px;color:#4b5563;letter-spacing:0.5px;text-transform:uppercase;">Zyphron Cloud</p>
-          <p style="margin:0;font-size:11px;color:#374151;">© 2026 Zyphron Cloud. All rights reserved.</p>
+          <p style="margin:0 0 6px;font-size:11px;color:#4b5563;letter-spacing:0.5px;text-transform:uppercase;">${brand}</p>
+          <p style="margin:0;font-size:11px;color:#374151;">© ${new Date().getFullYear()} ${brand}. All rights reserved.</p>
         </td></tr>
       </table>
     </td></tr>
@@ -848,9 +868,10 @@ export class AuthService {
 
     // send confirmation email with the new password
     try {
+      const brand = await this.getBrandName();
       await this.mailService.sendEmail(
         email,
-        'Password Changed — Zyphron Cloud',
+        `Password Changed — ${brand}`,
         `<div style="margin:0;padding:0;background:#0a0f1a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0f1a;">
     <tr><td align="center" style="padding:40px 20px;">
@@ -872,8 +893,8 @@ export class AuthService {
           <p style="margin:10px 0;font-size:13px;color:#64748b;">For security, we recommend changing this password to something only you know.</p>
         </td></tr>
         <tr><td style="padding:24px 40px;background:#080c15;border-radius:0 0 16px 16px;border-top:1px solid rgba(255,255,255,0.04);text-align:center;">
-          <p style="margin:0 0 6px;font-size:11px;color:#4b5563;letter-spacing:0.5px;text-transform:uppercase;">Zyphron Cloud</p>
-          <p style="margin:0;font-size:11px;color:#374151;">© 2026 Zyphron Cloud. All rights reserved.</p>
+          <p style="margin:0 0 6px;font-size:11px;color:#4b5563;letter-spacing:0.5px;text-transform:uppercase;">${brand}</p>
+          <p style="margin:0;font-size:11px;color:#374151;">© ${new Date().getFullYear()} ${brand}. All rights reserved.</p>
         </td></tr>
       </table>
     </td></tr>

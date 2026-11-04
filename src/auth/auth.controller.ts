@@ -28,7 +28,9 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  // PUBLIC registration (H6 fix): JwtAuthGuard+AdminGuard made it impossible
+  // for anyone to create an account. Throttled heavily against spam.
+  @Throttle({ default: { limit: 3, ttl: 600000 } })
   @Post('register')
   async register(@Body() dto: RegisterDto, @Ip() ip: string) {
     return this.authService.register(dto, ip);

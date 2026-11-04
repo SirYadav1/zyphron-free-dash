@@ -12,6 +12,7 @@ import {
   Headers,
   BadRequestException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiKeyGuard, RequirePermission } from '../common/guards/api-key.guard';
 import { DataSource } from 'typeorm';
@@ -178,7 +179,7 @@ export class UniversalApiController {
       [id],
     );
     if (!user?.[0]) {
-      return { error: 'User not found', statusCode: 404 };
+      throw new NotFoundException('User not found');
     }
 
     const result: any = {
@@ -305,7 +306,7 @@ export class UniversalApiController {
       [id],
     );
     if (!server?.[0]) {
-      return { error: 'Server not found', statusCode: 404 };
+      throw new NotFoundException('Server not found');
     }
 
     return {
@@ -416,12 +417,13 @@ export class UniversalApiController {
   @Get('tickets/:id')
   @RequirePermission('tickets', 'read')
   async getTicket(@Param('id') id: string) {
+    // real column is `title`, aliased to `subject` for the API shape
     const ticket = await this.dataSource.query(
-      'SELECT id, subject, status, priority, user_id, created_at FROM tickets WHERE id = ?',
+      'SELECT id, title AS subject, status, priority, user_id, created_at FROM tickets WHERE id = ?',
       [id],
     );
     if (!ticket?.[0]) {
-      return { error: 'Ticket not found', statusCode: 404 };
+      throw new NotFoundException('Ticket not found');
     }
 
     return {
@@ -444,7 +446,7 @@ export class UniversalApiController {
     const limitNum = Math.min(100, Math.max(1, parseInt(perPage) || 50));
     const offset = (pageNum - 1) * limitNum;
 
-    let query = 'SELECT id, subject, status, priority, user_id, created_at FROM tickets';
+    let query = 'SELECT id, title AS subject, status, priority, user_id, created_at FROM tickets';
     let countQuery = 'SELECT COUNT(*) as total FROM tickets';
     const conditions: string[] = [];
     const params: any[] = [];
@@ -569,7 +571,8 @@ export class UniversalApiController {
     const limitNum = Math.min(100, Math.max(1, parseInt(perPage) || 50));
     const offset = (pageNum - 1) * limitNum;
 
-    let query = 'SELECT id, name, price, description, category, is_active, created_at FROM products';
+    // real columns: category_id (int FK), disabled (1 = unavailable)
+    let query = 'SELECT id, name, price, description, category_id, disabled, created_at FROM products';
     let countQuery = 'SELECT COUNT(*) as total FROM products';
     const conditions: string[] = [];
     const params: any[] = [];
@@ -579,8 +582,8 @@ export class UniversalApiController {
       params.push(`%${filterName}%`);
     }
     if (filterCategory) {
-      conditions.push('category = ?');
-      params.push(filterCategory);
+      conditions.push('category_id = ?');
+      params.push(parseInt(filterCategory, 10) || 0);
     }
 
     if (conditions.length > 0) {
@@ -690,8 +693,8 @@ export class UniversalApiController {
       name: product.name,
       price: product.price,
       description: product.description,
-      category: product.category,
-      is_active: product.is_active === 1,
+      category_id: product.category_id,
+      is_active: product.disabled !== 1,
       created_at: product.created_at,
     };
   }

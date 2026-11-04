@@ -2,8 +2,8 @@ import {
   Controller,
   Get,
   Post,
-  Body,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { IsNumber } from 'class-validator';
 import { CreditsService } from './credits.service';
@@ -27,9 +27,15 @@ export class CreditsController {
   @Post('buy')
   @UseGuards(JwtAuthGuard)
   async buyCredits(
-    @Body() dto: BuyCreditsDto,
+    _dto: BuyCreditsDto,
     @CurrentUser() user: any,
   ) {
-    return this.creditsService.buyCredits(user.id, dto.packageId);
+    // DISABLED (C4): this route credited coins without any real payment —
+    // an unauthenticated mint. Real purchases flow through coin orders
+    // (screenshot -> admin approval). Do not re-enable without a payment
+    // gateway callback / admin approval gate.
+    throw new BadRequestException(
+      'Direct credit purchases are currently disabled. Please use the coin order flow.',
+    );
   }
 }

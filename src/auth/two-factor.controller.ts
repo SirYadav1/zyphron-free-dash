@@ -95,7 +95,7 @@ export class TwoFactorController {
   /**
    * Check if email requires 2FA (for login flow, before authentication)
    */
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('check')
   @HttpCode(HttpStatus.OK)
   async check(@Body('email') email: string) {
