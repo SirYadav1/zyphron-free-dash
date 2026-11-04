@@ -50,6 +50,9 @@ import { MailModule } from '../mail/mail.module';
   ],
   controllers: [AuthController, TwoFactorController],
   providers: [AuthService, JwtAuthGuard, TwoFactorService],
-  exports: [AuthService, JwtModule, JwtAuthGuard],
+  // TypeOrmModule re-export: JwtAuthGuard (used app-wide) injects the User
+  // repository — without this, guards instantiated in other modules can't
+  // resolve it.
+  exports: [AuthService, JwtModule, JwtAuthGuard, TypeOrmModule],
 })
 export class AuthModule {}

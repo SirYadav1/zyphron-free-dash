@@ -31,11 +31,11 @@ export class EmailTemplateHelper {
   }
 
   /**
-   * Get the brand name from settings
+   * Get the brand name from settings (env fallback, never hardcode)
    */
   async getBrandName(): Promise<string> {
     const setting = await this.settingRepo.findOne({ where: { key: 'brand_name' } });
-    return setting?.value || 'Zyphron Cloud';
+    return setting?.value?.trim() || (process.env.BRAND_NAME || '').trim() || 'Zyphron Cloud';
   }
 
   /**
