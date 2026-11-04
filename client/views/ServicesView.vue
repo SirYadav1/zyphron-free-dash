@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#0a0f1a] relative overflow-hidden">
+  <div class="min-h-screen bg-base relative overflow-hidden">
     <!-- Background Decorations -->
     <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/[0.03] rounded-full blur-3xl"></div>
     <div class="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/[0.03] rounded-full blur-3xl"></div>
@@ -17,23 +17,29 @@
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="flex flex-col items-center justify-center py-32 gap-4">
-        <div class="w-10 h-10 border-3 border-accent border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Loading services...</p>
+      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" aria-busy="true" aria-live="polite">
+        <div v-for="i in 6" :key="i" class="card-surface overflow-hidden !p-0">
+          <div class="skeleton h-48 !rounded-none"></div>
+          <div class="p-6 space-y-3">
+            <div class="skeleton h-5 w-2/3"></div>
+            <div class="skeleton h-3 w-full"></div>
+            <div class="skeleton h-3 w-4/5"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Categories Grid -->
       <div v-else class="space-y-8">
         <!-- Search -->
         <div class="relative max-w-md">
-          <Search :size="16" class="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400/50" />
+          <Search :size="16" class="absolute left-4 top-1/2 -translate-y-1/2 text-accent/50" />
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Search services..."
-            class="w-full bg-[#0f1729] border border-white/5 rounded-xl pl-11 pr-10 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-blue-500/40 transition-colors"
+            class="w-full bg-surface border border-border rounded-xl pl-11 pr-10 py-3 text-sm text-text-primary placeholder-text-muted/50 outline-none focus:border-accent/40 transition-colors"
           />
-          <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+          <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary">
             <X :size="16" />
           </button>
         </div>
@@ -44,28 +50,28 @@
             v-for="(cat, index) in filteredCategories"
             :key="cat.id"
             :to="`/services/${cat.id}`"
-            class="group bg-[#0f1729] border border-blue-500/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-500/30 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1"
+            class="group bg-surface border border-border rounded-2xl overflow-hidden transition-all duration-300 hover:border-border-bright hover:shadow-xl hover:-translate-y-1"
           >
             <!-- Banner -->
             <div class="relative h-48 overflow-hidden">
               <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-              <div v-else class="w-full h-full bg-gradient-to-br from-blue-500/20 to-[#0f1729] flex items-center justify-center">
-                <Package :size="48" class="text-blue-400/40" />
+              <div v-else class="w-full h-full bg-gradient-to-br from-blue-500/20 to-surface flex items-center justify-center">
+                <Package :size="48" class="text-accent/40" />
               </div>
-              <div class="absolute inset-0 bg-gradient-to-t from-[#0f1729] via-[#0f1729]/20 to-transparent"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent"></div>
               <!-- Sub Image Badge -->
               <img v-if="cat.sub_image_url" :src="cat.sub_image_url" alt="badge" class="absolute top-3 left-3 w-10 h-10 rounded-lg object-cover border border-blue-500/30 shadow-lg" />
               <!-- Plan Count Badge -->
               <div class="absolute top-4 right-4 bg-blue-900/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-blue-500/20">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">{{ cat.product_count || 0 }} Plans</span>
+                <span class="text-[10px] font-bold text-white/80 uppercase">{{ cat.product_count || 0 }} Plans</span>
               </div>
             </div>
 
             <!-- Content -->
             <div class="p-6 -mt-8 relative">
-              <h3 class="text-xl font-bold text-white group-hover:text-blue-400 transition-colors mb-2">{{ cat.name }}</h3>
-              <p class="text-sm text-gray-400 leading-relaxed line-clamp-2">{{ cat.description || 'Browse available hosting plans' }}</p>
-              <div class="mt-4 flex items-center gap-2 text-blue-400 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+              <h3 class="text-xl font-bold text-text-primary group-hover:text-accent transition-colors mb-2">{{ cat.name }}</h3>
+              <p class="text-sm text-text-muted leading-relaxed line-clamp-2">{{ cat.description || 'Browse available hosting plans' }}</p>
+              <div class="mt-4 flex items-center gap-2 text-accent text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
                 View Plans
                 <ChevronRight :size="16" class="group-hover:translate-x-1 transition-transform" />
               </div>
@@ -75,9 +81,9 @@
           <!-- Empty -->
           <div v-if="filteredCategories.length === 0" class="col-span-full py-20 text-center">
             <div class="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto mb-4">
-              <SearchX :size="28" class="text-blue-400/50" />
+              <SearchX :size="28" class="text-accent/50" />
             </div>
-            <p class="text-gray-400">No services found{{ searchQuery ? ` for "${searchQuery}"` : '' }}</p>
+            <p class="text-text-muted">No services found{{ searchQuery ? ` for "${searchQuery}"` : '' }}</p>
           </div>
         </div>
       </div>

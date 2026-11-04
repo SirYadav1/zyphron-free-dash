@@ -90,6 +90,9 @@ const successMsg = ref('')
 const errorMsg = ref('')
 
 const savedTheme = localStorage.getItem('zyphron_theme') || 'dark'
+// local choice (localStorage) wins over server; server pref only used on fresh devices
+const hasLocalTheme = localStorage.getItem('zyphron_theme') !== null
+let themeTouched = false
 const prefs = reactive({
   locale: localStorage.getItem('zyphron_locale') || 'en',
   theme: savedTheme,
@@ -116,8 +119,9 @@ function switchLocale() {
 // apply theme immediately on load
 applyTheme(savedTheme)
 
-watch(() => prefs.theme, (newTheme) => {
-  applyTheme(newTheme)
+watch(() => prefs.theme, () => {
+  themeTouched = true
+  applyTheme(prefs.theme)
 })
 
 onMounted(async () => {
@@ -128,7 +132,9 @@ onMounted(async () => {
       locale.value = data.locale
       document.documentElement.lang = data.locale
     }
-    if (data.theme) prefs.theme = data.theme
+    // never flip an active local theme with the server value;
+    // server pref is only a fallback when nothing was chosen locally
+    if (data.theme && !hasLocalTheme && !themeTouched) prefs.theme = data.theme
   } catch {
     // use localStorage defaults
   } finally {

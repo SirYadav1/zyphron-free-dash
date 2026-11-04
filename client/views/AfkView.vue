@@ -7,7 +7,7 @@
         <p class="text-sm text-text-muted">Earn compute credits by maintaining an active session.</p>
       </div>
       <div v-if="store.isActive" class="flex items-center gap-3 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
-        <span class="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(0,229,153,0.4)]"></span>
+        <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
         <span class="text-xs font-bold text-accent uppercase tracking-widest">Generating Credits</span>
       </div>
     </div>
@@ -91,7 +91,7 @@
               pageStatus === 'blurred' ? 'bg-yellow-500/5 border-yellow-500/20 text-yellow-500' :
               'bg-red-500/5 border-red-500/20 text-red-500'
             ]">
-              <span class="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]" :class="
+              <span class="w-1.5 h-1.5 rounded-full animate-pulse" :class="
                 pageStatus === 'active' ? 'bg-accent' :
                 pageStatus === 'blurred' ? 'bg-yellow-500' :
                 'bg-red-500'

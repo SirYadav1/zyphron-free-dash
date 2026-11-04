@@ -35,7 +35,7 @@
             Open Console
           </a>
           <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-base border border-border">
-            <div :class="statusColor(server.status)" class="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]"></div>
+            <div :class="statusColor(server.status)" class="w-1.5 h-1.5 rounded-full"></div>
             <span :class="statusText(server.status)" class="text-[10px] font-bold uppercase tracking-wider">{{ server.status }}</span>
           </div>
         </div>

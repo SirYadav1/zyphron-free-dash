@@ -19,13 +19,26 @@
         :key="tab.id"
         @click="activeTab = tab.id"
         :class="[
-          'px-4 py-2 text-[11px] font-bold rounded-lg transition-all',
+          'px-4 py-2 text-[11px] font-bold rounded-lg transition-colors inline-flex items-center gap-1.5',
           activeTab === tab.id
-            ? 'bg-accent text-white shadow-md shadow-accent/20'
+            ? 'bg-accent text-white'
             : 'text-text-muted hover:text-text-primary hover:bg-white/[0.05] border border-border'
         ]"
       >
+        <component :is="tab.icon" :size="13" :stroke-width="2" />
         {{ tab.label }}
+        <span
+          v-if="tab.statusKey === 'ptero'"
+          class="w-1.5 h-1.5 rounded-full shrink-0"
+          :class="pteroConfigured ? 'bg-emerald-400' : (activeTab === tab.id ? 'bg-white/50' : 'bg-red-400')"
+          :title="pteroConfigured ? 'Panel connected' : 'Not configured'"
+        ></span>
+        <span
+          v-else-if="tab.statusKey === 'smtp'"
+          class="w-1.5 h-1.5 rounded-full shrink-0"
+          :class="smtpConfigured ? 'bg-emerald-400' : (activeTab === tab.id ? 'bg-white/50' : 'bg-amber-400')"
+          :title="smtpConfigured ? 'SMTP configured' : 'SMTP not configured'"
+        ></span>
       </button>
     </div>
 
@@ -33,31 +46,29 @@
     <div v-if="activeTab === 'general'" class="space-y-6">
       <!-- AFK Earning Rates -->
       <div class="card-surface p-6 space-y-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Zap :size="16" class="text-amber-400" />
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-text-primary">AFK Earning Rates</h3>
-              <p class="text-[11px] text-text-muted">Compute credits earned from active sessions</p>
-            </div>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+            <Zap :size="16" class="text-amber-400" />
           </div>
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 bg-surface/50 px-3 py-1.5 rounded-lg border border-border">
-              <input v-model="afkCoins" type="number" class="w-14 bg-transparent text-accent font-bold text-center text-sm border-none focus:ring-0 p-0" />
-              <span class="text-[10px] text-text-muted font-bold">CR /</span>
-              <input v-model="afkInterval" type="number" class="w-10 bg-transparent text-text-primary font-bold text-center text-sm border-none focus:ring-0 p-0" />
-              <span class="text-[10px] text-text-muted font-bold">MIN</span>
-            </div>
-            <button @click="saveAfkRates" :disabled="savingAfk" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-              {{ savingAfk ? 'Saving...' : 'Apply' }}
-            </button>
+          <div>
+            <h3 class="text-sm font-bold text-text-primary">AFK Earning Rates</h3>
+            <p class="text-[11px] text-text-muted">Compute credits earned from active sessions</p>
           </div>
         </div>
         <p class="text-[11px] text-text-muted bg-surface/50 px-3 py-2 rounded-lg border border-border">
           Users earn <span class="text-accent font-bold">{{ afkCoins || 0 }} CR</span> every <span class="text-text-primary font-bold">{{ afkInterval || 0 }} min</span> of active focus.
         </p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-border">
+          <div class="flex items-center gap-2 bg-surface/50 px-3 py-1.5 rounded-lg border border-border w-fit">
+            <input v-model="afkCoins" type="number" class="w-14 bg-transparent text-accent font-bold text-center text-sm border-none focus:ring-0 p-0" />
+            <span class="text-[10px] text-text-muted font-bold">CR /</span>
+            <input v-model="afkInterval" type="number" class="w-10 bg-transparent text-text-primary font-bold text-center text-sm border-none focus:ring-0 p-0" />
+            <span class="text-[10px] text-text-muted font-bold">MIN</span>
+          </div>
+          <button @click="saveAfkRates" :disabled="savingAfk" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5 w-fit">
+            <Save :size="12" /> {{ savingAfk ? 'Saving...' : 'Apply Rates' }}
+          </button>
+        </div>
       </div>
 
       <!-- Message of the Day -->
@@ -97,46 +108,39 @@
           </div>
           <div>
             <h3 class="text-sm font-bold text-text-primary">Branding</h3>
-            <p class="text-[11px] text-text-muted">Login page image & favicon</p>
+            <p class="text-[11px] text-text-muted">Login page image, favicon & brand name</p>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-2">
             <label class="text-[10px] font-bold text-text-muted uppercase">Login Image URL</label>
-            <div class="flex gap-2">
-              <input v-model="loginImageUrl" type="text" placeholder="https://example.com/bg.png" class="input-field py-2 flex-1" />
-              <button @click="saveLoginImage" :disabled="savingLoginImage" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-                {{ savingLoginImage ? '...' : 'Save' }}
-              </button>
-            </div>
-            <div v-if="loginImageUrl" class="mt-2 rounded-lg overflow-hidden border border-border max-w-[180px]">
+            <input v-model="loginImageUrl" type="text" placeholder="https://example.com/bg.png" class="input-field py-2" />
+            <div v-if="loginImageUrl" class="rounded-lg overflow-hidden border border-border max-w-[180px]">
               <img :src="loginImageUrl" @error="loginImageError = true" @load="loginImageError = false" class="w-full h-20 object-cover" />
             </div>
           </div>
           <div class="space-y-2">
             <label class="text-[10px] font-bold text-text-muted uppercase">Favicon URL</label>
-            <div class="flex gap-2">
-              <input v-model="faviconUrl" type="text" placeholder="https://example.com/favicon.ico" class="input-field py-2 flex-1" />
-              <button @click="saveFavicon" :disabled="savingFavicon" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-                {{ savingFavicon ? '...' : 'Save' }}
-              </button>
-            </div>
-            <div v-if="faviconUrl" class="flex items-center gap-2 mt-2">
+            <input v-model="faviconUrl" type="text" placeholder="https://example.com/favicon.ico" class="input-field py-2" />
+            <div v-if="faviconUrl" class="flex items-center gap-2">
               <img :src="faviconUrl" @error="faviconError = true" @load="faviconError = false" class="w-6 h-6 rounded border border-border" />
               <span v-if="faviconError" class="text-[10px] text-red-400">Invalid</span>
             </div>
           </div>
           <div class="space-y-2">
             <label class="text-[10px] font-bold text-text-muted uppercase">Brand Name</label>
-            <div class="flex gap-2">
-              <input v-model="brandName" type="text" placeholder="Zyphron Cloud" class="input-field py-2 flex-1" />
-              <button @click="saveBrandName" :disabled="savingBrandName" class="px-3 py-1.5 text-[10px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-                {{ savingBrandName ? '...' : 'Save' }}
-              </button>
-            </div>
-            <p class="text-[10px] text-text-muted">Brand name displayed in email headers and footers</p>
+            <input v-model="brandName" type="text" placeholder="Your brand name" class="input-field py-2" />
+            <p class="text-[10px] text-text-muted">Displayed in email headers and footers</p>
           </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-border">
+          <p v-if="brandingError" class="text-xs font-bold text-red-400">✕ {{ brandingError }}</p>
+          <span v-else class="text-[10px] text-text-muted">Applies to login page, emails & browser tab</span>
+          <button @click="saveBranding" :disabled="savingBranding" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
+            <Save :size="12" /> {{ savingBranding ? 'Saving...' : 'Save Branding' }}
+          </button>
         </div>
       </div>
     </div>
@@ -157,8 +161,8 @@
           </div>
           <div class="flex items-center gap-3">
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="maintenanceMode" @change="saveMaintenanceMode" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+              <input type="checkbox" v-model="maintenanceMode" @change="onMaintenanceToggle" class="sr-only peer">
+              <div class="w-11 h-6 bg-text-muted/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
             </label>
             <span class="text-[11px] font-bold" :class="maintenanceMode ? 'text-red-400' : 'text-text-muted'">
               {{ maintenanceMode ? 'ON' : 'OFF' }}
@@ -189,7 +193,7 @@
           <div class="flex items-center gap-3">
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" v-model="afkEnabled" @change="saveAfkEnabled" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              <div class="w-11 h-6 bg-text-muted/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
             </label>
             <span class="text-[11px] font-bold" :class="afkEnabled ? 'text-amber-400' : 'text-text-muted'">
               {{ afkEnabled ? 'UNLOCKED' : 'LOCKED' }}
@@ -220,14 +224,13 @@
               <p class="text-[11px] text-text-muted">Pterodactyl / Revactyl connection</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button @click="testPterodactyl" :disabled="testingPtero" class="px-3 py-1.5 text-[10px] font-bold text-blue-400 border border-blue-500/20 rounded-lg hover:bg-blue-500/10 disabled:opacity-40 transition-colors">
-              {{ testingPtero ? 'Testing...' : 'Test' }}
-            </button>
-            <button @click="savePterodactylConfig" :disabled="savingPtero" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-              {{ savingPtero ? 'Saving...' : 'Save Config' }}
-            </button>
-          </div>
+          <span
+            class="text-[10px] font-bold px-2 py-1 rounded-full w-fit inline-flex items-center gap-1.5"
+            :class="pteroConfigured ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'"
+          >
+            <span class="w-1.5 h-1.5 rounded-full" :class="pteroConfigured ? 'bg-emerald-400' : 'bg-amber-400'"></span>
+            {{ pteroConfigured ? 'Connected' : 'Not configured' }}
+          </span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -296,6 +299,18 @@
             <div v-if="pteroStatus.nodeCount" class="mt-1 font-bold">{{ pteroStatus.nodeCount }} nodes available</div>
           </div>
         </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-border">
+          <p class="text-[10px] text-text-muted">Changes apply to new server deployments immediately</p>
+          <div class="flex items-center gap-2">
+            <button @click="testPterodactyl" :disabled="testingPtero" class="px-3 py-1.5 text-[10px] font-bold text-accent border border-accent/20 rounded-lg hover:bg-accent/10 disabled:opacity-40 transition-colors">
+              {{ testingPtero ? 'Testing...' : 'Test Connection' }}
+            </button>
+            <button @click="savePterodactylConfig" :disabled="savingPtero" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
+              <Save :size="12" /> {{ savingPtero ? 'Saving...' : 'Save Config' }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Default Server Node -->
@@ -309,14 +324,6 @@
               <h3 class="text-sm font-bold text-text-primary">Default Server Node</h3>
               <p class="text-[11px] text-text-muted">Pterodactyl node for new deployments</p>
             </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button @click="loadNodes" :disabled="loadingNodes" class="px-3 py-1.5 text-[10px] font-bold text-orange-400 border border-orange-500/20 rounded-lg hover:bg-orange-500/10 disabled:opacity-40 transition-colors">
-              {{ loadingNodes ? 'Loading...' : 'Refresh' }}
-            </button>
-            <button @click="saveDefaultNode" :disabled="savingNode" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-              {{ savingNode ? 'Saving...' : 'Save Node' }}
-            </button>
           </div>
         </div>
 
@@ -347,28 +354,33 @@
           <p v-if="nodeSuccess" class="text-xs font-bold text-emerald-400">✓ {{ nodeSuccess }}</p>
           <p v-if="nodeError" class="text-xs font-bold text-red-400">✕ {{ nodeError }}</p>
         </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
+          <button @click="loadNodes" :disabled="loadingNodes" class="px-3 py-1.5 text-[10px] font-bold text-accent border border-accent/20 rounded-lg hover:bg-accent/10 disabled:opacity-40 transition-colors">
+            {{ loadingNodes ? 'Loading...' : 'Refresh Nodes' }}
+          </button>
+          <button @click="saveDefaultNode" :disabled="savingNode" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
+            <Save :size="12" /> {{ savingNode ? 'Saving...' : 'Save Node' }}
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- email / smtp tab -->
     <div v-if="activeTab === 'email'" class="space-y-6">
       <!-- SMTP Configuration -->
-      <div class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
-        <div class="px-5 py-4 border-b border-border bg-surface/50">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Mail :size="16" class="text-blue-400" />
-              </div>
-              <div>
-                <h3 class="text-sm font-bold text-text-primary">Email / SMTP Configuration</h3>
-                <p class="text-[11px] text-text-muted">Configure email delivery for notifications and verification</p>
-              </div>
-            </div>
+      <div class="card-surface p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <Mail :size="16" class="text-blue-400" />
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-text-primary">Email / SMTP Configuration</h3>
+            <p class="text-[11px] text-text-muted">Configure email delivery for notifications and verification</p>
           </div>
         </div>
 
-        <div class="p-5 space-y-4">
+        <div class="space-y-4">
           <!-- SMTP Connection -->
           <div class="space-y-3">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -392,33 +404,43 @@
               </div>
             </div>
 
-            <!-- SMTP Setup Guide -->
-            <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-3">
-              <div class="flex items-center gap-2">
-                <Info :size="14" class="text-blue-400" />
-                <p class="text-xs font-bold text-blue-400">SMTP Setup Guide</p>
-              </div>
-              <div class="text-[11px] text-blue-300/80 space-y-2">
-                <p class="font-bold text-blue-300">Gmail:</p>
-                <ul class="list-disc list-inside space-y-1 ml-2">
-                  <li>Host: <code class="bg-blue-500/10 px-1 rounded">smtp.gmail.com</code></li>
-                  <li>Port: <code class="bg-blue-500/10 px-1 rounded">587</code></li>
-                  <li>Username: Your Gmail address</li>
-                  <li>Password: <a href="https://myaccount.google.com/apppasswords" target="_blank" class="underline hover:text-white">App Password</a> (NOT your real password)</li>
-                  <li>Encryption: TLS</li>
-                </ul>
-                <p class="font-bold text-blue-300 mt-3">Pterodactyl Panel:</p>
-                <ul class="list-disc list-inside space-y-1 ml-2">
-                  <li>Host: Your panel's SMTP host (check Panel → Admin → Settings → Mail)</li>
-                  <li>Port: Usually 587 (TLS) or 465 (SSL)</li>
-                  <li>Username: SMTP username from panel config</li>
-                  <li>Password: SMTP password from panel config</li>
-                </ul>
-                <p class="font-bold text-blue-300 mt-3">Resend / SendGrid / Mailgun:</p>
-                <ul class="list-disc list-inside space-y-1 ml-2">
-                  <li>Use their SMTP credentials from dashboard</li>
-                  <li>Host/Port/Username/Password found in their SMTP settings page</li>
-                </ul>
+            <!-- SMTP Setup Guide (collapsible) -->
+            <div class="border border-border rounded-lg overflow-hidden">
+              <button
+                @click="showSmtpGuide = !showSmtpGuide"
+                class="w-full flex items-center justify-between px-4 py-2.5 bg-surface/50 hover:bg-surface-hover transition-colors"
+              >
+                <span class="flex items-center gap-2">
+                  <Info :size="14" class="text-accent" />
+                  <span class="text-xs font-bold text-text-primary">SMTP Setup Guide</span>
+                  <span class="text-[10px] text-text-muted">— Gmail, Pterodactyl, Resend & more</span>
+                </span>
+                <ChevronUp v-if="showSmtpGuide" :size="14" class="text-text-muted" />
+                <ChevronDown v-else :size="14" class="text-text-muted" />
+              </button>
+              <div v-if="showSmtpGuide" class="bg-blue-500/10 border-t border-blue-500/20 p-4 space-y-3">
+                <div class="text-[11px] text-blue-300/80 space-y-2">
+                  <p class="font-bold text-blue-300">Gmail:</p>
+                  <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>Host: <code class="bg-blue-500/10 px-1 rounded">smtp.gmail.com</code></li>
+                    <li>Port: <code class="bg-blue-500/10 px-1 rounded">587</code></li>
+                    <li>Username: Your Gmail address</li>
+                    <li>Password: <a href="https://myaccount.google.com/apppasswords" target="_blank" class="underline hover:text-white">App Password</a> (NOT your real password)</li>
+                    <li>Encryption: TLS</li>
+                  </ul>
+                  <p class="font-bold text-blue-300 mt-3">Pterodactyl Panel:</p>
+                  <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>Host: Your panel's SMTP host (check Panel → Admin → Settings → Mail)</li>
+                    <li>Port: Usually 587 (TLS) or 465 (SSL)</li>
+                    <li>Username: SMTP username from panel config</li>
+                    <li>Password: SMTP password from panel config</li>
+                  </ul>
+                  <p class="font-bold text-blue-300 mt-3">Resend / SendGrid / Mailgun:</p>
+                  <ul class="list-disc list-inside space-y-1 ml-2">
+                    <li>Use their SMTP credentials from dashboard</li>
+                    <li>Host/Port/Username/Password found in their SMTP settings page</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
@@ -465,7 +487,7 @@
                   v-model="smtpForm.fromName"
                   type="text"
                   class="input-field py-2"
-                  placeholder="Zyphron Cloud"
+                  placeholder="Your brand name"
                 />
               </div>
               <div class="space-y-1">
@@ -540,9 +562,6 @@
               <p class="text-[11px] text-text-muted">Resource limits for new servers (startup depends on nest/egg)</p>
             </div>
           </div>
-          <button @click="saveAllocationSettings" :disabled="savingAllocation" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-            {{ savingAllocation ? 'Saving...' : 'Save Allocation' }}
-          </button>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -603,6 +622,12 @@
 
         <p v-if="allocationSuccess" class="text-xs font-bold text-emerald-400">✓ {{ allocationSuccess }}</p>
         <p v-if="allocationError" class="text-xs font-bold text-red-400">✕ {{ allocationError }}</p>
+
+        <div class="flex items-center justify-end pt-2 border-t border-border">
+          <button @click="saveAllocationSettings" :disabled="savingAllocation" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
+            <Save :size="12" /> {{ savingAllocation ? 'Saving...' : 'Save Allocation' }}
+          </button>
+        </div>
       </div>
 
       <!-- Max Resource Limits (Upgrade Limits) -->
@@ -617,9 +642,6 @@
               <p class="text-[11px] text-text-muted">Maximum RAM/CPU/Disk a server can be upgraded to</p>
             </div>
           </div>
-          <button @click="saveMaxResourceLimits" :disabled="savingMaxLimits" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-            {{ savingMaxLimits ? 'Saving...' : 'Save Limits' }}
-          </button>
         </div>
 
         <div class="grid grid-cols-3 gap-3">
@@ -642,6 +664,12 @@
 
         <p v-if="maxLimitsSuccess" class="text-xs font-bold text-emerald-400">✓ {{ maxLimitsSuccess }}</p>
         <p v-if="maxLimitsError" class="text-xs font-bold text-red-400">✕ {{ maxLimitsError }}</p>
+
+        <div class="flex items-center justify-end pt-2 border-t border-border">
+          <button @click="saveMaxResourceLimits" :disabled="savingMaxLimits" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
+            <Save :size="12" /> {{ savingMaxLimits ? 'Saving...' : 'Save Limits' }}
+          </button>
+        </div>
       </div>
 
       <!-- Server Expiry Transfer -->
@@ -656,9 +684,6 @@
               <p class="text-[11px] text-text-muted">Transfer expired servers to this admin account</p>
             </div>
           </div>
-          <button @click="saveTransferEmail" :disabled="savingTransferEmail" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors">
-            {{ savingTransferEmail ? 'Saving...' : 'Save' }}
-          </button>
         </div>
 
         <div class="space-y-1">
@@ -669,6 +694,12 @@
 
         <p v-if="transferSuccess" class="text-xs font-bold text-emerald-400">✓ {{ transferSuccess }}</p>
         <p v-if="transferError" class="text-xs font-bold text-red-400">✕ {{ transferError }}</p>
+
+        <div class="flex items-center justify-end pt-2 border-t border-border">
+          <button @click="saveTransferEmail" :disabled="savingTransferEmail" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
+            <Save :size="12" /> {{ savingTransferEmail ? 'Saving...' : 'Save Transfer Email' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -705,58 +736,131 @@
       </div>
     </div>
 
-    <!-- all settings table (always visible) -->
-    <div class="bg-[#1e293b] border border-border rounded-xl overflow-hidden">
-      <div class="px-5 py-3 border-b border-border flex items-center justify-between">
-        <h3 class="text-sm font-bold text-text-primary">All Settings</h3>
-        <span class="text-[10px] text-text-muted font-bold">{{ Object.keys(store.settings).length }} keys</span>
-      </div>
-      <div v-if="Object.keys(store.settings).length > 0" class="divide-y divide-border/50 max-h-80 overflow-y-auto">
-        <div
-          v-for="(value, key) in store.settings"
-          :key="key"
-          class="px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 hover:bg-white/[0.02] transition-colors group"
-        >
-          <!-- Key -->
-          <div class="w-full sm:w-64 flex-shrink-0">
-            <span class="text-xs font-mono text-accent/80 bg-accent/5 px-2 py-0.5 rounded">{{ key }}</span>
+    <!-- advanced: raw settings (collapsed by default, searchable) -->
+    <div class="card-surface overflow-hidden">
+      <button
+        @click="showRawSettings = !showRawSettings"
+        class="w-full px-6 py-4 flex items-center justify-between hover:bg-surface-hover transition-colors"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-slate-500/10 border border-slate-500/20 flex items-center justify-center">
+            <Layers :size="16" class="text-slate-400" />
           </div>
-          <!-- Value -->
-          <div class="flex-1 min-w-0">
-            <div v-if="editingKey === key" class="flex items-center gap-2">
-              <input v-model="editValue" type="text" class="input-field py-1.5 text-xs flex-1" @keyup.enter="handleSave(key)" />
-              <button @click="handleSave(key)" :disabled="saving" class="px-3 py-1 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded hover:bg-emerald-500/30 disabled:opacity-40 transition-colors">
-                {{ saving ? '...' : 'Save' }}
-              </button>
-              <button @click="editingKey = null" class="px-3 py-1 text-[10px] font-bold text-text-muted hover:text-text-primary transition-colors">
-                Cancel
-              </button>
+          <div class="text-left">
+            <h3 class="text-sm font-bold text-text-primary">Advanced — Raw Settings</h3>
+            <p class="text-[11px] text-text-muted">{{ settingsEntries.length }} keys stored in the database</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-bold text-text-muted border border-border rounded-full px-2 py-0.5">Edit with caution</span>
+          <ChevronUp v-if="showRawSettings" :size="16" class="text-text-muted" />
+          <ChevronDown v-else :size="16" class="text-text-muted" />
+        </div>
+      </button>
+
+      <div v-if="showRawSettings">
+        <!-- search -->
+        <div class="px-6 pb-3">
+          <div class="relative max-w-xs">
+            <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              v-model="rawSearch"
+              type="text"
+              placeholder="Filter settings..."
+              class="input-field py-2 pl-9 text-xs"
+            />
+          </div>
+        </div>
+
+        <div v-if="filteredSettings.length > 0" class="divide-y divide-border/50 max-h-96 overflow-y-auto">
+          <div
+            v-for="[rawKey, rawValue] in filteredSettings"
+            :key="rawKey"
+            class="px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 hover:bg-white/[0.02] transition-colors group"
+          >
+            <!-- Key -->
+            <div class="w-full sm:w-64 flex-shrink-0">
+              <span class="text-xs font-mono text-accent/80 bg-accent/5 px-2 py-0.5 rounded">{{ rawKey }}</span>
             </div>
-            <span v-else class="text-xs text-text-muted truncate block">{{ value }}</span>
+            <!-- Value -->
+            <div class="flex-1 min-w-0">
+              <div v-if="editingKey === rawKey" class="flex items-center gap-2">
+                <input v-model="editValue" type="text" class="input-field py-1.5 text-xs flex-1" @keyup.enter="handleSave(rawKey)" />
+                <button @click="handleSave(rawKey)" :disabled="saving" class="px-3 py-1 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded hover:bg-emerald-500/30 disabled:opacity-40 transition-colors">
+                  {{ saving ? '...' : 'Save' }}
+                </button>
+                <button @click="editingKey = null" class="px-3 py-1 text-[10px] font-bold text-text-muted hover:text-text-primary transition-colors">
+                  Cancel
+                </button>
+              </div>
+              <span v-else class="text-xs text-text-muted truncate block">{{ rawValue }}</span>
+            </div>
+            <!-- Edit -->
+            <button
+              v-if="editingKey !== rawKey"
+              @click="startEdit(rawKey, rawValue)"
+              class="text-[10px] font-bold text-accent hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+            >Edit</button>
           </div>
-          <!-- Edit -->
-          <button
-            v-if="editingKey !== key"
-            @click="startEdit(key, value)"
-            class="text-[10px] font-bold text-accent hover:text-white transition-colors opacity-0 group-hover:opacity-100"
-          >Edit</button>
+        </div>
+
+        <div v-else class="py-10 text-center">
+          <p class="text-text-muted text-sm font-bold">No settings match "{{ rawSearch }}"</p>
+        </div>
+
+        <div class="px-6 py-3 border-t border-border bg-surface/50">
+          <p class="text-[10px] text-text-muted">
+            <AlertTriangle :size="10" class="inline -mt-0.5 mr-1 text-amber-400" />
+            These keys power the whole panel — editing an unknown key can break deployments, payouts or email delivery.
+          </p>
         </div>
       </div>
+    </div>
 
-      <div v-else class="py-12 text-center">
-        <p class="text-text-muted text-sm font-bold">No settings found</p>
+    <!-- Maintenance mode confirmation modal -->
+    <div
+      v-if="maintenanceConfirmOpen"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="maintenance-confirm-title"
+      @click.self="maintenanceConfirmOpen = false"
+      style="overscroll-behavior: contain;"
+    >
+      <div class="card-surface !p-6 max-w-md w-full space-y-4" style="animation: scaleIn 0.2s ease-out;">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+            <AlertTriangle :size="18" class="text-red-400" />
+          </div>
+          <div>
+            <h3 id="maintenance-confirm-title" class="text-sm font-bold text-text-primary">Enable maintenance mode?</h3>
+            <p class="text-xs text-text-muted mt-1">
+              All normal users will be logged out and blocked from logging in while this is active.
+              Admins keep full access. You can turn it off anytime.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button @click="maintenanceConfirmOpen = false" class="px-4 py-2 text-[11px] font-bold text-text-muted border border-border rounded-lg hover:text-text-primary hover:bg-white/[0.05] transition-colors">
+            Cancel
+          </button>
+          <button @click="confirmMaintenance" class="px-4 py-2 text-[11px] font-bold bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+            Yes, Enable Maintenance
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useAdminStore } from '../../stores/admin'
 import client from '../../api/client'
 import {
   AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive,
-  Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck, MessageSquare, UserCog, ShieldAlert,
+  Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck, MessageSquare, UserCog, ShieldAlert, Info,
+  SlidersHorizontal, Power, Monitor, ShieldCheck, ChevronDown, ChevronUp, Search,
 } from 'lucide-vue-next'
 
 const store = useAdminStore()
@@ -768,13 +872,46 @@ const success = ref('')
 
 const activeTab = ref('general')
 const tabs = [
-  { id: 'general', label: 'General', icon: 'Settings' },
-  { id: 'features', label: 'Features', icon: 'Power' },
-  { id: 'pterodactyl', label: 'Pterodactyl', icon: 'Monitor' },
-  { id: 'email', label: 'Email / SMTP', icon: 'Mail' },
-  { id: 'server', label: 'Server Defaults', icon: 'Server' },
-  { id: 'security', label: '🔒 Security' },
+  { id: 'general', label: 'General', icon: SlidersHorizontal },
+  { id: 'features', label: 'Features', icon: Power },
+  { id: 'pterodactyl', label: 'Pterodactyl', icon: Monitor, statusKey: 'ptero' },
+  { id: 'email', label: 'Email / SMTP', icon: Mail, statusKey: 'smtp' },
+  { id: 'server', label: 'Server Defaults', icon: Server },
+  { id: 'security', label: 'Security', icon: ShieldCheck },
 ]
+
+// Auto-dismiss status messages so stale "Saved" text never lingers
+// (watchers are attached below, after all message refs are declared)
+
+// Advanced: raw key/value settings — collapsed by default, with search
+const showRawSettings = ref(false)
+const rawSearch = ref('')
+const settingsEntries = computed(() => Object.entries(store.settings))
+const filteredSettings = computed(() => {
+  const q = rawSearch.value.trim().toLowerCase()
+  if (!q) return settingsEntries.value
+  return settingsEntries.value.filter(([k, v]) => k.toLowerCase().includes(q) || String(v).toLowerCase().includes(q))
+})
+
+const smtpConfigured = computed(() => Boolean(smtpForm.value.host && smtpForm.value.user))
+const showSmtpGuide = ref(false)
+
+// Maintenance mode requires explicit confirmation before enabling
+const maintenanceConfirmOpen = ref(false)
+function onMaintenanceToggle() {
+  if (maintenanceMode.value) {
+    // turning ON is destructive — confirm first
+    maintenanceMode.value = false
+    maintenanceConfirmOpen.value = true
+  } else {
+    saveMaintenanceMode()
+  }
+}
+function confirmMaintenance() {
+  maintenanceConfirmOpen.value = false
+  maintenanceMode.value = true
+  saveMaintenanceMode()
+}
 
 const savingAfk = ref(false)
 const afkCoins = ref(10)
@@ -791,13 +928,8 @@ const loginImageUrl = ref('')
 const faviconUrl = ref('')
 const emailLogoUrl = ref('')
 const brandName = ref('')
-const savingLoginImage = ref(false)
-const savingFavicon = ref(false)
-const savingEmailLogo = ref(false)
-const savingBrandName = ref(false)
 const loginImageError = ref(false)
 const faviconError = ref(false)
-const emailLogoError = ref(false)
 
 const loadingNodes = ref(false)
 const savingNode = ref(false)
@@ -861,6 +993,22 @@ const sendingTestEmail = ref(false)
 const smtpSuccess = ref('')
 const smtpError = ref('')
 const showSmtpPass = ref(false)
+
+// Auto-dismiss status messages: success clears in 4s, errors in 6s
+const successTimers = new Map()
+const errorTimers = new Map()
+;[success, nodeSuccess, allocationSuccess, maxLimitsSuccess, transferSuccess, smtpSuccess].forEach((r) => {
+  watch(r, (v) => {
+    if (successTimers.has(r)) clearTimeout(successTimers.get(r))
+    if (v) successTimers.set(r, setTimeout(() => { r.value = '' }, 4000))
+  })
+})
+;[error, nodeError, allocationError, maxLimitsError, transferError, smtpError].forEach((r) => {
+  watch(r, (v) => {
+    if (errorTimers.has(r)) clearTimeout(errorTimers.get(r))
+    if (v) errorTimers.set(r, setTimeout(() => { r.value = '' }, 6000))
+  })
+})
 
 const selectedNode = computed(() => {
   if (!selectedNodeId.value || !nodes.value.length) return null
@@ -997,13 +1145,6 @@ onMounted(async () => {
   }
 })
 
-async function saveLoginImage() {
-  savingLoginImage.value = true; error.value = ''; success.value = ''
-  try { await store.updateSetting('login_image_url', loginImageUrl.value); success.value = 'Login image updated' }
-  catch (err) { error.value = err.response?.data?.message || 'Failed' }
-  finally { savingLoginImage.value = false }
-}
-
 async function saveMotd() {
   savingMotd.value = true; error.value = ''; success.value = ''
   try {
@@ -1015,25 +1156,21 @@ async function saveMotd() {
   finally { savingMotd.value = false }
 }
 
-async function saveFavicon() {
-  savingFavicon.value = true; error.value = ''; success.value = ''
-  try { await store.updateSetting('favicon_url', faviconUrl.value); success.value = 'Favicon updated' }
-  catch (err) { error.value = err.response?.data?.message || 'Failed' }
-  finally { savingFavicon.value = false }
-}
-
-async function saveEmailLogo() {
-  savingEmailLogo.value = true; error.value = ''; success.value = ''
-  try { await store.updateSetting('email_logo_url', emailLogoUrl.value); success.value = 'Email logo updated' }
-  catch (err) { error.value = err.response?.data?.message || 'Failed' }
-  finally { savingEmailLogo.value = false }
-}
-
-async function saveBrandName() {
-  savingBrandName.value = true; error.value = ''; success.value = ''
-  try { await store.updateSetting('brand_name', brandName.value); success.value = 'Brand name updated' }
-  catch (err) { error.value = err.response?.data?.message || 'Failed' }
-  finally { savingBrandName.value = false }
+// Branding: save all three fields in one go
+const savingBranding = ref(false)
+const brandingError = ref('')
+async function saveBranding() {
+  savingBranding.value = true; error.value = ''; success.value = ''; brandingError.value = ''
+  try {
+    await Promise.all([
+      store.updateSetting('login_image_url', loginImageUrl.value),
+      store.updateSetting('favicon_url', faviconUrl.value),
+      store.updateSetting('brand_name', brandName.value),
+    ])
+    success.value = 'Branding updated'
+  } catch (err) {
+    brandingError.value = err.response?.data?.message || 'Failed'
+  } finally { savingBranding.value = false }
 }
 
 async function saveAfkRates() {

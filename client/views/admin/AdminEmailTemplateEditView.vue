@@ -1,8 +1,8 @@
 <template>
-  <div class="space-y-10 max-w-4xl">
+  <div class="space-y-6 max-w-4xl">
     <div class="space-y-1">
       <div class="flex items-center gap-3">
-        <router-link to="/admin/email-templates" class="text-sm text-accent hover:text-white transition-colors">&larr; Back to Templates</router-link>
+        <router-link to="/admin/email-templates" class="text-sm text-accent hover:text-text-primary transition-colors">&larr; Back to Templates</router-link>
       </div>
       <h2 class="text-2xl font-bold text-text-primary tracking-tight">{{ isCreate ? 'Create Email Template' : 'Edit Email Template' }}</h2>
       <p class="text-sm text-text-muted">{{ isCreate ? 'Create a new email template' : 'Modify email template details' }}</p>
@@ -14,8 +14,12 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Form -->
       <div class="card-surface p-6 space-y-6">
-        <div v-if="loading" class="flex items-center justify-center py-12">
-          <div class="w-10 h-10 border-[3px] border-accent border-t-transparent rounded-full animate-spin"></div>
+        <div v-if="loading" class="py-12 space-y-4" aria-busy="true" aria-live="polite">
+          <div class="skeleton h-5 w-1/3"></div>
+          <div class="skeleton h-10 w-full"></div>
+          <div class="skeleton h-5 w-1/4"></div>
+          <div class="skeleton h-10 w-full"></div>
+          <div class="skeleton h-32 w-full"></div>
         </div>
 
         <template v-else>
@@ -95,7 +99,7 @@
 
         <div class="space-y-1">
           <p class="text-label text-xs">Body Preview</p>
-          <div class="p-4 bg-base rounded-md border border-border overflow-auto" style="max-height: 400px;">
+          <div class="p-4 bg-white rounded-md border border-border overflow-auto" style="max-height: 400px;">
             <div class="text-sm text-text-primary" v-html="renderedBody"></div>
           </div>
         </div>
@@ -122,7 +126,7 @@ const deleting = ref(false)
 const error = ref('')
 const success = ref('')
 const isCreate = computed(() => route.name === 'AdminEmailTemplateCreate')
-const previewVars = ref('{\n  "first_name": "John",\n  "company_name": "Zyphron"\n}')
+const previewVars = ref('{\n  "user_name": "Alex",\n  "company_name": "Zyphron",\n  "dashboard_url": "https://panel.example.com"\n}')
 const sampleVar = '{{first_name}}'
 
 const form = ref({

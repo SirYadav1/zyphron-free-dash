@@ -3,86 +3,46 @@
     <!-- Sidebar -->
     <aside
       :class="[
-        'fixed inset-y-0 left-0 z-50 w-64 bg-surface border-r border-border flex flex-col transition-all duration-300 lg:translate-x-0 lg:static lg:inset-auto',
+        'sidebar-panel fixed inset-y-0 left-0 z-50 w-60 bg-surface border-r border-border flex flex-col transition-all duration-300 lg:translate-x-0 lg:static lg:inset-auto',
+        collapsed ? 'lg:w-[68px]' : 'lg:w-60',
         sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
       ]"
     >
-      <!-- Sidebar Logo -->
-      <div class="h-16 flex items-center px-6 border-b border-border shrink-0">
+      <div class="h-16 flex items-center px-5 shrink-0" :class="collapsed ? 'lg:justify-center lg:px-2 lg:[&>div>span]:hidden' : ''">
         <ZyphronLogo size="sm" />
       </div>
-      <div class="h-px bg-gradient-to-r from-accent/20 via-accent/5 to-transparent"></div>
 
-      <!-- Sidebar Content -->
-      <nav class="flex-1 overflow-y-auto p-4 space-y-5 mt-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-        <div 
-          v-for="section in navSections" 
-          :key="section.title"
-          :class="[
-            'py-2 px-1 rounded-xl transition-all',
-            section.title === 'Earning' 
-              ? 'bg-gradient-to-b from-accent/[0.04] to-transparent border border-accent/10'
-              : ''
-          ]"
-        >
-          <!-- Section Header with Gradient Divider -->
-          <div class="flex items-center gap-3 px-2 mb-3">
-            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-            <span 
-              :class="[
-                'text-[9px] font-bold uppercase tracking-[0.2em]',
-                section.title === 'Earning' ? 'text-accent/40' : 'text-text-muted/40'
-              ]"
-            >{{ section.title }}</span>
-            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-          </div>
-
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-thin" :class="collapsed ? 'lg:px-2' : ''">
+        <div v-for="section in navSections" :key="section.title">
+          <p class="px-3 mb-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-text-muted/50" :class="collapsed ? 'lg:hidden' : ''">
+            {{ section.title }}
+          </p>
           <div class="space-y-0.5">
             <router-link
               v-for="item in section.items"
               :key="item.path"
               :to="item.path"
+              :title="item.label"
               @click="sidebarOpen = false"
+              class="nav-item group flex items-center gap-2.5 px-3 py-2 rounded-lg border text-[13px] font-medium"
               :class="[
-                'nav-item group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative',
+                collapsed ? 'lg:justify-center lg:px-2 lg:gap-0' : '',
                 isActive(item.path)
-                  ? 'bg-gradient-to-r from-accent/15 to-accent/5 text-accent'
-                  : 'text-text-muted hover:text-text-primary hover:bg-white/[0.04]'
+                  ? 'nav-active'
+                  : 'text-text-muted border-transparent hover:text-text-primary hover:bg-white/[0.04] hover:border-border'
               ]"
             >
-              <!-- Active indicator bar -->
-              <div 
-                v-if="isActive(item.path)" 
-                class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-accent rounded-r-full shadow-[0_0_8px_rgba(37,99,235,0.5)]"
-              ></div>
-              
-              <!-- Icon with subtle background -->
-              <!-- SECURITY NOTE: v-html used for inline SVG icons. Icons are hardcoded in navSections (not user input), so XSS risk is minimal. -->
-              <span 
-                :class="[
-                  'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 [&>svg]:w-4 [&>svg]:h-4',
-                  isActive(item.path) ? 'bg-accent/15' : 'bg-white/[0.03] group-hover:bg-white/[0.06]'
-                ]"
-                v-html="item.icon"
-              ></span>
-              
-              <span class="flex-1">{{ item.label }}</span>
-              
-              <span 
-                v-if="item.badge" 
-                class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent/20 text-accent"
-              >{{ item.badge }}</span>
+              <span class="w-4 h-4 flex items-center justify-center shrink-0 [&>svg]:w-4 [&>svg]:h-4" v-html="item.icon"></span>
+              <span class="flex-1 truncate" :class="collapsed ? 'lg:hidden' : ''">{{ item.label }}</span>
+              <span v-if="item.badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" :class="[isActive(item.path) ? 'nav-badge-active' : 'bg-accent/15 text-accent', collapsed ? 'lg:hidden' : '']">
+                {{ item.badge }}
+              </span>
             </router-link>
           </div>
         </div>
 
-        <!-- Useful Links Section -->
-        <div v-if="!linksLoading && usefulLinks.length > 0" class="py-2 px-1 rounded-xl">
-          <div class="flex items-center gap-3 px-2 mb-3">
-            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-            <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-text-muted/40">Quick Links</span>
-            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-          </div>
+        <div v-if="!linksLoading && usefulLinks.length > 0">
+          <p class="px-3 mb-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-text-muted/50" :class="collapsed ? 'lg:hidden' : ''">Links</p>
           <div class="space-y-0.5">
             <a
               v-for="link in usefulLinks"
@@ -90,80 +50,60 @@
               :href="link.link"
               target="_blank"
               rel="noopener"
+              :title="link.title"
               @click="sidebarOpen = false"
-              class="nav-item group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 relative text-text-muted hover:text-text-primary hover:bg-white/[0.04]"
+              class="nav-item group flex items-center gap-2.5 px-3 py-2 rounded-lg border border-transparent text-[13px] font-medium text-text-muted hover:text-text-primary hover:bg-white/[0.04] hover:border-border"
+              :class="collapsed ? 'lg:justify-center lg:px-2 lg:gap-0' : ''"
             >
-              <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 bg-white/[0.03] group-hover:bg-white/[0.06]">
-                <ExternalLink :size="16" :stroke-width="2" />
-              </span>
-              <span class="flex-1 truncate">{{ link.title }}</span>
+              <ExternalLink :size="15" :stroke-width="2" class="shrink-0" />
+              <span class="flex-1 truncate" :class="collapsed ? 'lg:hidden' : ''">{{ link.title }}</span>
             </a>
           </div>
         </div>
       </nav>
 
-      <!-- Sidebar Footer -->
-      <div class="p-4 border-t border-border">
-        <div class="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-4 border border-accent/15">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-              <Coins :size="20" class="text-accent" />
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-accent/60 uppercase tracking-widest">Balance</p>
-              <p class="text-lg font-bold text-accent tabular-nums">{{ authStore.user?.coins || 0 }}</p>
-            </div>
-          </div>
+      <div class="p-3">
+        <div class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-base/50 border border-border" :class="collapsed ? 'lg:justify-center' : ''">
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-text-muted" :class="collapsed ? 'lg:hidden' : ''">Balance</span>
+          <span class="flex items-center gap-1.5 text-sm font-semibold text-text-primary tabular-nums">
+            <Coins :size="14" class="text-accent" />
+            {{ authStore.user?.coins || 0 }}
+          </span>
         </div>
       </div>
     </aside>
 
-    <!-- Mobile Overlay -->
     <div v-if="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"></div>
 
-    <!-- Main View -->
     <div class="flex-1 flex flex-col min-w-0 h-screen">
-      <!-- Top Navigation Bar -->
-      <header class="h-14 lg:h-16 bg-surface/80 backdrop-blur-md border-b border-border flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
-        <div class="flex items-center gap-4 flex-1">
+      <header class="h-16 bg-surface/70 backdrop-blur-md border-b border-border flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <button @click="toggleCollapse" :title="collapsed ? 'Expand menu' : 'Collapse menu'" class="hidden lg:flex p-2 -ml-2 text-text-muted hover:text-text-primary transition-colors">
+            <PanelLeftClose v-if="!collapsed" :size="18" :stroke-width="2" />
+            <PanelLeftOpen v-else :size="18" :stroke-width="2" />
+          </button>
           <button @click="sidebarOpen = true" aria-label="Toggle menu" class="p-2 -ml-2 text-text-muted hover:text-text-primary lg:hidden transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
           </button>
-          
-          <!-- Search Bar -->
-          <div class="max-w-md w-full relative group hidden md:block">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none group-focus-within:text-accent transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </span>
-            <input 
-              type="text" 
-              placeholder="Search resources..." 
-              class="w-full bg-base/50 border border-border rounded-md py-1.5 pl-10 pr-4 text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/30 transition-all"
-            >
-          </div>
+          <p class="text-sm font-semibold text-text-primary truncate">{{ pageTitle }}</p>
         </div>
 
-        <!-- Top Nav Actions -->
-        <div class="flex items-center gap-4">
-          <!-- Credits Display -->
-          <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-accent/5 border border-accent/10">
-            <Coins :size="14" class="text-accent" />
-            <span class="text-xs font-bold text-accent">{{ authStore.user?.coins || 0 }}</span>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/[0.04] border border-border">
+            <Coins :size="13" class="text-accent" />
+            <span class="text-xs font-semibold text-text-primary tabular-nums">{{ authStore.user?.coins || 0 }}</span>
           </div>
 
-          <div class="w-px h-6 bg-border mx-2"></div>
+          <div class="w-px h-5 bg-border"></div>
 
-          <!-- User Profile Dropdown -->
-          <div class="flex items-center gap-3 pl-2">
-            <div class="text-right hidden sm:block">
-              <p class="text-xs font-semibold text-text-primary leading-none">{{ authStore.user?.username }}</p>
-              <p class="text-[10px] font-medium text-text-muted mt-1">{{ authStore.user?.email?.split('@')[0] }}</p>
+          <div class="flex items-center gap-2.5">
+            <div class="text-right hidden sm:block leading-tight">
+              <p class="text-xs font-semibold text-text-primary">{{ authStore.user?.username }}</p>
+              <p class="text-[10px] text-text-muted">Member</p>
             </div>
-            <div class="w-8 h-8 rounded-full bg-accent/20 border border-accent/20 flex items-center justify-center text-accent text-xs font-bold ring-2 ring-surface overflow-hidden">
+            <div class="w-8 h-8 rounded-full bg-accent/15 border border-accent/20 flex items-center justify-center text-accent text-xs font-bold overflow-hidden">
               <img v-if="authStore.user?.profilePhoto" :src="authStore.user.profilePhoto" alt="Profile" class="w-full h-full object-cover" />
               <span v-else>{{ authStore.user?.username?.charAt(0).toUpperCase() }}</span>
             </div>
@@ -176,9 +116,8 @@
         </div>
       </header>
 
-      <!-- Page Content -->
       <main class="flex-1 overflow-y-auto bg-base">
-        <div class="app-container py-10">
+        <div class="app-container py-8">
           <router-view />
         </div>
       </main>
@@ -194,7 +133,7 @@ import { useAuthStore } from '../stores/auth'
 import { useAfkStore } from '../stores/afk'
 import ZyphronLogo from '../components/ZyphronLogo.vue'
 import client from '../api/client'
-import { ExternalLink, Coins } from 'lucide-vue-next'
+import { ExternalLink, Coins, PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -204,6 +143,17 @@ const afkStore = useAfkStore()
 const sidebarOpen = ref(false)
 const usefulLinks = ref([])
 const linksLoading = ref(true)
+const collapsed = ref(localStorage.getItem('zyphron_sidebar') === '1')
+
+function toggleCollapse() {
+  collapsed.value = !collapsed.value
+  localStorage.setItem('zyphron_sidebar', collapsed.value ? '1' : '0')
+}
+
+const pageTitle = computed(() => {
+  const segment = route.path.split('/').filter(Boolean).pop() || 'home'
+  return segment.replace(/-/g, ' ').replace(/^\w/, (c) => c.toUpperCase())
+})
 
 onMounted(async () => {
   try {
@@ -361,7 +311,12 @@ const navSections = computed(() => {
 })
 
 function isActive(path) {
-  return route.path === path || route.path.startsWith(path + '/')
+  const p = route.path
+  if (p === path) return true
+  if (!p.startsWith(path + '/')) return false
+  // deeper nested route wins: /store/successful must not also highlight /store
+  const all = navSections.value.flatMap(s => s.items.map(i => i.path))
+  return !all.some(o => o !== path && o.length > path.length && (p === o || p.startsWith(o + '/')))
 }
 
 function handleLogout() {

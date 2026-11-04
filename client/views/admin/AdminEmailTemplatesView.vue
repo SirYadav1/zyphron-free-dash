@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-10">
+  <div class="space-y-6">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="space-y-1">
         <h2 class="text-2xl font-bold text-text-primary tracking-tight">Email Templates</h2>
@@ -22,7 +22,7 @@
 
     <div class="card-surface overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm min-w-[640px]">
           <thead>
             <tr class="border-b border-border bg-base/50 text-left">
               <th class="px-5 py-3 text-label">Name</th>
@@ -36,7 +36,7 @@
             <tr
               v-for="template in templates"
               :key="template.id"
-              class="border-b border-border/50 hover:bg-white/[0.02] transition-colors"
+              class="border-b border-border/50 hover:bg-surface-hover transition-colors"
             >
               <td class="px-5 py-3 text-text-primary font-bold text-sm">{{ template.name }}</td>
               <td class="px-5 py-3">
@@ -62,7 +62,7 @@
                   >Test</button>
                   <router-link
                     :to="`/admin/email-templates/${template.id}/edit`"
-                    class="text-xs font-bold text-accent hover:text-white transition-colors"
+                    class="text-xs font-bold text-accent hover:text-text-primary transition-colors"
                   >Edit</router-link>
                   <button
                     @click="handleDelete(template)"
@@ -78,8 +78,13 @@
         <p class="text-text-muted text-lg font-bold mb-1">No Templates Found</p>
         <p class="text-sm text-text-muted/60">Create your first email template or use pre-built templates.</p>
       </div>
-      <div v-if="loading" class="flex items-center justify-center py-16">
-        <div class="w-10 h-10 border-[3px] border-accent border-t-transparent rounded-full animate-spin"></div>
+      <div v-if="loading" class="py-10 px-6 space-y-4" aria-busy="true" aria-live="polite">
+        <div v-for="i in 5" :key="i" class="flex items-center gap-4">
+          <div class="skeleton w-40 h-4"></div>
+          <div class="skeleton w-20 h-4 hidden sm:block"></div>
+          <div class="skeleton h-4 flex-1 hidden sm:block"></div>
+          <div class="skeleton w-24 h-6 shrink-0"></div>
+        </div>
       </div>
     </div>
 
@@ -237,190 +242,175 @@ const templateTypes = [
   'newsletter',
 ]
 
+// ── Pre-built templates: shared professional email shell ─────────────
+// Table-based layout, solid colors only (no gradients — Gmail/Outlook safe),
+// light body with brand-blue accent. Renders correctly in all major clients.
+const EMAIL_ACCENT = '#2563eb'
+const SUCCESS = '#059669'
+const WARNING = '#d97706'
+const DANGER = '#dc2626'
+
+function emailShell({ accent = EMAIL_ACCENT, tagline, body }) {
+  return `<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f1f5f9;padding:24px 12px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;border-collapse:separate;border-spacing:0;">
+    <tr>
+      <td style="background:${accent};padding:26px 32px;border-radius:12px 12px 0 0;">
+        <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">{{company_name}}</p>
+        <p style="margin:6px 0 0;font-size:14px;color:rgba(255,255,255,0.78);">${tagline}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#ffffff;padding:32px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px;">
+${body}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:20px 8px;text-align:center;">
+        <p style="margin:0;font-size:12px;color:#94a3b8;">You are receiving this email because of activity on your {{company_name}} account.</p>
+        <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">&copy; {{company_name}} &middot; <a href="{{dashboard_url}}" style="color:${EMAIL_ACCENT};text-decoration:none;">Open Dashboard</a></p>
+      </td>
+    </tr>
+  </table>
+</div>`
+}
+
+function ep(html) { return `<p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#475569;">${html}</p>` }
+function est(t) { return `<strong style="color:#0f172a;">${t}</strong>` }
+function ecenter(html) { return `<div style="text-align:center;margin:28px 0;">${html}</div>` }
+function ebtn(url, label, color = EMAIL_ACCENT) {
+  return `<a href="${url}" style="display:inline-block;background:${color};color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">${label}</a>`
+}
+function ebox(title, rows, color = EMAIL_ACCENT) {
+  const rowsHtml = rows.map(([k, v]) =>
+    `<p style="margin:6px 0;font-size:13px;color:#334155;"><span style="color:#64748b;">${k}:</span> <strong style="color:#0f172a;">${v}</strong></p>`
+  ).join('')
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin:20px 0;border-collapse:separate;">
+        <tr><td style="padding:16px 20px;">
+          <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${color};">${title}</p>
+          ${rowsHtml}
+        </td></tr>
+      </table>`
+}
+
 const prebuiltTemplates = [
   {
     name: 'Welcome Email',
     type: 'welcome',
-    subject: 'Welcome to {{company_name}}! 🎉',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Welcome to {{company_name}}!</h1>
-    <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 14px;">Your account has been created successfully</p>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Welcome aboard! Your account is now ready. Here's what you can do:</p>
-    <div style="background: #0a0a0f; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin: 20px 0;">
-      <p style="margin: 8px 0; color: #94a3b8;">🖥️ Deploy free servers instantly</p>
-      <p style="margin: 8px 0; color: #94a3b8;">💰 Earn coins by being active</p>
-      <p style="margin: 8px 0; color: #94a3b8;">⚡ Upgrade your server resources</p>
-      <p style="margin: 8px 0; color: #94a3b8;">🎫 Get support via tickets</p>
-    </div>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="{{dashboard_url}}" style="background: #10b981; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">Go to Dashboard</a>
-    </div>
-    <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 30px;">If you have any questions, feel free to contact our support team.</p>
-  </div>
-</div>`,
+    subject: 'Welcome to {{company_name}}',
+    body: emailShell({
+      tagline: 'Your account is ready',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep('Welcome aboard! Your account has been created successfully. Here is what you can do:') +
+        `<ul style="margin:0 0 16px;padding:0 0 0 20px;">
+            <li style="font-size:14px;line-height:1.8;color:#475569;">Deploy free game servers instantly</li>
+            <li style="font-size:14px;line-height:1.8;color:#475569;">Earn coins through daily activity and AFK sessions</li>
+            <li style="font-size:14px;line-height:1.8;color:#475569;">Upgrade server resources as you grow</li>
+            <li style="font-size:14px;line-height:1.8;color:#475569;">Get support through the ticket system</li>
+          </ul>` +
+        ecenter(ebtn('{{dashboard_url}}', 'Go to Dashboard')) +
+        ep('If you have any questions, our support team is always ready to help.')
+    }),
   },
   {
     name: 'Password Reset',
     type: 'password_reset',
     subject: 'Reset your password — {{company_name}}',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Password Reset</h1>
-    <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 14px;">We received a request to reset your password</p>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">We received a request to reset your password. Click the button below to create a new password:</p>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="{{reset_url}}" style="background: #f59e0b; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">Reset Password</a>
-    </div>
-    <div style="background: #0a0a0f; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; margin: 20px 0;">
-      <p style="margin: 0; font-size: 13px; color: #64748b;">⏰ This link expires in 1 hour</p>
-      <p style="margin: 8px 0 0; font-size: 13px; color: #64748b;">🔒 If you didn't request this, ignore this email</p>
-    </div>
-  </div>
-</div>`,
+    body: emailShell({
+      tagline: 'Password reset request',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep('We received a request to reset the password for your account. Click the button below to choose a new password:') +
+        ecenter(ebtn('{{reset_url}}', 'Reset Password')) +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin:20px 0;border-collapse:separate;">
+        <tr><td style="padding:14px 20px;">
+          <p style="margin:0;font-size:13px;color:#475569;">This link <strong style="color:#0f172a;">expires in 1 hour</strong>.</p>
+          <p style="margin:8px 0 0;font-size:13px;color:#475569;">If you did not request a password reset, you can safely ignore this email — your current password will keep working.</p>
+        </td></tr>
+      </table>`
+    }),
   },
   {
     name: 'Server Suspended',
     type: 'server_suspended',
     subject: 'Your server "{{server_name}}" has been suspended',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Server Suspended</h1>
-    <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 14px;">Action required to restore your server</p>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Your server <strong style="color: #e2e8f0;">{{server_name}}</strong> has been suspended.</p>
-    <div style="background: #0a0a0f; border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
-      <p style="margin: 0 0 8px; font-size: 13px; color: #64748b;">📋 <strong>Server Details</strong></p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">Name: {{server_name}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">Reason: {{reason}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">Date: {{date}}</p>
-    </div>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">To restore your server, please contact our support team or renew your subscription.</p>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="{{dashboard_url}}" style="background: #ef4444; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">View Server</a>
-    </div>
-  </div>
-</div>`,
+    body: emailShell({
+      accent: DANGER,
+      tagline: 'Action required',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep(`Your server ${est('{{server_name}}')} has been suspended.`) +
+        ebox('Server Details', [['Server', '{{server_name}}'], ['Reason', '{{reason}}'], ['Date', '{{date}}']], DANGER) +
+        ep('To restore your server, renew it from the dashboard or contact our support team if you believe this was a mistake.') +
+        ecenter(ebtn('{{dashboard_url}}', 'View Server', DANGER))
+    }),
   },
   {
     name: 'Server Deployed',
     type: 'server_deployed',
-    subject: 'Your server "{{server_name}}" is ready! 🚀',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Server Ready! 🚀</h1>
-    <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 14px;">Your server has been successfully deployed</p>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Great news! Your server <strong style="color: #e2e8f0;">{{server_name}}</strong> is now live and ready to use.</p>
-    <div style="background: #0a0a0f; border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
-      <p style="margin: 0 0 12px; font-size: 13px; color: #64748b;">📋 <strong>Server Specs</strong></p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">🖥️ RAM: {{ram}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">⚡ CPU: {{cpu}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">💾 Disk: {{disk}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">📅 Expires: {{expires_at}}</p>
-    </div>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="{{panel_url}}" style="background: #10b981; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">Open Server Panel</a>
-    </div>
-  </div>
-</div>`,
+    subject: 'Your server "{{server_name}}" is ready',
+    body: emailShell({
+      accent: SUCCESS,
+      tagline: 'Deployment successful',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep(`Great news — your server ${est('{{server_name}}')} is now live and ready to use.`) +
+        ebox('Server Specifications', [['RAM', '{{ram}}'], ['CPU', '{{cpu}}'], ['Disk', '{{disk}}'], ['Expires', '{{expires_at}}']], SUCCESS) +
+        ecenter(ebtn('{{panel_url}}', 'Open Server Panel', SUCCESS))
+    }),
   },
   {
     name: 'Server Expiring Soon',
     type: 'server_expiring',
     subject: 'Your server "{{server_name}}" expires in {{days_left}} days',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Server Expiring Soon</h1>
-    <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 14px;">Renew before it's too late</p>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Your server <strong style="color: #e2e8f0;">{{server_name}}</strong> will expire in <strong style="color: #f59e0b;">{{days_left}} days</strong>.</p>
-    <div style="background: #0a0a0f; border: 1px solid rgba(245,158,11,0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
-      <p style="margin: 0 0 12px; font-size: 13px; color: #64748b;">📋 <strong>Renewal Details</strong></p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">💰 Cost: {{renewal_price}} coins</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">📅 Expires: {{expires_at}}</p>
-    </div>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Renew now to keep your server running. If not renewed, your server will be suspended and data may be lost.</p>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="{{renew_url}}" style="background: #f59e0b; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">Renew Server</a>
-    </div>
-  </div>
-</div>`,
+    body: emailShell({
+      accent: WARNING,
+      tagline: 'Renewal required',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep(`Your server ${est('{{server_name}}')} will expire in <strong style="color:${WARNING};">{{days_left}} days</strong>.`) +
+        ebox('Renewal Details', [['Renewal cost', '{{renewal_price}} coins'], ['Expires', '{{expires_at}}']], WARNING) +
+        ep('Renew now to keep your server running. If the server expires, it will be suspended and data may be lost.') +
+        ecenter(ebtn('{{renew_url}}', 'Renew Server', WARNING))
+    }),
   },
   {
     name: 'Payment Received',
     type: 'payment_received',
     subject: 'Payment confirmed — {{amount}} coins added',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Payment Confirmed! 💰</h1>
-    <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 14px;">Your coins have been added</p>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Your payment has been confirmed and <strong style="color: #10b981;">{{amount}} coins</strong> have been added to your account.</p>
-    <div style="background: #0a0a0f; border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
-      <p style="margin: 0 0 8px; font-size: 13px; color: #64748b;">💰 <strong>Amount Added</strong></p>
-      <p style="margin: 0; font-size: 32px; font-weight: 800; color: #10b981;">{{amount}} coins</p>
-    </div>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="{{dashboard_url}}" style="background: #10b981; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-block;">View Balance</a>
-    </div>
-  </div>
-</div>`,
+    body: emailShell({
+      accent: SUCCESS,
+      tagline: 'Payment received',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep('Your payment has been confirmed and the following amount has been added to your account.') +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin:20px 0;border-collapse:separate;">
+        <tr><td style="padding:24px 20px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${SUCCESS};">Amount Added</p>
+          <p style="margin:0;font-size:30px;font-weight:700;color:${SUCCESS};">{{amount}} coins</p>
+        </td></tr>
+      </table>` +
+        ecenter(ebtn('{{dashboard_url}}', 'View Balance', SUCCESS))
+    }),
   },
   {
     name: 'Ticket Created',
     type: 'ticket_created',
-    subject: 'Ticket #{{ticket_id}} — We received your request',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Ticket Received</h1>
-    <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 14px;">We'll get back to you soon</p>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">We've received your support ticket and our team will review it shortly.</p>
-    <div style="background: #0a0a0f; border: 1px solid rgba(139,92,246,0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
-      <p style="margin: 0 0 12px; font-size: 13px; color: #64748b;">🎫 <strong>Ticket Details</strong></p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">ID: #{{ticket_id}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">Subject: {{subject}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">Priority: {{priority}}</p>
-    </div>
-    <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">Average response time: 1-2 hours</p>
-  </div>
-</div>`,
+    subject: 'Ticket #{{ticket_id}} — we received your request',
+    body: emailShell({
+      tagline: 'Support ticket received',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep('We have received your support ticket. Our team will review it and get back to you shortly.') +
+        ebox('Ticket Details', [['Ticket', '#{{ticket_id}}'], ['Subject', '{{subject}}'], ['Priority', '{{priority}}']]) +
+        ep('Average first response time is 1–2 hours.')
+    }),
   },
   {
     name: 'Account Banned',
     type: 'account_banned',
     subject: 'Your account has been suspended',
-    body: `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e2e8f0;">
-  <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 800;">Account Suspended</h1>
-  </div>
-  <div style="padding: 40px 30px; background: #12121a; border-radius: 0 0 16px 16px;">
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Hi <strong style="color: #e2e8f0;">{{user_name}}</strong>,</p>
-    <p style="font-size: 15px; line-height: 1.7; color: #94a3b8;">Your account has been suspended due to a violation of our terms of service.</p>
-    <div style="background: #0a0a0f; border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">📋 Reason: {{reason}}</p>
-      <p style="margin: 4px 0; font-size: 13px; color: #94a3b8;">📅 Date: {{date}}</p>
-    </div>
-    <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">If you believe this is an error, please contact support.</p>
-  </div>
-</div>`,
+    body: emailShell({
+      accent: DANGER,
+      tagline: 'Account suspended',
+      body: ep(`Hi ${est('{{user_name}}')},`) +
+        ep('Your account has been suspended due to a violation of our terms of service.') +
+        ebox('Details', [['Reason', '{{reason}}'], ['Date', '{{date}}']], DANGER) +
+        ep('If you believe this is an error, please contact our support team to appeal this decision.')
+    }),
   },
 ]
 
@@ -435,8 +425,8 @@ function getTypeBadgeClass(type) {
     server_suspended: 'bg-red-500/15 text-red-400',
     server_renewed: 'bg-blue-500/15 text-blue-400',
     payment_received: 'bg-emerald-500/15 text-emerald-400',
-    ticket_created: 'bg-purple-500/15 text-purple-400',
-    ticket_replied: 'bg-indigo-500/15 text-indigo-400',
+    ticket_created: 'bg-blue-500/15 text-blue-400',
+    ticket_replied: 'bg-sky-500/15 text-sky-400',
     invoice_generated: 'bg-cyan-500/15 text-cyan-400',
     '2fa_enabled': 'bg-orange-500/15 text-orange-400',
     account_banned: 'bg-red-600/15 text-red-300',

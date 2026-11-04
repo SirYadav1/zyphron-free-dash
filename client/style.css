@@ -9,11 +9,11 @@
   --color-base: #070b12;
   --color-surface: #0a1628;
   --color-surface-hover: #101e36;
-  --color-accent: #2563eb;
+  --color-accent: #3b82f6;
   --color-accent-dim: #1a3a7a;
-  --color-accent-light: #60a5fa;
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-bright: rgba(37, 99, 235, 0.22);
+  --color-accent-light: #7aabff;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-bright: rgba(59, 130, 246, 0.38);
   --color-text-primary: #f0f4ff;
   --color-text-muted: #94a3b8;
 }
@@ -26,16 +26,16 @@
 }
 
 :root.light {
-  --color-base: #f5f7fb;
+  --color-base: #eef1f6;
   --color-surface: #ffffff;
-  --color-surface-hover: #f0f4ff;
-  --color-accent: #2563eb;
-  --color-accent-dim: #dbeafe;
-  --color-accent-light: #1d4ed8;
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-bright: rgba(37, 99, 235, 0.25);
+  --color-surface-hover: #f2f5fa;
+  --color-accent: #1e40af;
+  --color-accent-dim: #dbe4f8;
+  --color-accent-light: #1e3a8a;
+  --color-border: rgba(15, 23, 42, 0.13);
+  --color-border-bright: rgba(30, 64, 175, 0.4);
   --color-text-primary: #0f172a;
-  --color-text-muted: #64748b;
+  --color-text-muted: #5a6377;
 }
 
 body {
@@ -46,9 +46,9 @@ body {
   line-height: 1.5;
   background-color: var(--color-base);
   background-image:
-    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(37, 99, 235, 0.15), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 100% 0%, rgba(59, 130, 246, 0.06), transparent 50%),
-    radial-gradient(ellipse 40% 30% at 0% 100%, rgba(37, 99, 235, 0.08), transparent 50%);
+    radial-gradient(ellipse 80% 50% at 50% -12%, rgba(59, 130, 246, 0.10), transparent 60%),
+    radial-gradient(ellipse 45% 35% at 100% 0%, rgba(59, 130, 246, 0.05), transparent 55%),
+    radial-gradient(ellipse 35% 30% at 0% 100%, rgba(59, 130, 246, 0.06), transparent 55%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -67,6 +67,12 @@ html {
   .auth-card { padding: 1.25rem; }
   .stat-card { padding: 1rem; }
 
+  /* iOS Safari auto-zooms inputs with font-size < 16px on focus —
+     bump form controls to 16px so the viewport doesn't jump */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
   /* Reduce font sizes on mobile */
   h1 { font-size: 1.375rem; line-height: 1.75rem; }
   h2 { font-size: 1.25rem; line-height: 1.75rem; }
@@ -74,6 +80,11 @@ html {
 
   /* Reduce app container padding on mobile */
   .app-container { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* kill the gray tap flash on mobile for all interactive elements */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Ensure consistent font sizes */
@@ -139,7 +150,7 @@ h4 { font-size: 1.125rem; line-height: 1.5rem; }
 .loading-state .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(37, 99, 235, 0.15);
+  border: 3px solid rgba(59, 130, 246, 0.15);
   border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -158,44 +169,32 @@ body.light-bg {
   background-image: none;
 }
 
-/* Ambient overlays */
-.noise-overlay {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.scanline {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(37, 99, 235, 0.012) 2px,
-    rgba(37, 99, 235, 0.012) 4px
-  );
-}
+/* Ambient overlays removed — clean flat look (retro noise/scanline dropped) */
 
 .bg-grid {
   background-image:
-    linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+/* Admin panel background: soft depth wash instead of grid boxes */
+.admin-bg {
+  background-image: radial-gradient(1100px 380px at 50% -120px, rgba(59, 130, 246, 0.07), transparent 65%);
+  background-repeat: no-repeat;
+}
+
+.light .admin-bg {
+  background-image: radial-gradient(1100px 380px at 50% -120px, rgba(30, 64, 175, 0.05), transparent 65%);
 }
 
 /* Professional Surface Styles */
 .card-surface {
-  background: linear-gradient(145deg, rgba(37, 99, 235, 0.04) 0%, rgba(10, 22, 40, 0.9) 40%);
+  background: linear-gradient(160deg, rgba(59, 130, 246, 0.05) 0%, rgba(10, 22, 40, 0.92) 45%);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 14px;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 
 .card-surface:hover {
@@ -204,18 +203,20 @@ body.light-bg {
 }
 
 .btn-primary {
-  @apply px-4 py-2 bg-accent text-white font-semibold rounded-lg transition-all duration-200 hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply px-4 py-2 bg-accent text-white font-semibold rounded-lg hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   font-size: 13px;
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.25);
+  transition: background-color 0.15s ease-out, filter 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.1s ease-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 0 28px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .btn-secondary {
-  @apply px-4 py-2 bg-white/5 text-text-primary border border-border rounded-lg transition-all duration-200 hover:bg-white/10 hover:border-border-bright active:scale-95;
+  @apply px-4 py-2 bg-white/5 text-text-primary border border-border rounded-lg hover:bg-white/10 hover:border-border-bright active:scale-95;
   font-size: 13px;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, color 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 
 .text-label {
@@ -236,21 +237,22 @@ body.light-bg {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(37, 99, 235, 0.3);
+  background: rgba(59, 130, 246, 0.3);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(37, 99, 235, 0.5);
+  background: rgba(59, 130, 246, 0.5);
 }
 
 .shadow-surface {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(37, 99, 235, 0.06);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .input-field {
-  @apply w-full px-3 py-2.5 bg-base/80 border border-border rounded-lg text-text-primary placeholder-text-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all duration-200;
+  @apply w-full px-3 py-2.5 bg-base/80 border border-border rounded-lg text-text-primary placeholder-text-muted/50 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50;
   font-size: 13px;
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out, background-color 0.15s ease-out;
 }
 
 .auth-shell {
@@ -258,12 +260,12 @@ body.light-bg {
 }
 
 .stat-card {
-  background: linear-gradient(145deg, rgba(37, 99, 235, 0.04) 0%, rgba(10, 22, 40, 0.9) 40%);
+  background: linear-gradient(160deg, rgba(59, 130, 246, 0.05) 0%, rgba(10, 22, 40, 0.92) 45%);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 1.25rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.15s ease-out;
   animation: card-in 0.5s ease-out forwards;
   opacity: 0;
 }
@@ -271,7 +273,7 @@ body.light-bg {
 .stat-card:hover {
   border-color: var(--color-border-bright);
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .stat-card:nth-child(1) { animation-delay: 0.05s; }
@@ -288,10 +290,10 @@ body.light-bg {
 .quick-action-btn {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 1rem 0.75rem;
   text-align: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.15s ease-out;
   animation: card-in 0.5s ease-out forwards;
   opacity: 0;
 }
@@ -303,16 +305,16 @@ body.light-bg {
 .quick-action-btn:hover {
   border-color: var(--color-border-bright);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .auth-card {
-  background: linear-gradient(145deg, rgba(37, 99, 235, 0.04) 0%, rgba(10, 22, 40, 0.9) 40%);
+  background: linear-gradient(160deg, rgba(59, 130, 246, 0.05) 0%, rgba(10, 22, 40, 0.92) 45%);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(37, 99, 235, 0.06);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   position: relative;
   z-index: 10;
 }
@@ -336,38 +338,144 @@ body.light-bg {
 .light .card-surface,
 .light .stat-card,
 .light .auth-card {
-  background: linear-gradient(145deg, rgba(37, 99, 235, 0.03) 0%, rgba(255, 255, 255, 0.95) 40%);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.10), 0 12px 28px -16px rgba(15, 23, 42, 0.35);
 }
 
+.light .card-surface:hover,
 .light .stat-card:hover {
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
+  border-color: var(--color-border-bright);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.05), 0 2px 4px rgba(15, 23, 42, 0.10), 0 16px 32px -16px rgba(15, 23, 42, 0.3);
 }
 
 .light .btn-primary {
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(16, 32, 92, 0.6);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.light .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .light .btn-secondary {
-  background: rgba(0, 0, 0, 0.03);
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.22);
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.light .btn-secondary:hover {
+  background: #f4f2ff;
+  border-color: rgba(30, 64, 175, 0.4);
 }
 
 .light .input-field {
-  background-color: rgba(245, 247, 251, 0.8);
+  background-color: #ffffff;
+  border-color: rgba(15, 23, 42, 0.22);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
-.light .noise-overlay {
-  opacity: 0.01;
+.light .input-field:focus {
+  border-color: rgba(30, 64, 175, 0.55);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
 }
 
-.light .scanline {
-  display: none;
+/* white-alpha surfaces are invisible on a light page, swap them for ink tints */
+.light .bg-white\/5 { background-color: rgba(20, 26, 45, 0.045); }
+.light .bg-white\/10 { background-color: rgba(20, 26, 45, 0.07); }
+.light .bg-white\/\[0\.02\] { background-color: rgba(20, 26, 45, 0.03); }
+.light .bg-white\/\[0\.03\] { background-color: rgba(20, 26, 45, 0.035); }
+.light .bg-white\/\[0\.04\] { background-color: rgba(20, 26, 45, 0.045); }
+.light .bg-white\/\[0\.06\] { background-color: rgba(20, 26, 45, 0.06); }
+.light .hover\:bg-white\/5:hover { background-color: rgba(20, 26, 45, 0.06); }
+.light .hover\:bg-white\/10:hover { background-color: rgba(20, 26, 45, 0.085); }
+.light .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(20, 26, 45, 0.05); }
+.light .border-white\/10 { border-color: rgba(15, 23, 42, 0.12); }
+.light .border-white\/5 { border-color: rgba(15, 23, 42, 0.1); }
+
+.light .quick-action-btn {
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.light .quick-action-btn:hover {
+  box-shadow: 0 8px 20px -8px rgba(15, 23, 42, 0.3);
+}
+
+.light .shadow-surface {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 12px 28px -16px rgba(15, 23, 42, 0.25);
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.22);
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.38);
+}
+
+.light .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+}
+
+
+/* sidebar gets the cooler blue-gray panel, main area stays warm cream */
+.light .sidebar-panel {
+  background-color: #e6eaf2;
+  border-right-color: rgba(15, 23, 42, 0.1);
+}
+
+.light .sidebar-panel .bg-base\/50 {
+  background-color: rgba(15, 23, 42, 0.06);
 }
 
 .light .bg-grid {
   background-image:
-    linear-gradient(rgba(37, 99, 235, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.02) 1px, transparent 1px);
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+}
+
+/* ===== SKELETON LOADING ===== */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-surface-hover);
+  border-radius: 8px;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+:root.light .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 /* ===== PROFESSIONAL ANIMATIONS ===== */
@@ -397,11 +505,6 @@ body.light-bg {
   50% { transform: translateY(-8px); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(37, 99, 235, 0.15); }
-  50% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3); }
-}
-
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -416,18 +519,14 @@ body.light-bg {
   animation: float 3s ease-in-out infinite;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
 /* Card hover lift effect */
 .card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.2s ease-out;
 }
 
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
   border-color: var(--color-border-bright);
 }
 
@@ -451,7 +550,7 @@ body.light-bg {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(37, 99, 235, 0.15);
+  border: 3px solid rgba(59, 130, 246, 0.15);
   border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -470,14 +569,36 @@ body.light-bg {
   animation: fadeIn 0.2s ease-in reverse;
 }
 
-/* Sidebar nav item animations */
-.nav-item {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
+
+/* Sidebar active item: solid blue on dark, soft tint on light */
+.nav-active {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-.nav-item:hover {
-  transform: translateX(2px);
+:root.light .nav-active {
+  background-color: rgba(30, 64, 175, 0.14);
+  border-color: rgba(30, 64, 175, 0.38);
+  color: var(--color-accent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.15);
+}
+
+.nav-badge-active {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+:root.light .nav-badge-active {
+  background: rgba(30, 64, 175, 0.25);
+  color: var(--color-accent);
+}
+
+/* Sidebar nav item animations */
+.nav-item {
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+  position: relative;
 }
 
 /* Sidebar scrollbar styling */

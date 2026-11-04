@@ -30,7 +30,8 @@
 
     <!-- Users Table -->
     <div v-if="paginatedUsers.length > 0" class="card-surface overflow-hidden">
-      <table class="w-full text-sm border-collapse">
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[760px]">
         <thead>
           <tr class="border-b border-border bg-[#0f172a]">
             <th class="px-5 py-3 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider">ID</th>
@@ -127,6 +128,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="flex items-center justify-between px-5 py-3 border-t border-border bg-[#0f172a]">

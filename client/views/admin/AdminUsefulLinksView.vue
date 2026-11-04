@@ -52,7 +52,8 @@
 
     <!-- Table -->
     <div v-if="links.length > 0" class="bg-base-secondary border border-border rounded-xl overflow-hidden">
-      <table class="w-full text-sm">
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm min-w-[680px]">
         <thead>
           <tr class="border-b border-border bg-base/50">
             <th class="px-5 py-3 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider">Title</th>
@@ -129,6 +130,7 @@
           </template>
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Empty state -->
