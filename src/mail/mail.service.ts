@@ -107,7 +107,7 @@ export class MailService {
       port: parseInt(settingsMap.get('smtp_port') || process.env.MAIL_PORT || '587'),
       user: settingsMap.get('smtp_user') || process.env.MAIL_USER || '',
       from: settingsMap.get('smtp_from') || process.env.MAIL_FROM || 'noreply@your-domain.com',
-      from_name: settingsMap.get('smtp_from_name') || process.env.MAIL_FROM_NAME || 'Zyphron',
+      from_name: settingsMap.get('smtp_from_name') || process.env.MAIL_FROM_NAME || (await this.getBrandName()),
       encryption: settingsMap.get('smtp_encryption') || process.env.MAIL_ENCRYPTION || 'tls',
     };
   }
@@ -137,12 +137,22 @@ export class MailService {
   }
 
   /**
+   * White-label brand name — admin setting -> env -> default.
+   * Other services (server emails, lifecycle) call this for subjects/footers.
+   */
+  async getBrandName(): Promise<string> {
+    const settings = await this.settingRepo.find();
+    const sm = new Map(settings.map(s => [s.key, s.value]));
+    return sm.get('brand_name')?.trim() || (process.env.BRAND_NAME || '').trim() || 'Zyphron Cloud';
+  }
+
+  /**
    * Get the configured sender name from database settings
    */
   private async getFromName(): Promise<string> {
     const settings = await this.settingRepo.find();
     const sm = new Map(settings.map(s => [s.key, s.value]));
-    return sm.get('smtp_from_name') || 'Zyphron';
+    return sm.get('smtp_from_name') || process.env.MAIL_FROM_NAME || (await this.getBrandName());
   }
 
   /**
@@ -179,10 +189,25 @@ export class MailService {
     const template = await this.templateRepo.findOne({ where: { name: templateName } });
     if (!template) {
       this.logger.warn(`Template "${templateName}" not found in DB, using fallback`);
+      const rows = Object.entries(vars)
+        .map(([k, v]) => `<p style="margin:6px 0;font-size:13px;color:#334155;"><span style="color:#64748b;">${escapeHtml(k)}:</span> <strong style="color:#0f172a;">${escapeHtml(v)}</strong></p>`)
+        .join('');
       return {
         subject: `Notification — ${templateName}`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-          <p>${Object.entries(vars).map(([k, v]) => `<strong>${escapeHtml(k)}:</strong> ${escapeHtml(v)}`).join('<br>')}</p>
+        html: `<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f1f5f9;padding:24px 12px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;border-collapse:separate;border-spacing:0;">
+            <tr><td style="background:#2563eb;padding:26px 32px;border-radius:12px 12px 0 0;">
+              <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">{{company_name}}</p>
+              <p style="margin:6px 0 0;font-size:14px;color:rgba(255,255,255,0.78);">Notification</p>
+            </td></tr>
+            <tr><td style="background:#ffffff;padding:32px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px;">
+              <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#475569;">Hi {{user_name}},</p>
+              ${rows}
+            </td></tr>
+            <tr><td style="padding:20px 8px;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#94a3b8;">&copy; {{company_name}} &middot; This is an automated message.</p>
+            </td></tr>
+          </table>
         </div>`,
       };
     }

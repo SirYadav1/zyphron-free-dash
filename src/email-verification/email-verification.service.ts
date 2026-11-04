@@ -37,12 +37,16 @@ export class EmailVerificationService {
     if (!user) throw new BadRequestException('User not found');
 
     // check if user has a rate limit tracker
-    // we use verification_expiry as a simple rate limit tracker
-    // if the token was sent less than 1 hour ago, block
+    // we use verification_expiry as a simple rate limit tracker — but it stores
+    // the FUTURE expiry (sent + 24h), so subtract the token lifetime to get the
+    // actual sent time. Previously the raw expiry was compared, locking resend
+    // for the full 24h+ (bug fix).
     if (user.verification_expiry) {
-      const lastSent = new Date(user.verification_expiry);
+      const lastSent =
+        new Date(user.verification_expiry).getTime() -
+        this.TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
       const now = new Date();
-      const timeDiff = now.getTime() - lastSent.getTime();
+      const timeDiff = now.getTime() - lastSent;
       
       if (timeDiff < this.RATE_LIMIT_WINDOW_MS) {
         const remainingMinutes = Math.ceil((this.RATE_LIMIT_WINDOW_MS - timeDiff) / 60000);
@@ -87,6 +91,7 @@ export class EmailVerificationService {
 
     // send email
     const verificationUrl = `${process.env.FRONTEND_URL || 'http://108.181.193.242:8080'}/verify-email?token=${token}`;
+    const brand = await this.mailService.getBrandName();
     const htmlBody = `
       <!DOCTYPE html>
       <html>
@@ -105,14 +110,14 @@ export class EmailVerificationService {
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">⚡ Zyphron Cloud</div>
+            <div class="logo">⚡ ${brand}</div>
           </div>
           
           <h2 style="color: #e94560;">Verify Your Email</h2>
           
           <p>Hello <strong>${user.username || 'User'}</strong>,</p>
           
-          <p>Thank you for registering with Zyphron Cloud! Please verify your email address to activate your account.</p>
+          <p>Thank you for registering with ${brand}! Please verify your email address to activate your account.</p>
           
           <p style="text-align: center;">
             <a href="${verificationUrl}" class="btn">Verify Email Address</a>
@@ -134,7 +139,7 @@ export class EmailVerificationService {
           
           <div class="footer">
             <p>If you didn't create an account, please ignore this email.</p>
-            <p>© ${new Date().getFullYear()} Zyphron Cloud. All rights reserved.</p>
+            <p>© ${new Date().getFullYear()} ${brand}. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -144,7 +149,7 @@ export class EmailVerificationService {
     try {
       await this.mailService.sendEmail(
         user.email,
-        'Verify Your Zyphron Cloud Account',
+        `Verify Your ${brand} Account`,
         htmlBody,
       );
 

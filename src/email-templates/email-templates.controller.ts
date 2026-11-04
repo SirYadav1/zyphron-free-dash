@@ -109,7 +109,7 @@ export class EmailTemplatesController {
       first_name: 'TestUser',
       username: 'TestUser',
       email: dto.email,
-      company_name: 'Zyphron Cloud',
+      company_name: await this.mailService.getBrandName(),
       server_name: 'Test Server',
       ram: '2 GB',
       cpu: '100%',

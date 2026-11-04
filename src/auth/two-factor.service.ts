@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import * as OTPAuth from 'otpauth';
 import { User } from '../entities/user.entity';
 import { PterodactylService } from '../pterodactyl/pterodactyl.service';
+import { BrandService } from '../common/brand/brand.service';
 
 @Injectable()
 export class TwoFactorService {
@@ -12,14 +13,16 @@ export class TwoFactorService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     private pterodactylService: PterodactylService,
+    private brandService: BrandService,
   ) {}
 
   /**
    * Create a TOTP instance for a user
    */
-  private createTOTP(user: User, secret?: string): OTPAuth.TOTP {
+  private async createTOTP(user: User, secret?: string): Promise<OTPAuth.TOTP> {
     return new OTPAuth.TOTP({
-      issuer: 'Zyphron Cloud',
+      // white-label issuer: brand from admin setting/env (never hardcoded)
+      issuer: await this.brandService.getBrandName(),
       label: user.email || user.username,
       algorithm: 'SHA1',
       digits: 6,
@@ -41,7 +44,7 @@ export class TwoFactorService {
       throw new BadRequestException('Two-factor authentication is already enabled');
     }
 
-    const totp = this.createTOTP(user);
+    const totp = await this.createTOTP(user);
     const secret = totp.secret.base32;
     const otpauthUrl = totp.toString();
 
@@ -64,7 +67,7 @@ export class TwoFactorService {
       throw new BadRequestException('Two-factor authentication is not set up');
     }
 
-    const totp = this.createTOTP(user, user.two_factor_secret);
+    const totp = await this.createTOTP(user, user.two_factor_secret);
     const delta = totp.validate({ token: code, window: 1 });
     return delta !== null;
   }
@@ -86,7 +89,7 @@ export class TwoFactorService {
       throw new BadRequestException('Two-factor authentication is already enabled');
     }
 
-    const totp = this.createTOTP(user, user.two_factor_secret);
+    const totp = await this.createTOTP(user, user.two_factor_secret);
     const delta = totp.validate({ token: code, window: 1 });
     if (delta === null) {
       throw new BadRequestException('Invalid verification code');
@@ -126,7 +129,7 @@ export class TwoFactorService {
       throw new BadRequestException('Two-factor authentication is not set up');
     }
 
-    const totp = this.createTOTP(user, user.two_factor_secret);
+    const totp = await this.createTOTP(user, user.two_factor_secret);
     const delta = totp.validate({ token: code, window: 1 });
     if (delta === null) {
       throw new BadRequestException('Invalid verification code');
@@ -166,7 +169,7 @@ export class TwoFactorService {
       throw new BadRequestException('Two-factor authentication is not enabled');
     }
 
-    const totp = this.createTOTP(user, user.two_factor_secret);
+    const totp = await this.createTOTP(user, user.two_factor_secret);
     const delta = totp.validate({ token: code, window: 1 });
     if (delta === null) {
       throw new UnauthorizedException('Invalid two-factor code');
