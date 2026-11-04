@@ -2,7 +2,7 @@
   <div class="auth-shell">
     <div class="max-w-md w-full space-y-8 relative z-10">
       <div class="flex justify-center mb-4">
-        <img src="/login-logo.png" alt="Zyphron Cloud" class="max-h-32 max-w-full rounded-lg object-contain animate-float" />
+        <img :src="brand.loginImage || '/login-logo.png'" :alt="brand.name" class="max-h-32 max-w-full rounded-lg object-contain animate-float" />
       </div>
       <div class="text-center space-y-3" style="animation: slideUp 0.5s ease-out 0.1s both;">
         <h1 class="text-2xl font-bold text-text-primary tracking-tight">
@@ -56,7 +56,7 @@
 
           <div class="text-center space-y-2">
             <div class="flex justify-center mb-2">
-              <div class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center animate-pulse-glow">
+              <div class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center">
                 <KeyRound :size="30" :stroke-width="2" class="text-yellow-500" />
               </div>
             </div>
@@ -192,7 +192,7 @@
       </div>
 
       <div class="text-center" style="animation: fadeIn 0.6s ease-out 0.5s both;">
-        <p class="text-[10px] font-bold text-text-muted/40 uppercase tracking-[0.3em]">Zyphron Cloud • Client Area</p>
+        <p class="text-[10px] font-bold text-text-muted/40 uppercase tracking-[0.3em]">{{ brand.name }} • Client Area</p>
       </div>
     </div>
   </div>
@@ -201,6 +201,7 @@
 <script setup>
 import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useBrandingStore } from '../stores/branding'
 import client from '../api/client'
 import {
   AlertTriangle,
@@ -217,6 +218,7 @@ import {
 const router = useRouter()
 
 const step = ref(1)
+const brand = useBrandingStore()
 const email = ref('')
 const otp = ref('')
 const resetToken = ref('')

@@ -2,11 +2,11 @@
   <div class="auth-shell">
     <div class="max-w-md w-full space-y-8 relative z-10">
       <div class="flex justify-center mb-4">
-        <img src="/login-logo.png" alt="Zyphron Cloud" class="max-h-32 max-w-full rounded-lg object-contain animate-float" />
+        <img :src="brand.loginImage || '/login-logo.png'" :alt="brand.name" class="max-h-32 max-w-full rounded-lg object-contain animate-float" />
       </div>
       <div class="text-center space-y-3" style="animation: slideUp 0.5s ease-out 0.1s both;">
         <h1 class="text-2xl font-bold text-text-primary tracking-tight">{{ t('auth.signIn') }}</h1>
-        <p class="text-sm text-text-muted">{{ t('auth.signInSubtitle') }}</p>
+        <p class="text-sm text-text-muted">{{ t('auth.signInSubtitle', { brand: brand.name }) }}</p>
       </div>
 
       <div class="auth-card" style="animation: slideUp 0.5s ease-out 0.2s both;">
@@ -76,7 +76,7 @@
 
           <div class="text-center space-y-2" style="animation: scaleIn 0.4s ease-out both;">
             <div class="flex justify-center mb-2">
-              <div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center animate-pulse-glow">
+              <div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center">
                 <ShieldCheck :size="30" :stroke-width="2" class="text-accent" />
               </div>
             </div>
@@ -136,10 +136,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
+import { useBrandingStore } from '../stores/branding'
 import client from '../api/client'
 import {
   AlertTriangle,
@@ -153,8 +154,9 @@ import {
 const { t } = useI18n()
 const router = useRouter()
 const store = useAuthStore()
+const brand = useBrandingStore()
 
-const BRAND_NAME = 'Zyphron Cloud'
+const BRAND_NAME = computed(() => brand.name)
 
 const email = ref('')
 const password = ref('')

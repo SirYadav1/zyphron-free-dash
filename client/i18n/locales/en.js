@@ -67,7 +67,7 @@ export default {
     createAccount: 'Create an account',
     alreadyHaveAccount: 'Already have an account?',
     noAccount: "Don't have an account?",
-    signInSubtitle: 'Sign in to manage your servers on Zyphron Cloud.',
+    signInSubtitle: 'Sign in to manage your servers on {brand}.',
     createAccountSubtitle: 'Create your account',
     authenticating: 'Authenticating...',
     passwordsDoNotMatch: 'Passwords do not match',
@@ -302,6 +302,6 @@ export default {
 
   // footer
   footer: {
-    poweredBy: 'Zyphron Cloud • Client Area',
+    poweredBy: '{brand} • Client Area',
   },
 }

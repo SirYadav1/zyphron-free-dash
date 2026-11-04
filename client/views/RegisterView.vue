@@ -152,12 +152,14 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useBrandingStore } from '../stores/branding'
 import ZyphronLogo from '../components/ZyphronLogo.vue'
 
 const router = useRouter()
 const store = useAuthStore()
+const brand = useBrandingStore()
 
-const BRAND_NAME = 'Zyphron Cloud'
+const BRAND_NAME = computed(() => brand.name)
 
 const firstName = ref('')
 const lastName = ref('')

@@ -51,7 +51,7 @@
           <a href="/api/discord/link" class="btn-primary inline-flex items-center gap-2 bg-[#5865F2] hover:bg-[#4752C4] border-none text-white px-6">
             Connect Discord
           </a>
-          <p class="text-[11px] text-text-muted font-medium">Must be a member of the official Zyphron server. You'll be redirected back after linking.</p>
+          <p class="text-[11px] text-text-muted font-medium">Must be a member of the official {{ brand.name }} server. You'll be redirected back after linking.</p>
         </div>
       </div>
 
@@ -141,8 +141,11 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useBrandingStore } from '../stores/branding'
 import client from '../api/client'
 import { AlertTriangle, CheckCircle, User } from 'lucide-vue-next'
+
+const brand = useBrandingStore()
 
 const route = useRoute()
 const authStore = useAuthStore()

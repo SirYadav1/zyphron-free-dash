@@ -21,7 +21,7 @@ export default {
     lastName: 'अंतिम नाम', forgotPassword: 'भूल गए?',
     createAccount: 'खाता बनाएं', alreadyHaveAccount: 'पहले से खाता है?',
     noAccount: 'खाता नहीं है?',
-    signInSubtitle: 'Zyphron Cloud पर अपने सर्वर प्रबंधित करने के लिए साइन इन करें।',
+    signInSubtitle: '{brand} पर अपने सर्वर प्रबंधित करने के लिए साइन इन करें।',
     createAccountSubtitle: 'अपना खाता बनाएं',
     authenticating: 'प्रमाणीकरण हो रहा है...',
     passwordsDoNotMatch: 'पासवर्ड मेल नहीं खाते',
@@ -174,5 +174,5 @@ export default {
     conflictDetected: 'टकराव का पता चला',
     focusRequired: 'ध्यान आवश्यक',
   },
-  footer: { poweredBy: 'Zyphron Cloud • क्लाइंट एरिया' },
+  footer: { poweredBy: '{brand} • क्लाइंट एरिया' },
 }

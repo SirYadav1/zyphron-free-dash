@@ -109,7 +109,7 @@
         <div class="space-y-1">
           <p class="text-xs font-bold text-text-primary">How Coins Work</p>
           <p class="text-[11px] text-text-muted leading-relaxed">
-            Coins are used to deploy and maintain servers on the Zyphron network.
+            Coins are used to deploy and maintain servers on the {{ brand.name }} network.
             Each server plan costs a specific number of coins. You can also earn coins
             by using the AFK earning system or purchasing packages here.
           </p>
@@ -123,7 +123,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useBrandingStore } from '../stores/branding'
 import client from '../api/client'
+
+const brand = useBrandingStore()
 
 const router = useRouter()
 const authStore = useAuthStore()
