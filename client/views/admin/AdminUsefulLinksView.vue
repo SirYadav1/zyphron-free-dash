@@ -7,7 +7,7 @@
       </div>
       <button @click="showAddForm = !showAddForm"
         class="px-4 py-2 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors flex items-center gap-2">
-        <span v-if="showAddForm">✕ Cancel</span>
+        <span v-if="showAddForm">Cancel</span>
         <span v-else>+ Add New Link</span>
       </button>
     </div>

@@ -27,7 +27,7 @@
               <td class="px-5 py-3">
                 <div class="w-10 h-10 rounded-lg overflow-hidden bg-base border border-border flex items-center justify-center">
                   <img v-if="cat.image_url" :src="cat.image_url" :alt="cat.name" class="w-full h-full object-cover" />
-                  <span v-else class="text-lg">📦</span>
+                  <span v-else class="text-text-muted/40"><Package :size="18" :stroke-width="2" /></span>
                 </div>
               </td>
               <td class="px-5 py-3 text-text-primary font-bold text-sm">{{ cat.name }}</td>
@@ -55,6 +55,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { Package } from 'lucide-vue-next'
 import client from '../../api/client'
 
 const categories = ref([])

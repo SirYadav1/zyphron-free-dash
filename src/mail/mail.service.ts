@@ -234,16 +234,16 @@ export class MailService {
       <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">SMTP Working!</h2>
       ${this.templateHelper.p('This is a test email from your <strong style="color:#e2e8f0;">Zyphron Cloud</strong> dashboard to verify SMTP configuration.')}
       ${this.templateHelper.box(`
-        ${this.templateHelper.infoRow('📧 Sent to', to)}
+        ${this.templateHelper.infoRow('Sent to', to)}
         ${this.templateHelper.infoRow('🕐 Time', new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }))}
       `, 'green')}
-      ${this.templateHelper.p('✅ If you received this, your SMTP settings are working. You can now send automated notifications to users.', { color: '#64748b', size: '13px' })}
+      ${this.templateHelper.p('If you received this, your SMTP settings are working. You can now send automated notifications to users.', { color: '#64748b', size: '13px' })}
     `;
 
     return this.safeSendMail({
       from: `${fromName} <${from}>`,
       to,
-      subject: 'Zyphron Cloud — SMTP Test ✅',
+      subject: `${await this.getBrandName()} — SMTP Test`,
       html: await this.templateHelper.wrap(content, 'linear-gradient(135deg,#10b981 0%,#059669 100%)'),
     });
   }
@@ -271,7 +271,7 @@ export class MailService {
 
   async sendUnbanNotification(to: string, firstName?: string) {
     const content = `
-      <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">✅ Account Unbanned</h2>
+      <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">Account Unbanned</h2>
       ${this.templateHelper.p(`Hey <strong style="color:#e2e8f0;">${escapeHtml(firstName || to.split('@')[0])}</strong>,`)}
       ${this.templateHelper.p('Your account has been unbanned. You may now log in and use our services again.')}
       ${this.templateHelper.button('Login Now', process.env.FRONTEND_URL || 'https://your-domain.com', '#10b981')}
@@ -298,7 +298,7 @@ export class MailService {
 
   async sendServerUnsuspension(to: string, serverName: string, firstName?: string) {
     const content = `
-      <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">✅ Server Unsuspended</h2>
+      <h2 style="margin:0 0 20px;color:#10b981;font-size:22px;">Server Unsuspended</h2>
       ${this.templateHelper.p(`Hey <strong style="color:#e2e8f0;">${escapeHtml(firstName || to.split('@')[0])}</strong>,`)}
       ${this.templateHelper.p(`Your server <strong style="color:#e2e8f0;">${escapeHtml(serverName)}</strong> has been unsuspended and is now active.`)}
       ${this.templateHelper.button('Go to Dashboard', process.env.FRONTEND_URL || 'https://your-domain.com', '#10b981')}

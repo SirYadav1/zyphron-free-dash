@@ -273,7 +273,7 @@
                 class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-xs font-bold border transition-all disabled:opacity-50"
               >
                 <span>{{ role.name }}</span>
-                <span v-if="currentUserRoleIds.includes(role.id)" class="text-accent">✓</span>
+                <span v-if="currentUserRoleIds.includes(role.id)" class="text-accent inline-flex"><Check :size="14" :stroke-width="3" /></span>
                 <span v-else class="text-text-muted/40">+</span>
               </button>
             </div>
@@ -298,6 +298,7 @@ import {
   Eye,
   Edit3,
   Trash2,
+  Check,
 } from 'lucide-vue-next'
 
 const store = useAdminStore()

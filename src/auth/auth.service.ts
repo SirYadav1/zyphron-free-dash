@@ -749,7 +749,7 @@ export class AuthService {
     <tr><td align="center" style="padding:40px 20px;">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <tr><td style="padding:48px 40px 36px;background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);border-radius:16px 16px 0 0;text-align:center;">
-          <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;line-height:56px;font-size:28px;">🔑</div>
+          <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;line-height:56px;font-size:26px;font-weight:800;">R</div>
           <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;">Password Reset</h1>
           <p style="margin:10px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Enter this code to reset your password</p>
         </td></tr>
@@ -761,7 +761,7 @@ export class AuthService {
             <p style="margin:0;font-size:42px;font-weight:800;color:#f59e0b;letter-spacing:8px;">${otp}</p>
           </div>
           <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:12px;padding:16px;margin:20px 0;">
-            <p style="margin:0;font-size:13px;color:#ef4444;">⚠️ This code expires in <strong>10 minutes</strong>.</p>
+            <p style="margin:0;font-size:13px;color:#ef4444;">This code expires in <strong>10 minutes</strong>.</p>
             <p style="margin:8px 0 0;font-size:13px;color:#ef4444;">If you didn't request this, <strong>contact our support team immediately</strong> — your account may be at risk.</p>
           </div>
         </td></tr>
@@ -877,7 +877,7 @@ export class AuthService {
     <tr><td align="center" style="padding:40px 20px;">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <tr><td style="padding:48px 40px 36px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:16px 16px 0 0;text-align:center;">
-          <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;line-height:56px;font-size:28px;">✅</div>
+          <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;margin:0 auto 16px;line-height:56px;font-size:26px;font-weight:800;">C</div>
           <h1 style="margin:0;color:#fff;font-size:26px;font-weight:800;">Password Changed</h1>
           <p style="margin:10px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">Your password has been updated successfully</p>
         </td></tr>
@@ -885,10 +885,10 @@ export class AuthService {
           <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Hey <strong style="color:#e2e8f0;">${user.first_name || user.username}</strong>,</p>
           <p style="margin:10px 0;font-size:15px;line-height:1.7;color:#94a3b8;">Your password has been changed successfully.</p>
           <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:20px;margin:20px 0;">
-            <p style="margin:4px 0;font-size:13px;color:#94a3b8;">📧 Email: <strong style="color:#e2e8f0;">${email}</strong></p>
+            <p style="margin:4px 0;font-size:13px;color:#94a3b8;">Email: <strong style="color:#e2e8f0;">${email}</strong></p>
           </div>
           <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:12px;padding:16px;margin:20px 0;">
-            <p style="margin:0;font-size:13px;color:#ef4444;">⚠️ <strong>If you did NOT request this password change, contact our support team immediately</strong> — your account may be compromised.</p>
+            <p style="margin:0;font-size:13px;color:#ef4444;"><strong>If you did NOT request this password change, contact our support team immediately</strong> — your account may be compromised.</p>
           </div>
           <p style="margin:10px 0;font-size:13px;color:#64748b;">For security, we recommend changing this password to something only you know.</p>
         </td></tr>

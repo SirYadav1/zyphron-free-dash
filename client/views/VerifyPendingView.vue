@@ -59,7 +59,7 @@
 
           <!-- Tips -->
           <div class="p-3 bg-surface/50 rounded-md text-xs text-text-muted space-y-1.5">
-            <p class="font-bold text-text-secondary">📧 Can't find the email?</p>
+            <p class="font-bold text-text-secondary">Can't find the email?</p>
             <ul class="list-disc list-inside space-y-1 ml-1">
               <li>Check your <strong>Spam/Junk</strong> folder</li>
               <li>Check your <strong>Promotions</strong> tab (Gmail)</li>

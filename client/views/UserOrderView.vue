@@ -9,10 +9,10 @@
 
     <!-- Feedback -->
     <div v-if="error" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-sm font-bold flex items-center gap-3">
-      <span>⚠️</span> {{ error }}
+      <AlertTriangle :size="16" :stroke-width="2" class="shrink-0" /> {{ error }}
     </div>
     <div v-if="success" class="card-surface p-4 border-emerald-500/20 bg-emerald-500/5 text-emerald-500 text-sm font-bold flex items-center gap-3">
-      <span>✅</span> {{ success }}
+      <CheckCircle :size="16" :stroke-width="2" class="shrink-0" /> {{ success }}
     </div>
 
     <!-- Success Toast/Popup -->
@@ -26,7 +26,7 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-text-primary">Screenshot Uploaded! 🎉</h3>
+              <h3 class="text-xl font-bold text-text-primary">Screenshot Uploaded!</h3>
               <p class="text-sm text-text-muted mt-2">Your payment screenshot has been submitted successfully. Redirecting to your order status page...</p>
             </div>
             <div class="flex justify-center">
@@ -158,7 +158,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 class="text-lg font-bold text-emerald-500">Payment Approved! 🎉</h3>
+          <h3 class="text-lg font-bold text-emerald-500">Payment Approved!</h3>
           <p class="text-sm text-text-muted">{{ order.coins_amount }} coins have been added to your account.</p>
           <router-link to="/store" class="btn-primary inline-block px-6 py-2 text-sm">Back to Store</router-link>
         </div>
@@ -190,6 +190,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import QRCode from 'qrcode'
 import client from '../api/client'
+import { AlertTriangle, CheckCircle } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()

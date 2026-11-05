@@ -135,7 +135,7 @@
                   >
                     Install
                   </button>
-                  <span v-else class="text-xs text-green-400 font-bold shrink-0">✓ Installed</span>
+                  <span v-else class="text-xs text-green-400 font-bold shrink-0">Installed</span>
                 </div>
               </div>
             </template>

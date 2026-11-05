@@ -12,11 +12,11 @@
       <div class="auth-card">
         <form @submit.prevent="handleRegister" class="space-y-6">
           <div v-if="store.error" class="p-3 bg-red-500/10 border border-red-500/20 rounded-md text-xs font-bold text-red-500 flex items-center gap-2">
-            <span>⚠️</span> {{ store.error }}
+            <AlertTriangle :size="16" :stroke-width="2" class="shrink-0" /> {{ store.error }}
           </div>
 
           <div v-if="success" class="p-3 bg-green-500/10 border border-green-500/20 rounded-md text-xs font-bold text-green-400 flex items-center gap-2">
-            <span>✅</span> {{ success }}
+            <CheckCircle :size="16" :stroke-width="2" class="shrink-0" /> {{ success }}
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,6 +154,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useBrandingStore } from '../stores/branding'
 import ZyphronLogo from '../components/ZyphronLogo.vue'
+import { AlertTriangle, CheckCircle } from 'lucide-vue-next'
 
 const router = useRouter()
 const store = useAuthStore()

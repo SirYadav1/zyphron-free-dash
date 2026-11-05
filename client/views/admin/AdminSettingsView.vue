@@ -136,7 +136,7 @@
         </div>
 
         <div class="flex items-center justify-between pt-2 border-t border-border">
-          <p v-if="brandingError" class="text-xs font-bold text-red-400">✕ {{ brandingError }}</p>
+          <p v-if="brandingError" class="text-xs font-bold text-red-400">><X :size="14" class="inline shrink-0" /> {{ brandingError }}</p>
           <span v-else class="text-[10px] text-text-muted">Applies to login page, emails & browser tab</span>
           <button @click="saveBranding" :disabled="savingBranding" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
             <Save :size="12" /> {{ savingBranding ? 'Saving...' : 'Save Branding' }}
@@ -171,8 +171,8 @@
         </div>
         <div class="bg-surface/50 px-3 py-2 rounded-lg border border-border">
           <p class="text-[11px] text-text-muted">
-            <span v-if="maintenanceMode" class="text-red-400 font-bold">⚠️ Active:</span>
-            <span v-else class="text-emerald-400 font-bold">✓ Inactive:</span>
+            <span v-if="maintenanceMode" class="text-red-400 font-bold">Active:</span>
+            <span v-else class="text-emerald-400 font-bold">Inactive:</span>
             Normal users will see a maintenance message and cannot login. Admins can still access the dashboard.
           </p>
         </div>
@@ -202,8 +202,8 @@
         </div>
         <div class="bg-surface/50 px-3 py-2 rounded-lg border border-border">
           <p class="text-[11px] text-text-muted">
-            <span v-if="afkEnabled" class="text-amber-400 font-bold">✓ Unlocked:</span>
-            <span v-else class="text-red-400 font-bold">🔒 Locked:</span>
+            <span v-if="afkEnabled" class="text-amber-400 font-bold">Unlocked:</span>
+            <span v-else class="text-red-400 font-bold">Locked:</span>
             {{ afkEnabled ? 'Users can start AFK sessions and earn credits.' : 'AFK earning is disabled. Users cannot start new sessions.' }}
           </p>
         </div>
@@ -292,8 +292,8 @@
 
         <div v-if="pteroStatus" class="p-3 rounded-lg text-xs font-medium flex items-start gap-2"
           :class="pteroStatus.success ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'">
-          <span v-if="pteroStatus.success">✓</span>
-          <span v-else>✕</span>
+          <span v-if="pteroStatus.success" class="inline-flex"><Check :size="14" class="shrink-0" /></span>
+          <span v-else class="inline-flex"><X :size="14" class="shrink-0" /></span>
           <div class="flex-1">
             <div>{{ pteroStatus.message }}</div>
             <div v-if="pteroStatus.nodeCount" class="mt-1 font-bold">{{ pteroStatus.nodeCount }} nodes available</div>
@@ -351,8 +351,8 @@
             <div><p class="text-[9px] text-text-muted uppercase font-bold mb-0.5">Disk</p><p class="text-text-primary font-bold">{{ formatDisk(selectedNode.disk || selectedNode.diskSpace) }}</p></div>
           </div>
 
-          <p v-if="nodeSuccess" class="text-xs font-bold text-emerald-400">✓ {{ nodeSuccess }}</p>
-          <p v-if="nodeError" class="text-xs font-bold text-red-400">✕ {{ nodeError }}</p>
+          <p v-if="nodeSuccess" class="text-xs font-bold text-emerald-400">><Check :size="14" class="inline shrink-0" /> {{ nodeSuccess }}</p>
+          <p v-if="nodeError" class="text-xs font-bold text-red-400">><X :size="14" class="inline shrink-0" /> {{ nodeError }}</p>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
@@ -538,11 +538,13 @@
           </div>
 
           <!-- SMTP Status Messages -->
-          <div v-if="smtpSuccess" class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs font-bold text-emerald-400">
-            ✓ {{ smtpSuccess }}
+          <div v-if="smtpSuccess" class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs font-bold text-emerald-400 flex items-center gap-2">
+            <Check :size="14" class="shrink-0" />
+            {{ smtpSuccess }}
           </div>
-          <div v-if="smtpError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-bold text-red-400">
-            ✕ {{ smtpError }}
+          <div v-if="smtpError" class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-bold text-red-400 flex items-center gap-2">
+            <X :size="14" class="shrink-0" />
+            {{ smtpError }}
           </div>
         </div>
       </div>
@@ -620,8 +622,8 @@
           </div>
         </div>
 
-        <p v-if="allocationSuccess" class="text-xs font-bold text-emerald-400">✓ {{ allocationSuccess }}</p>
-        <p v-if="allocationError" class="text-xs font-bold text-red-400">✕ {{ allocationError }}</p>
+        <p v-if="allocationSuccess" class="text-xs font-bold text-emerald-400">><Check :size="14" class="inline shrink-0" /> {{ allocationSuccess }}</p>
+        <p v-if="allocationError" class="text-xs font-bold text-red-400">><X :size="14" class="inline shrink-0" /> {{ allocationError }}</p>
 
         <div class="flex items-center justify-end pt-2 border-t border-border">
           <button @click="saveAllocationSettings" :disabled="savingAllocation" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
@@ -662,8 +664,8 @@
           </div>
         </div>
 
-        <p v-if="maxLimitsSuccess" class="text-xs font-bold text-emerald-400">✓ {{ maxLimitsSuccess }}</p>
-        <p v-if="maxLimitsError" class="text-xs font-bold text-red-400">✕ {{ maxLimitsError }}</p>
+        <p v-if="maxLimitsSuccess" class="text-xs font-bold text-emerald-400">><Check :size="14" class="inline shrink-0" /> {{ maxLimitsSuccess }}</p>
+        <p v-if="maxLimitsError" class="text-xs font-bold text-red-400">><X :size="14" class="inline shrink-0" /> {{ maxLimitsError }}</p>
 
         <div class="flex items-center justify-end pt-2 border-t border-border">
           <button @click="saveMaxResourceLimits" :disabled="savingMaxLimits" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
@@ -692,8 +694,8 @@
           <p class="text-[10px] text-text-muted">When a server expires, ownership transfers to this admin account on Pterodactyl panel</p>
         </div>
 
-        <p v-if="transferSuccess" class="text-xs font-bold text-emerald-400">✓ {{ transferSuccess }}</p>
-        <p v-if="transferError" class="text-xs font-bold text-red-400">✕ {{ transferError }}</p>
+        <p v-if="transferSuccess" class="text-xs font-bold text-emerald-400">><Check :size="14" class="inline shrink-0" /> {{ transferSuccess }}</p>
+        <p v-if="transferError" class="text-xs font-bold text-red-400">><X :size="14" class="inline shrink-0" /> {{ transferError }}</p>
 
         <div class="flex items-center justify-end pt-2 border-t border-border">
           <button @click="saveTransferEmail" :disabled="savingTransferEmail" class="px-4 py-1.5 text-[11px] font-bold bg-accent text-white rounded-lg hover:bg-accent/90 disabled:opacity-40 transition-colors inline-flex items-center gap-1.5">
@@ -860,7 +862,7 @@ import client from '../../api/client'
 import {
   AlertTriangle, CheckCircle, Zap, Check, Server, HardDrive,
   Eye, EyeOff, Layers, Lock, Globe, Mail, Shield, Save, Send, MailCheck, MessageSquare, UserCog, ShieldAlert, Info,
-  SlidersHorizontal, Power, Monitor, ShieldCheck, ChevronDown, ChevronUp, Search,
+  SlidersHorizontal, Power, Monitor, ShieldCheck, ChevronDown, ChevronUp, Search, X,
 } from 'lucide-vue-next'
 
 const store = useAdminStore()

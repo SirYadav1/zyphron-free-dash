@@ -110,7 +110,7 @@ export class EmailVerificationService {
       <body>
         <div class="container">
           <div class="header">
-            <div class="logo">⚡ ${brand}</div>
+            <div class="logo">${brand}</div>
           </div>
           
           <h2 style="color: #e94560;">Verify Your Email</h2>
@@ -124,7 +124,7 @@ export class EmailVerificationService {
           </p>
           
           <div class="note">
-            <strong>📧 Can't find the email?</strong>
+            <strong>Can't find the email?</strong>
             <ul>
               <li>Check your <strong>Spam/Junk</strong> folder</li>
               <li>Check your <strong>Promotions</strong> tab (Gmail)</li>
@@ -134,7 +134,7 @@ export class EmailVerificationService {
           </div>
           
           <div class="note" style="background: #e9456020; border: 1px solid #e94560;">
-            <strong>⏰ Important:</strong> This link expires in <strong>24 hours</strong>.
+            <strong>Important:</strong> This link expires in <strong>24 hours</strong>.
           </div>
           
           <div class="footer">

@@ -8,11 +8,11 @@
 
     <!-- Feedback -->
     <div v-if="store.error" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-sm font-bold flex items-center gap-3">
-      <span>⚠️</span> {{ store.error }}
+      <AlertTriangle :size="16" :stroke-width="2" class="shrink-0" /> {{ store.error }}
     </div>
 
     <div v-if="success" class="card-surface p-4 border-accent/20 bg-accent/5 text-accent text-sm font-bold flex items-center gap-3">
-      <span>✅</span> {{ success }}
+      <CheckCircle :size="16" :stroke-width="2" class="shrink-0" /> {{ success }}
     </div>
 
     <div v-if="store.loading && !store.plans.length" class="flex flex-col items-center justify-center py-20 gap-4">
@@ -191,6 +191,7 @@ import { useRouter } from 'vue-router'
 import { useServersStore } from '../stores/servers'
 import { useAuthStore } from '../stores/auth'
 import client from '../api/client'
+import { AlertTriangle, CheckCircle } from 'lucide-vue-next'
 
 const router = useRouter()
 const store = useServersStore()

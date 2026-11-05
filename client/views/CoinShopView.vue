@@ -26,11 +26,11 @@
 
     <!-- Feedback -->
     <div v-if="error" class="card-surface p-4 border-red-500/20 bg-red-500/5 text-red-500 text-sm font-bold flex items-center gap-3">
-      <span>⚠️</span> {{ error }}
+      <AlertTriangle :size="16" :stroke-width="2" class="shrink-0" /> {{ error }}
     </div>
 
     <div v-if="success" class="card-surface p-4 border-emerald-500/20 bg-emerald-500/5 text-emerald-500 text-sm font-bold flex items-center gap-3">
-      <span>✅</span> {{ success }}
+      <CheckCircle :size="16" :stroke-width="2" class="shrink-0" /> {{ success }}
     </div>
 
     <!-- Loading -->
@@ -125,6 +125,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useBrandingStore } from '../stores/branding'
 import client from '../api/client'
+import { AlertTriangle, CheckCircle } from 'lucide-vue-next'
 
 const brand = useBrandingStore()
 
